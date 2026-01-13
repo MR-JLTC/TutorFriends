@@ -39,11 +39,11 @@ export class EmailService {
     if (gmailAppPassword) {
       const verifyPromise = Promise.race([
         this.transporter.verify(),
-        new Promise((_, reject) => 
+        new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Verification timeout')), 15000) // 15 seconds to allow for connection setup
         )
       ]);
-      
+
       verifyPromise
         .then(() => {
           // eslint-disable-next-line no-console
@@ -52,7 +52,7 @@ export class EmailService {
         .catch((err: unknown) => {
           // Only log as warning, not error, since email might still work
           // eslint-disable-next-line no-console
-          console.warn('⚠️ Email transporter verification failed (emails may still work):', 
+          console.warn('⚠️ Email transporter verification failed (emails may still work):',
             err instanceof Error ? err.message : 'Unknown error');
         });
     }
@@ -67,7 +67,7 @@ export class EmailService {
     try {
       const mailOptions = {
         // from: `${this.gmailUser}`,
-        from: `"TutorLink" <${this.gmailUser}>`,
+        from: `"TutorFriends" <${this.gmailUser}>`,
         to: `${this.gmailUser}`,
         replyTo: `${contactData.name} <${contactData.email}>`,
         subject: `Contact Form: ${contactData.subject}`,
@@ -85,7 +85,7 @@ export class EmailService {
             </div>
             <div style="margin-top: 20px; padding: 15px; background-color: #f1f5f9; border-radius: 8px;">
               <p style="margin: 0; color: #64748b; font-size: 14px;">
-                This message was sent from the TutorLink contact form.
+                This message was sent from the TutorFriends contact form.
               </p>
             </div>
           </div>
@@ -106,7 +106,7 @@ export class EmailService {
   }): Promise<boolean> {
     try {
       const mailOptions = {
-        from: `"TutorLink" <${this.gmailUser}>`,
+        from: `"TutorFriends" <${this.gmailUser}>`,
         to: tutorData.email,
         subject: '🎉 Your Tutor Application Has Been Approved!',
         html: `
@@ -116,7 +116,7 @@ export class EmailService {
               <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Your tutor application has been approved</p>
             </div>
             <div style="background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-              <h2 style="color: #1e293b; margin-top: 0;">Welcome to TutorLink, ${tutorData.name}!</h2>
+              <h2 style="color: #1e293b; margin-top: 0;">Welcome to TutorFriends, ${tutorData.name}!</h2>
               <p style="color: #475569; line-height: 1.6; font-size: 16px;">
                 We're excited to inform you that your tutor application has been reviewed and approved! 
                 You can now start offering tutoring services to students on our platform.
@@ -136,12 +136,12 @@ export class EmailService {
               </p>
             </div>
             <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">
-              <p>This email was sent from TutorLink - Connecting Minds, Building Futures</p>
+              <p>This email was sent from TutorFriends - Connecting Minds, Building Futures</p>
             </div>
           </div>
         `,
       };
-      
+
       await this.transporter.sendMail(mailOptions);
       return true;
     } catch (error) {
@@ -157,7 +157,7 @@ export class EmailService {
   }): Promise<boolean> {
     try {
       const mailOptions = {
-        from: `"TutorLink" <${this.gmailUser}>`,
+        from: `"TutorFriends" <${this.gmailUser}>`,
         to: tutorData.email,
         subject: '✅ Your Subject Expertise Has Been Approved!',
         html: `
@@ -190,7 +190,7 @@ export class EmailService {
               </p>
             </div>
             <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">
-              <p>This email was sent from TutorLink - Connecting Minds, Building Futures</p>
+              <p>This email was sent from TutorFriends - Connecting Minds, Building Futures</p>
             </div>
           </div>
         `,
@@ -208,15 +208,15 @@ export class EmailService {
     try {
       console.log('Attempting to send test email to:', to);
       console.log('Using Gmail User:', this.gmailUser);
-      
+
       const mailOptions = {
-        from: `"TutorLink" <${this.gmailUser}>`,
+        from: `"TutorFriends" <${this.gmailUser}>`,
         to: to,
-        subject: 'TutorLink Email Test',
+        subject: 'TutorFriends Email Test',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h2 style="color: #0ea5e9;">Email Service Test</h2>
-            <p>This is a test email from TutorLink to verify that the email service is working correctly.</p>
+            <p>This is a test email from TutorFriends to verify that the email service is working correctly.</p>
             <p>If you receive this email, the email configuration is successful!</p>
             <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 0; color: #0ea5e9;"><strong>✅ Email Service is Working!</strong></p>
@@ -243,12 +243,12 @@ export class EmailService {
       // Log the admin notes being sent
       console.log(`[Email Service] Sending rejection email to ${tutorData.email}`);
       console.log(`[Email Service] Admin notes provided:`, tutorData.adminNotes ? `"${tutorData.adminNotes.substring(0, 50)}${tutorData.adminNotes.length > 50 ? '...' : ''}"` : 'none');
-      
+
       const hasAdminNotes = tutorData.adminNotes && tutorData.adminNotes.trim().length > 0;
       console.log(`[Email Service] Will include rejection reason in email:`, hasAdminNotes);
-      
+
       const mailOptions = {
-        from: `"TutorLink" <${this.gmailUser}>`,
+        from: `"TutorFriends" <${this.gmailUser}>`,
         to: tutorData.email,
         subject: '❌ Your Tutor Application Status Update',
         html: `
@@ -291,7 +291,7 @@ export class EmailService {
               </p>
             </div>
             <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">
-              <p>This email was sent from TutorLink - Connecting Minds, Building Futures</p>
+              <p>This email was sent from TutorFriends - Connecting Minds, Building Futures</p>
             </div>
           </div>
         `,
@@ -313,7 +313,7 @@ export class EmailService {
   }): Promise<boolean> {
     try {
       const mailOptions = {
-        from: `"TutorLink" <${this.gmailUser}>`,
+        from: `"TutorFriends" <${this.gmailUser}>`,
         to: tutorData.email,
         subject: '❌ Your Subject Expertise Application Status Update',
         html: `
@@ -357,7 +357,7 @@ export class EmailService {
               </p>
             </div>
             <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">
-              <p>This email was sent from TutorLink - Connecting Minds, Building Futures</p>
+              <p>This email was sent from TutorFriends - Connecting Minds, Building Futures</p>
             </div>
           </div>
         `,

@@ -33,7 +33,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsViewed, setTermsViewed] = useState(false);
   const [termsScrollProgress, setTermsScrollProgress] = useState(0);
-  
+
   // Email verification states
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
@@ -43,12 +43,12 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
   const [verificationError, setVerificationError] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const [codeExpiresAt, setCodeExpiresAt] = useState<number | null>(null);
-  
+
   // Profile image state
   const [profileImage, setProfileImage] = useState<File | null>(null);
 
-  const selectedUniversity = useMemo(() => 
-    universities.find(u => u.university_id === universityId), 
+  const selectedUniversity = useMemo(() =>
+    universities.find(u => u.university_id === universityId),
     [universities, universityId]
   );
 
@@ -116,12 +116,12 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       // Check if there's an active verification code by checking the registry
       // We'll use a custom endpoint or check the status endpoint with additional info
       const response = await apiClient.get(`/auth/email-verification/status?email=${encodeURIComponent(emailToCheck)}&user_type=tutee`);
-      
+
       // If the response includes code expiration info, use it
       if (response.data && response.data.verification_expires) {
         const expiresAt = new Date(response.data.verification_expires).getTime();
         const now = Date.now();
-        
+
         // If code exists and hasn't expired
         if (expiresAt > now) {
           setCodeExpiresAt(expiresAt);
@@ -129,7 +129,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
           return;
         }
       }
-      
+
       // If no active code found, reset state
       setCodeSent(false);
       setCodeExpiresAt(null);
@@ -155,12 +155,12 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
 
     try {
       console.log('Frontend: Sending verification code to:', formData.email);
-      const response = await apiClient.post('/auth/email-verification/send-code', { 
-        email: formData.email, 
-        user_type: 'tutee' 
+      const response = await apiClient.post('/auth/email-verification/send-code', {
+        email: formData.email,
+        user_type: 'tutee'
       });
       console.log('Frontend: Verification code response:', response.data);
-      
+
       if (response.data) {
         // Set code expiration to 10 minutes from now
         const expirationTime = Date.now() + (10 * 60 * 1000); // 10 minutes
@@ -196,13 +196,13 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
 
     try {
       console.log('Frontend: Verifying code:', verificationCode);
-      const response = await apiClient.post('/auth/email-verification/verify-code', { 
-        email: formData.email, 
+      const response = await apiClient.post('/auth/email-verification/verify-code', {
+        email: formData.email,
         code: verificationCode,
         user_type: 'tutee'
       });
       console.log('Frontend: Verification response:', response.data);
-      
+
       if (response.data) {
         setIsEmailVerified(true);
         setShowVerificationModal(false);
@@ -253,7 +253,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       if (file.type.startsWith('image/')) {
         setProfileImage(file);
         notify('Profile image selected successfully!', 'success');
-    } else {
+      } else {
         notify('Please select a valid image file.', 'error');
         e.target.value = '';
       }
@@ -320,7 +320,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
   // Check expiration periodically
   useEffect(() => {
     if (!codeExpiresAt) return;
-    
+
     const interval = setInterval(() => {
       if (Date.now() > codeExpiresAt) {
         setCodeSent(false);
@@ -365,32 +365,32 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       setFormData(prev => ({ ...prev, course: '' }));
     }
   }, [universityId]);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     if (!formData.name || !formData.email || !formData.password || !formData.yearLevel) {
       setIsLoading(false);
       notify('Please fill all required fields.', 'error');
       return;
     }
-    
+
     if (emailDomainError) {
       notify(emailDomainError, 'error');
       return;
     }
-    
+
     if (!isEmailVerified) {
       notify('Please verify your email address before submitting the registration.', 'error');
       return;
     }
-    
+
     if (formData.password.length < 7 || formData.password.length > 21) {
       notify('Password must be between 7 and 21 characters.', 'error');
       return;
     }
-    
+
     const courseProvided = !!courseId || !!formData.course.trim();
     if (!courseProvided) {
       notify('Please select or enter a course.', 'error');
@@ -423,7 +423,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
 
       const registrationResponse = await apiClient.post('/auth/register', registerPayload);
       console.log('Tutee registration successful:', registrationResponse.data);
-      
+
       // Store the token for authenticated requests
       const { user, accessToken } = registrationResponse.data;
       localStorage.setItem('token', accessToken);
@@ -432,10 +432,10 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       if (storageRole && user) {
         setRoleAuth(storageRole, user, accessToken);
       }
-      
+
       console.log('Token stored:', accessToken);
       console.log('User stored:', user);
-      
+
       // Test authentication endpoint
       try {
         const testResponse = await apiClient.get('/users/test-auth', {
@@ -447,27 +447,27 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       } catch (testErr) {
         console.error('Auth test failed:', testErr);
       }
-      
+
       // Small delay to ensure token is properly set
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       // Upload profile image if provided
       if (profileImage) {
         try {
           console.log('Uploading profile image for tutee:', user.user_id);
           console.log('Using token:', accessToken);
-          
+
           const pf = new FormData();
           pf.append('file', profileImage);
-          
-          const profileResponse = await apiClient.post(`/users/${user.user_id}/profile-image`, pf, { 
-            headers: { 
+
+          const profileResponse = await apiClient.post(`/users/${user.user_id}/profile-image`, pf, {
+            headers: {
               'Content-Type': 'multipart/form-data',
               'Authorization': `Bearer ${accessToken}`
-            } 
+            }
           });
           console.log('Profile image uploaded successfully:', profileResponse.data);
-          
+
           // Update user with new profile image URL
           const updatedUser = { ...user, profile_image_url: profileResponse.data.profile_image_url };
           localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -494,7 +494,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
           console.error('Failed to set placeholder profile image:', placeholderErr);
         }
       }
-      
+
       notify('Registration successful!', 'success');
       if (onClose) {
         onClose();
@@ -506,12 +506,12 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       console.error('Registration error:', err);
       console.error('Error response:', err?.response?.data);
       console.error('Error status:', err?.response?.status);
-      
+
       const message = err?.response?.data?.message || err?.message || 'Failed to submit registration';
-      
+
       if (typeof message === 'string' && message.toLowerCase().includes('email already registered')) {
         notify('Email already registered', 'error');
-    } else {
+      } else {
         notify(message, 'error');
       }
     }
@@ -524,7 +524,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
           <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto" />
           <h2 className="text-3xl font-bold text-slate-800 mt-4">Registration Successful!</h2>
           <p className="text-slate-600 mt-2">
-          Your account is now active! You can log in with your credentials anytime.
+            Your account is now active! You can log in with your credentials anytime.
           </p>
           <button
             onClick={() => navigate('/login')}
@@ -547,7 +547,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
   const isModalOpen = isModal ? !!isOpen : true;
   const handleCloseModal = () => {
     if (onClose) return onClose();
-    try { window.history.back(); } catch {}
+    try { window.history.back(); } catch { }
   };
 
   // Reset success state and gating when modal opens again
@@ -563,12 +563,12 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
   if (!isModalOpen) return null;
 
   return (
-    <div 
+    <div
       className={isModal ? "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 sm:p-6 animate-[fadeIn_200ms_ease-out]" : "min-h-screen flex items-center justify-center lg:py-8 bg-gradient-to-br from-indigo-50/40 to-sky-50/40"}
       role={isModal ? "dialog" : undefined}
       aria-modal={isModal ? "true" : undefined as any}
     >
-      <div 
+      <div
         className={
           isModal
             ? "w-full max-w-5xl lg:max-w-4xl bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden transform transition-all duration-300 ease-out animate-[slideUp_240ms_ease-out]"
@@ -585,12 +585,12 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
           </div>
           {isModal ? (
             <button aria-label="Close" onClick={handleCloseModal} className="p-1.5 sm:p-2 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors flex-shrink-0 ml-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           ) : (
-            <button 
+            <button
               type="button"
-              aria-label="Back" 
+              aria-label="Back"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -599,349 +599,344 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
                 } else {
                   window.history.back();
                 }
-              }} 
+              }}
               className="p-1.5 sm:p-2 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors flex-shrink-0 ml-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </button>
           )}
         </div>
         <div className={`overflow-y-auto px-2 sm:px-3 md:px-4 lg:px-4 py-3 sm:py-4 lg:py-3 bg-gradient-to-br from-indigo-50/40 to-sky-50/40 ${isModal ? 'max-h-[85vh] sm:max-h-[90vh]' : 'flex-1'}`}>
           <div className="w-full bg-white/80 backdrop-blur-lg p-3 sm:p-4 md:p-5 lg:p-4 rounded-xl sm:rounded-2xl shadow-xl border border-white/50">
             <form onSubmit={handleSubmit} noValidate className="max-w-4xl mx-auto">
-          {/* Email Verification Section */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 sm:p-4 md:p-4 lg:p-3 rounded-lg sm:rounded-xl border border-blue-200 mb-3 sm:mb-4 lg:mb-3">
-            <h3 className="text-base sm:text-lg lg:text-base font-semibold text-slate-800 mb-3 sm:mb-3 lg:mb-2 flex items-center">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <span className="truncate">Email Verification</span>
-            </h3>
-            
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="w-full">
-                <label className="block text-sm sm:text-base lg:text-sm text-slate-700 font-semibold mb-1.5 sm:mb-2 lg:mb-1">University</label>
-              <select
-                  className="w-full px-3 sm:px-4 lg:px-3 py-2 sm:py-3 lg:py-2 text-sm sm:text-base lg:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all max-w-[60ch]" 
-                value={universityId}
-                onChange={(e) => setUniversityId(e.target.value ? Number(e.target.value) : '')}
-                required
-              >
-                <option value="">Select University</option>
-                {universities.map(u => (
-                  <option key={u.university_id} value={u.university_id}>{u.name}</option>
-                ))}
-              </select>
-            </div>
-             <div className="w-full">
-                <label className="block text-sm sm:text-base lg:text-sm text-slate-700 font-semibold mb-1.5 sm:mb-2 lg:mb-1">Email Address</label>
-                <input 
-                  type="email" 
-                  value={formData.email} 
-                  onChange={handleInputChange} 
-                  disabled={!universityId}
-                  className={`w-full px-3 sm:px-4 lg:px-3 py-2 sm:py-3 lg:py-2 text-sm sm:text-base lg:text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                    emailDomainError ? 'border-red-400 bg-red-50' : 
-                    !universityId ? 'border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed' : 
-                    'border-slate-300'
-                  }`} 
-                  placeholder={!universityId ? "Select a university first" : "Enter your university email"}
-                  name="email"
-                  required 
-                />
-                {!universityId && (
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1.5 sm:mt-2 flex items-start sm:items-center">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0 mt-0.5 sm:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="break-words">Please select a university first to enter your email</span>
-                  </p>
-                )}
-              </div>
-            </div>
+              {/* Email Verification Section */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 sm:p-4 md:p-4 lg:p-3 rounded-lg sm:rounded-xl border border-blue-200 mb-3 sm:mb-4 lg:mb-3">
+                <h3 className="text-base sm:text-lg lg:text-base font-semibold text-slate-800 mb-3 sm:mb-3 lg:mb-2 flex items-center">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span className="truncate">Email Verification</span>
+                </h3>
 
-            {/* Verification Buttons */}
-            <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3 sm:gap-4">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={handleInputCode}
-                  disabled={!codeSent || isCodeExpired || isEmailVerified}
-                  className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-semibold transition-all duration-300 transform flex-shrink-0 ${
-                    isEmailVerified
-                      ? 'bg-green-100 text-green-800 border-2 border-green-300 cursor-default'
-                      : !codeSent || isCodeExpired
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105 shadow-lg hover:shadow-xl'
-                  }`}
-                  title={
-                    isEmailVerified
-                      ? 'Email verified ✓'
-                      : !codeSent
-                      ? 'Send verification code first'
-                      : isCodeExpired
-                      ? 'Code expired. Please send a new code'
-                      : 'Input verification code'
-                  }
-                >
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    Input Code
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="w-full">
+                    <label className="block text-sm sm:text-base lg:text-sm text-slate-700 font-semibold mb-1.5 sm:mb-2 lg:mb-1">University</label>
+                    <select
+                      className="w-full px-3 sm:px-4 lg:px-3 py-2 sm:py-3 lg:py-2 text-sm sm:text-base lg:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all max-w-[60ch]"
+                      value={universityId}
+                      onChange={(e) => setUniversityId(e.target.value ? Number(e.target.value) : '')}
+                      required
+                    >
+                      <option value="">Select University</option>
+                      {universities.map(u => (
+                        <option key={u.university_id} value={u.university_id}>{u.name}</option>
+                      ))}
+                    </select>
                   </div>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={handleSendVerificationCode}
-                  disabled={Boolean(!formData.email || !universityId || emailDomainError || isSendingCode || isEmailVerified || (codeSent && !isCodeExpired))}
-                  className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-semibold transition-all duration-300 transform flex-shrink-0 ${
-                    isEmailVerified
-                      ? 'bg-green-100 text-green-800 border-2 border-green-300 cursor-default' 
-                      : !formData.email || !universityId || emailDomainError || (codeSent && !isCodeExpired)
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 shadow-lg hover:shadow-xl'
-                  }`}
-                  title={
-                    isEmailVerified
-                      ? 'Email verified ✓' 
-                      : !formData.email || !universityId 
-                      ? 'Enter email and select university first'
-                      : emailDomainError
-                      ? 'Fix email domain error first'
-                      : (codeSent && !isCodeExpired)
-                      ? 'Code already sent. Use "Input Code" button or wait for expiration'
-                      : 'Send verification code'
-                  }
-                >
-                  {isSendingCode ? (
-                    <div className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Sending Code...
-                    </div>
-                  ) : isEmailVerified ? (
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      Verified ✓
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      Send Verification Code
-                    </div>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+                  <div className="w-full">
+                    <label className="block text-sm sm:text-base lg:text-sm text-slate-700 font-semibold mb-1.5 sm:mb-2 lg:mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      disabled={!universityId}
+                      className={`w-full px-3 sm:px-4 lg:px-3 py-2 sm:py-3 lg:py-2 text-sm sm:text-base lg:text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${emailDomainError ? 'border-red-400 bg-red-50' :
+                          !universityId ? 'border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed' :
+                            'border-slate-300'
+                        }`}
+                      placeholder={!universityId ? "Select a university first" : "Enter your university email"}
+                      name="email"
+                      required
+                    />
+                    {!universityId && (
+                      <p className="text-xs sm:text-sm text-slate-500 mt-1.5 sm:mt-2 flex items-start sm:items-center">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0 mt-0.5 sm:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="break-words">Please select a university first to enter your email</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-          {/* Other Account Fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-3 lg:gap-3 mb-4 sm:mb-4 lg:mb-3 items-start">
-            <div className="w-full sm:col-span-2 lg:col-span-8">
-              <label className="block text-sm sm:text-base lg:text-sm text-slate-700 font-semibold mb-1 lg:mb-0.5" htmlFor="name">Full Name</label>
-              <input 
-                type="text" 
-                id="name" 
-                name="name" 
-                value={formData.name} 
-                onChange={(e) => {
-                  const next = e.target.value.replace(/[^A-Za-z\-\s]/g, '').slice(0, 60);
-                  handleInputChange({ target: { name: 'name', value: next } } as any);
-                }} 
-                maxLength={60}
-                className="w-full py-2 sm:py-2 lg:py-1.5 pl-3 sm:pl-3 lg:pl-3 pr-3 sm:pr-3 lg:pr-3 text-sm sm:text-base lg:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                placeholder="Enter your full name"
-                required 
-              />
-            </div>
-            <div className="w-full sm:col-span-2 lg:col-span-4">
-              <label className="block text-sm sm:text-base lg:text-sm text-slate-700 font-semibold mb-1 lg:mb-0.5" htmlFor="password">Password</label>
-              <div className="relative w-full">
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  id="password" 
-                  name="password" 
-                  value={formData.password} 
-                  onChange={handleInputChange} 
-                  minLength={7} 
-                  maxLength={21} 
-                  className="w-full px-3 sm:px-4 lg:px-3 py-2 sm:py-2.5 lg:py-1.5 pr-10 sm:pr-12 lg:pr-10 text-sm sm:text-base lg:text-sm border border-slate-300 rounded-lg 
+                {/* Verification Buttons */}
+                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3 sm:gap-4">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={handleInputCode}
+                      disabled={!codeSent || isCodeExpired || isEmailVerified}
+                      className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-semibold transition-all duration-300 transform flex-shrink-0 ${isEmailVerified
+                          ? 'bg-green-100 text-green-800 border-2 border-green-300 cursor-default'
+                          : !codeSent || isCodeExpired
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105 shadow-lg hover:shadow-xl'
+                        }`}
+                      title={
+                        isEmailVerified
+                          ? 'Email verified ✓'
+                          : !codeSent
+                            ? 'Send verification code first'
+                            : isCodeExpired
+                              ? 'Code expired. Please send a new code'
+                              : 'Input verification code'
+                      }
+                    >
+                      <div className="flex items-center">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Input Code
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSendVerificationCode}
+                      disabled={Boolean(!formData.email || !universityId || emailDomainError || isSendingCode || isEmailVerified || (codeSent && !isCodeExpired))}
+                      className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-semibold transition-all duration-300 transform flex-shrink-0 ${isEmailVerified
+                          ? 'bg-green-100 text-green-800 border-2 border-green-300 cursor-default'
+                          : !formData.email || !universityId || emailDomainError || (codeSent && !isCodeExpired)
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 shadow-lg hover:shadow-xl'
+                        }`}
+                      title={
+                        isEmailVerified
+                          ? 'Email verified ✓'
+                          : !formData.email || !universityId
+                            ? 'Enter email and select university first'
+                            : emailDomainError
+                              ? 'Fix email domain error first'
+                              : (codeSent && !isCodeExpired)
+                                ? 'Code already sent. Use "Input Code" button or wait for expiration'
+                                : 'Send verification code'
+                      }
+                    >
+                      {isSendingCode ? (
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Sending Code...
+                        </div>
+                      ) : isEmailVerified ? (
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Verified ✓
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Send Verification Code
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Other Account Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-3 lg:gap-3 mb-4 sm:mb-4 lg:mb-3 items-start">
+                <div className="w-full sm:col-span-2 lg:col-span-8">
+                  <label className="block text-sm sm:text-base lg:text-sm text-slate-700 font-semibold mb-1 lg:mb-0.5" htmlFor="name">Full Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={(e) => {
+                      const next = e.target.value.replace(/[^A-Za-z\-\s]/g, '').slice(0, 60);
+                      handleInputChange({ target: { name: 'name', value: next } } as any);
+                    }}
+                    maxLength={60}
+                    className="w-full py-2 sm:py-2 lg:py-1.5 pl-3 sm:pl-3 lg:pl-3 pr-3 sm:pr-3 lg:pr-3 text-sm sm:text-base lg:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+                <div className="w-full sm:col-span-2 lg:col-span-4">
+                  <label className="block text-sm sm:text-base lg:text-sm text-slate-700 font-semibold mb-1 lg:mb-0.5" htmlFor="password">Password</label>
+                  <div className="relative w-full">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      minLength={7}
+                      maxLength={21}
+                      className="w-full px-3 sm:px-4 lg:px-3 py-2 sm:py-2.5 lg:py-1.5 pr-10 sm:pr-12 lg:pr-10 text-sm sm:text-base lg:text-sm border border-slate-300 rounded-lg 
                   [&::-ms-reveal]:hidden 
                   [&::-webkit-credentials-auto-fill-button]:hidden 
-                  [&::-webkit-strong-password-auto-fill-button]:hidden" 
-                  autoComplete="new-password"
-                  data-form-type="other"
-                  data-lpignore="true"
-                  data-1p-ignore="true"
-                  data-bwignore="true"
-                  required 
+                  [&::-webkit-strong-password-auto-fill-button]:hidden"
+                      autoComplete="new-password"
+                      data-form-type="other"
+                      data-lpignore="true"
+                      data-1p-ignore="true"
+                      data-bwignore="true"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? (
+                        // Swapped to a cleaner, known-good "Eye" SVG
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="h-4 w-4 sm:h-5 sm:w-5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                      ) : (
+                        // Swapped to a cleaner, known-good "EyeOff" SVG
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="h-4 w-4 sm:h-5 sm:w-5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L6.228 6.228"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div className="w-full sm:col-span-2 lg:col-span-8">
+                  <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">Course</label>
+                  <select
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base border rounded-lg ${!universityId ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-300'}`}
+                    value={courseId}
+                    onChange={(e) => {
+                      const value = e.target.value ? Number(e.target.value) : '';
+                      setCourseId(value);
+                      if (value) {
+                        setFormData(prev => ({ ...prev, course: '' }));
+                      }
+                    }}
+                    disabled={!universityId}
+                    title={!universityId ? 'Select a university first' : undefined}
+                  >
+                    <option value="">Select Course</option>
+                    {filteredCourses.map(c => (
+                      <option key={c.course_id} value={c.course_id}>{c.course_name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="w-full sm:col-span-2 lg:col-span-4">
+                  <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1" htmlFor="yearLevel">Year Level</label>
+                  <select
+                    id="yearLevel"
+                    name="yearLevel"
+                    value={formData.yearLevel}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-lg"
+                    required
+                  >
+                    <option value="">Select Year Level</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                    <option value="5">5th Year</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Profile Image Upload */}
+              <div className="mb-4 sm:mb-4 lg:mb-3">
+                <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">Profile Image (optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfileImageChange}
+                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg"
                 />
+                {profileImage && <p className="text-xs text-slate-500 mt-1">Selected: {profileImage.name}</p>}
+                <p className="text-xs text-slate-500 mt-1">Upload a photo of yourself (JPG, PNG, or other image formats)</p>
+              </div>
+
+              <div className="pt-2">
+                <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-700">
+                  <input
+                    id="accept-terms-tutee"
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    disabled={!termsViewed}
+                    className={`mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 flex-shrink-0 ${!termsViewed ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                  />
+                  <label htmlFor="accept-terms-tutee" className="leading-5 break-words">
+                    {termsViewed
+                      ? 'I have read and agree to the Student Terms and Conditions.'
+                      : 'I agree to the Student Terms and Conditions (please read the terms first).'}
+                    <button
+                      type="button"
+                      className="ml-1 sm:ml-2 text-indigo-600 hover:text-indigo-700 underline whitespace-nowrap"
+                      onClick={() => {
+                        setShowTermsModal(true);
+                        setTermsScrollProgress(0);
+                      }}
+                    >
+                      {termsViewed ? 'Review Terms' : 'Read Terms'}
+                    </button>
+                  </label>
+                </div>
+                {!termsViewed && (
+                  <p className="text-xs text-amber-600 mt-1 ml-6 sm:ml-7 flex items-start sm:items-center">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0 mt-0.5 sm:mt-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span className="break-words">Please open and read the Terms and Conditions before accepting.</span>
+                  </p>
+                )}
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                  type="submit"
+                  className={`mt-3 sm:mt-4 w-full font-bold py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base rounded-lg transition-colors ${isEmailVerified && acceptedTerms && termsViewed
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    }`}
+                  disabled={!isEmailVerified || !acceptedTerms || !termsViewed}
+                  title={
+                    !isEmailVerified
+                      ? 'Please verify your email first'
+                      : !termsViewed
+                        ? 'Please read the Terms and Conditions first'
+                        : !acceptedTerms
+                          ? 'Please accept the Terms and Conditions'
+                          : 'Create your account'
+                  }
                 >
-                  {showPassword ? (
-                    // Swapped to a cleaner, known-good "Eye" SVG
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      strokeWidth={1.5} 
-                      stroke="currentColor" 
-                      className="h-4 w-4 sm:h-5 sm:w-5"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" 
-                      />
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
-                      />
-                    </svg>
-                  ) : (
-                    // Swapped to a cleaner, known-good "EyeOff" SVG
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      strokeWidth={1.5} 
-                      stroke="currentColor" 
-                      className="h-4 w-4 sm:h-5 sm:w-5"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L6.228 6.228" 
-                      />
-                    </svg>
-                  )}
+                  {isEmailVerified ? 'Create Account' : 'Verify Email to Submit'}
                 </button>
               </div>
-            </div>
-            <div className="w-full sm:col-span-2 lg:col-span-8">
-              <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">Course</label>
-              <select
-                className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base border rounded-lg ${!universityId ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-300'}`}
-                value={courseId}
-                onChange={(e) => {
-                  const value = e.target.value ? Number(e.target.value) : '';
-                  setCourseId(value);
-                  if (value) {
-                    setFormData(prev => ({ ...prev, course: '' }));
-                  }
-                }}
-                disabled={!universityId}
-                title={!universityId ? 'Select a university first' : undefined}
-              >
-                <option value="">Select Course</option>
-                {filteredCourses.map(c => (
-                  <option key={c.course_id} value={c.course_id}>{c.course_name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="w-full sm:col-span-2 lg:col-span-4">
-              <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1" htmlFor="yearLevel">Year Level</label>
-              <select 
-                id="yearLevel" 
-                name="yearLevel" 
-                value={formData.yearLevel} 
-                onChange={handleInputChange} 
-                className="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-lg"
-                required
-              >
-                <option value="">Select Year Level</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-                <option value="5">5th Year</option>
-              </select>
-            </div>
-          </div>
-          
-          {/* Profile Image Upload */}
-          <div className="mb-4 sm:mb-4 lg:mb-3">
-            <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">Profile Image (optional)</label>
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={handleProfileImageChange} 
-              className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg"
-            />
-            {profileImage && <p className="text-xs text-slate-500 mt-1">Selected: {profileImage.name}</p>}
-            <p className="text-xs text-slate-500 mt-1">Upload a photo of yourself (JPG, PNG, or other image formats)</p>
-          </div>
-          
-          <div className="pt-2">
-            <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-700">
-              <input
-                id="accept-terms-tutee"
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                disabled={!termsViewed}
-                className={`mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 flex-shrink-0 ${
-                  !termsViewed ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              />
-              <label htmlFor="accept-terms-tutee" className="leading-5 break-words">
-                {termsViewed
-                  ? 'I have read and agree to the Student Terms and Conditions.'
-                  : 'I agree to the Student Terms and Conditions (please read the terms first).'}
-                <button
-                  type="button"
-                  className="ml-1 sm:ml-2 text-indigo-600 hover:text-indigo-700 underline whitespace-nowrap"
-                  onClick={() => {
-                    setShowTermsModal(true);
-                    setTermsScrollProgress(0);
-                  }}
-                >
-                  {termsViewed ? 'Review Terms' : 'Read Terms'}
-                </button>
-              </label>
-            </div>
-            {!termsViewed && (
-              <p className="text-xs text-amber-600 mt-1 ml-6 sm:ml-7 flex items-start sm:items-center">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0 mt-0.5 sm:mt-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <span className="break-words">Please open and read the Terms and Conditions before accepting.</span>
-              </p>
-            )}
-            <button  
-              type="submit" 
-              className={`mt-3 sm:mt-4 w-full font-bold py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base rounded-lg transition-colors ${
-                isEmailVerified && acceptedTerms && termsViewed
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
-                  : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-              }`}
-              disabled={!isEmailVerified || !acceptedTerms || !termsViewed}
-              title={
-                !isEmailVerified
-                  ? 'Please verify your email first'
-                  : !termsViewed
-                  ? 'Please read the Terms and Conditions first'
-                  : !acceptedTerms
-                  ? 'Please accept the Terms and Conditions'
-                  : 'Create your account'
-              }
-            >
-              {isEmailVerified ? 'Create Account' : 'Verify Email to Submit'}
-            </button>
-          </div>
             </form>
           </div>
         </div>
@@ -1030,7 +1025,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
                       </span>
                     )}
                   </button>
-                  
+
                   <button
                     onClick={handleCloseVerificationModal}
                     className="px-4 py-3 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
@@ -1076,7 +1071,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
                     <div className="mt-2">
                       <div className="flex items-center gap-2 text-xs text-slate-600">
                         <div className="flex-1 bg-slate-200 rounded-full h-2 overflow-hidden">
-                          <div 
+                          <div
                             className="bg-indigo-600 h-full transition-all duration-300 ease-out"
                             style={{ width: `${Math.min(termsScrollProgress, 100)}%` }}
                           />
@@ -1097,17 +1092,17 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
                   )}
                 </div>
                 <button type="button" onClick={handleCloseTermsModal} className="p-2 text-slate-400 hover:text-slate-600 ml-4">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
-              <div 
+              <div
                 className="max-h-[65vh] overflow-y-auto pr-1 text-slate-700 space-y-4"
                 onScroll={handleTermsModalScroll}
               >
                 <p><strong>Effective Date:</strong> October 31, 2025</p>
-                <p><strong>Platform Name:</strong> TutorLink (“the Platform”)</p>
+                <p><strong>Platform Name:</strong> TutorFriends (“the Platform”)</p>
                 <h3 className="font-semibold">1. Overview</h3>
-                <p>These Terms govern your participation as a Student (Tutee) on TutorLink. By registering and using the Platform, you agree to follow these rules and use the services responsibly.</p>
+                <p>These Terms govern your participation as a Student (Tutee) on TutorFriends. By registering and using the Platform, you agree to follow these rules and use the services responsibly.</p>
                 <h3 className="font-semibold">2. Account and Verification</h3>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>Provide accurate personal and academic information.</li>
@@ -1140,7 +1135,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
                 <h3 className="font-semibold">7. Privacy</h3>
                 <p>Your information is handled in accordance with the Data Privacy Act of 2012. We use your data to operate and improve the Platform.</p>
                 <h3 className="font-semibold">8. Modifications</h3>
-                <p>TutorLink may update these Terms anytime. Continued use means you accept the revised version.</p>
+                <p>TutorFriends may update these Terms anytime. Continued use means you accept the revised version.</p>
               </div>
               <div className="mt-4 flex justify-end gap-2">
                 <button type="button" onClick={handleCloseTermsModal} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">Close</button>

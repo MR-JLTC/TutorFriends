@@ -3,6 +3,6 @@
 // Using import ensures correct path resolution across routes/layouts
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import logoUrl from './images/tutorlink-logo.png';
+import logoUrl from './images/tutorfriends-logo.png';
 
 export const logoBase64 = logoUrl as string;

@@ -11,8 +11,8 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ className = '', style }) => {
-  const logoSrc = "assets/images/tutorlink-logo.png";
-  return <img src={logoSrc} alt="TutorLink Logo" className={className} style={style} />;
+  const logoSrc = "assets/images/tutorfriends-logo.png";
+  return <img src={logoSrc} alt="TutorFriends Logo" className={className} style={style} />;;
 };
 
 // FIX: The component was not exported, causing a module resolution error in LandingPage.tsx.

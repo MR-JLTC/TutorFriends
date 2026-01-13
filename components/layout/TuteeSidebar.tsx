@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  GraduationCap, 
-  Search, 
-  CreditCard, 
+import {
+  GraduationCap,
+  Search,
+  CreditCard,
   Star,
   User,
   Edit2,
@@ -19,15 +19,15 @@ import { useToast } from '../ui/Toast';
 import { updateRoleUser } from '../../utils/authRole';
 
 const tuteeNavLinks = [
-  { 
-    to: '/tutee-dashboard/become-tutor', 
-    icon: GraduationCap, 
+  {
+    to: '/tutee-dashboard/become-tutor',
+    icon: GraduationCap,
     label: 'Become a Tutor',
     description: 'Apply to become a tutor by selecting subjects and uploading supporting documents like transcripts.',
   },
-  { 
-    to: '/tutee-dashboard/find-tutors', 
-    icon: Search, 
+  {
+    to: '/tutee-dashboard/find-tutors',
+    icon: Search,
     label: 'Find & Book Tutors',
     description: 'Browse tutors filtered by your course subjects, view their profiles, ratings, and availability to book a session.',
   },
@@ -44,16 +44,16 @@ const tuteeNavLinks = [
     description: 'See your scheduled sessions in the next 30 days.',
     showUpcoming: true,
   },
-  { 
-    to: '/tutee-dashboard/payment', 
-    icon: CreditCard, 
+  {
+    to: '/tutee-dashboard/payment',
+    icon: CreditCard,
     label: 'Payment',
     description: 'View tutor payment information, upload proof of payment via GCash, and wait for tutor approval.',
     showNotification: true, // This will be used to conditionally show the notification dot
   },
-  { 
-    to: '/tutee-dashboard/after-session', 
-    icon: Star, 
+  {
+    to: '/tutee-dashboard/after-session',
+    icon: Star,
     label: 'After Session',
     description: 'Leave feedback and rating for completed sessions to help future students make informed decisions.',
   },
@@ -122,27 +122,27 @@ const TuteeSidebar: React.FC = () => {
   //           return p.tutor_id === booking.tutor?.tutor_id &&
   //                  (p.subject === booking.subject || !p.subject);
   //         });
-          
+
   //         if (matchingPayment) {
   //           // Payment exists - check its status
   //           const paymentStatus = (matchingPayment.status || '').toLowerCase().trim();
-            
+
   //           // Debug logging (can be removed in production)
   //           console.log('[TuteeSidebar] Booking:', booking.id, 'Payment status:', paymentStatus, 'Payment ID:', matchingPayment.payment_id);
-          
+
   //           // ❌ Hide dot for these statuses - payment is confirmed, no action needed
   //           if (paymentStatus === 'admin_confirmed' || paymentStatus === 'confirmed') {
   //             // This booking is confirmed, continue checking other bookings
   //             continue;
   //           }
-          
+
   //           // ✅ Show dot for pending / rejected - payment needs attention
   //           if (paymentStatus === 'pending' || paymentStatus === 'rejected') {
   //             console.log('[TuteeSidebar] Found pending/rejected payment, showing dot');
   //             shouldShowDot = true;
   //             break; // Found one that needs attention, show dot immediately
   //           }
-          
+
   //           // Unknown status - treat as needing attention to be safe
   //           console.log('[TuteeSidebar] Unknown payment status:', paymentStatus, 'showing dot to be safe');
   //           shouldShowDot = true;
@@ -154,7 +154,7 @@ const TuteeSidebar: React.FC = () => {
   //           break; // Found one that needs attention, show dot immediately
   //         }
   //       }
-        
+
   //       // Debug: log final decision
   //       if (relevantBookings.length > 0) {
   //         console.log('[TuteeSidebar] Relevant bookings:', relevantBookings.length, 'Should show dot:', shouldShowDot);
@@ -192,7 +192,7 @@ const TuteeSidebar: React.FC = () => {
   //     window.removeEventListener('focus', onFocus);
   //   };
   // }, [user?.user_id]);
-  
+
   useEffect(() => {
     const checkPendingPayments = async () => {
       try {
@@ -200,15 +200,15 @@ const TuteeSidebar: React.FC = () => {
           apiClient.get('/users/me/bookings'),
           apiClient.get('/payments').catch(() => ({ data: [] }))
         ]);
-  
+
         if (!Array.isArray(bookingsResponse.data)) {
           setHasPendingPayments(false);
           return;
         }
-  
+
         const allBookings = bookingsResponse.data || [];
         const allPayments = paymentsResponse.data || [];
-  
+
         // Filter payments for current user
         const userPayments = allPayments.filter((p: any) => {
           if (!user?.user_id) return false;
@@ -216,7 +216,7 @@ const TuteeSidebar: React.FC = () => {
             p.student?.user?.user_id === user.user_id
           );
         });
-  
+
         // Bookings that require payment attention
         const relevantBookings = allBookings.filter((booking: any) => {
           const status = (booking?.status || '').toLowerCase().trim();
@@ -226,50 +226,50 @@ const TuteeSidebar: React.FC = () => {
             status === 'payment_rejected'
           );
         });
-  
+
         let shouldShowDot = false;
-  
+
         for (const booking of relevantBookings) {
           // Match payment by booking_id
           const matchingPayment = userPayments.find((p: any) => p.booking_id === booking.id);
-  
+
           if (!matchingPayment) {
             // No payment yet → show dot
             shouldShowDot = true;
             break;
           }
-  
+
           const paymentStatus = (matchingPayment.status || '').toLowerCase().trim();
-  
+
           // Only show dot for 'pending' or 'rejected'
           if (paymentStatus === 'pending' || paymentStatus === 'rejected') {
             shouldShowDot = true;
             break;
           }
-  
+
           // 'confirmed', 'admin_confirmed', 'refunded' → no dot
         }
-  
+
         setHasPendingPayments(shouldShowDot);
-  
+
       } catch (err) {
         console.error('Failed to check pending payments', err);
         setHasPendingPayments(false);
       }
     };
-  
+
     checkPendingPayments();
     const interval = setInterval(checkPendingPayments, 8000);
     const onFocus = () => checkPendingPayments();
-  
+
     window.addEventListener('focus', onFocus);
     return () => {
       clearInterval(interval);
       window.removeEventListener('focus', onFocus);
     };
   }, [user?.user_id]);
-  
-  
+
+
 
   // Fetch booking data and check for new items
   useEffect(() => {
@@ -287,7 +287,7 @@ const TuteeSidebar: React.FC = () => {
         // Fetch bookings
         const bookingsRes = await apiClient.get('/users/me/bookings');
         const allBookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
-        
+
         // Parse session start time helper
         const parseSessionStart = (dateStr: string, timeStr: string): Date | null => {
           if (!dateStr || !timeStr) return null;
@@ -306,9 +306,9 @@ const TuteeSidebar: React.FC = () => {
           }
           return sessionDate;
         };
-        
+
         const now = new Date();
-        
+
         // Count upcoming sessions - only future sessions (matching UpcomingSessionsPage logic)
         const upcoming = allBookings.filter((b: any) => {
           if (!['upcoming', 'confirmed'].includes(b.status)) return false;
@@ -316,7 +316,7 @@ const TuteeSidebar: React.FC = () => {
           return start && start > now;
         });
         if (mounted) setUpcomingCount(upcoming.length);
-        
+
         // Count pending bookings (awaiting tutor response) - matching TuteeMyBookings filter logic
         // TuteeMyBookings filters out 'upcoming' and 'completed', so we count the rest
         const pending = allBookings.filter((b: any) => {
@@ -324,9 +324,9 @@ const TuteeSidebar: React.FC = () => {
           return status !== 'upcoming' && status !== 'completed';
         });
         if (mounted) setPendingBookingsCount(pending.length);
-        
+
         // Check for completed sessions that might need feedback
-        const completedForFeedback = allBookings.filter((b: any) => 
+        const completedForFeedback = allBookings.filter((b: any) =>
           b.status === 'completed' && !b.tutee_rating
         );
         if (mounted) setHasCompletedSessionsForFeedback(completedForFeedback.length > 0);
@@ -359,7 +359,7 @@ const TuteeSidebar: React.FC = () => {
         if (mounted) setHasBecomeTutorUpdate(false);
         return;
       }
-      
+
       try {
         // First check if user has a tutor profile/application
         let hasTutorProfile = false;
@@ -374,16 +374,16 @@ const TuteeSidebar: React.FC = () => {
             console.error('Error checking tutor profile:', err);
           }
         }
-        
+
         // Only show dot if user has a tutor profile AND there are relevant unread notifications
         if (hasTutorProfile) {
           const tutorNotifications = notifications.filter(
-            (n: any) => 
-              !n.is_read && 
-              (n.message?.toLowerCase().includes('tutor') || 
-               n.message?.toLowerCase().includes('application') ||
-               n.message?.toLowerCase().includes('approved') ||
-               n.message?.toLowerCase().includes('rejected'))
+            (n: any) =>
+              !n.is_read &&
+              (n.message?.toLowerCase().includes('tutor') ||
+                n.message?.toLowerCase().includes('application') ||
+                n.message?.toLowerCase().includes('approved') ||
+                n.message?.toLowerCase().includes('rejected'))
           );
           if (mounted) setHasBecomeTutorUpdate(tutorNotifications.length > 0);
         } else {
@@ -395,7 +395,7 @@ const TuteeSidebar: React.FC = () => {
         if (mounted) setHasBecomeTutorUpdate(false);
       }
     };
-    
+
     checkTutorApplication();
     // Re-check when notifications change
     const interval = setInterval(checkTutorApplication, 10000);
@@ -463,19 +463,19 @@ const TuteeSidebar: React.FC = () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const response = await apiClient.post(`/users/${user?.user_id}/profile-image`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
+
       // Update local storage with new profile image URL
       const updatedUser = { ...user, profile_image_url: response.data.profile_image_url };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       updateRoleUser(updatedUser as any);
-      
+
       // Trigger re-render by reloading the page
       window.location.reload();
-      
+
       notify('Profile image updated successfully!', 'success');
     } catch (error) {
       console.error('Failed to upload profile image:', error);
@@ -491,27 +491,26 @@ const TuteeSidebar: React.FC = () => {
       <div className="px-4 py-4 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src={logoBase64} alt="TutorLink Logo" className="h-10 w-auto object-contain" />
+            <img src={logoBase64} alt="TutorFriends Logo" className="h-10 w-auto object-contain" />
             <div>
-              <h1 className="text-lg font-bold text-slate-800">TutorLink</h1>
+              <h1 className="text-lg font-bold text-slate-800">TutorFriends</h1>
               <p className="text-xs text-slate-600 font-medium">Student Dashboard</p>
             </div>
           </div>
           {/* Removed notification bell and badge from tutee sidebar as requested */}
         </div>
       </div>
-      
+
       <nav className="flex-1 px-3 py-4 space-y-1">
-  {tuteeNavLinks.map(({ to, icon: Icon, label, description, showNotification, showUpcoming }) => {
+        {tuteeNavLinks.map(({ to, icon: Icon, label, description, showNotification, showUpcoming }) => {
           return (
             <div key={to} className="relative">
               <NavLink
                 to={to}
                 className={({ isActive }) =>
-                  `block p-3 rounded-lg transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700 shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  `block p-3 rounded-lg transition-all duration-200 group ${isActive
+                    ? 'bg-blue-50 text-blue-700 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
                 onMouseEnter={() => handleMouseEnter(to)}
@@ -525,7 +524,7 @@ const TuteeSidebar: React.FC = () => {
                     <Icon className={`h-5 w-5 ${hoveredItem === to ? 'text-blue-600' : 'text-slate-500'}`} />
                     <span className="font-medium text-sm">{label}</span>
                   </div>
-                  
+
                   <div className="ml-auto flex items-center gap-2">
                     {/* My Bookings - Show dot if there are pending bookings or booking updates AND page not viewed */}
                     {to === '/tutee-dashboard/my-bookings' && !viewedPages.has(to) && (
@@ -541,32 +540,32 @@ const TuteeSidebar: React.FC = () => {
                             n.message?.toLowerCase().includes('declined')
                           )
                         ) && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse"></div>
-                        )}
+                            <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse"></div>
+                          )}
                       </>
                     )}
-                    
+
                     {/* Payment - Show dot if there are pending payments AND page not viewed */}
-                    {to === '/tutee-dashboard/payment' && 
-                     !viewedPages.has(to) &&
-                     hasPendingPayments && (
-                      <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></div>
-                    )}
-                    
+                    {to === '/tutee-dashboard/payment' &&
+                      !viewedPages.has(to) &&
+                      hasPendingPayments && (
+                        <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></div>
+                      )}
+
                     {/* After Session - Show dot if there are completed sessions needing feedback AND page not viewed */}
-                    {to === '/tutee-dashboard/after-session' && 
-                     !viewedPages.has(to) &&
-                     hasCompletedSessionsForFeedback && (
-                      <div className="h-2.5 w-2.5 rounded-full bg-purple-500 animate-pulse"></div>
-                    )}
-                    
+                    {to === '/tutee-dashboard/after-session' &&
+                      !viewedPages.has(to) &&
+                      hasCompletedSessionsForFeedback && (
+                        <div className="h-2.5 w-2.5 rounded-full bg-purple-500 animate-pulse"></div>
+                      )}
+
                     {/* Become a Tutor - Show dot if there are application updates AND page not viewed */}
-                    {to === '/tutee-dashboard/become-tutor' && 
-                     !viewedPages.has(to) &&
-                     hasBecomeTutorUpdate && (
-                      <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
-                    )}
-                    
+                    {to === '/tutee-dashboard/become-tutor' &&
+                      !viewedPages.has(to) &&
+                      hasBecomeTutorUpdate && (
+                        <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
+                      )}
+
                     {/* Upcoming Sessions - Show numeric badge */}
                     {showUpcoming && upcomingCount > 0 && (
                       <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white">
@@ -576,7 +575,7 @@ const TuteeSidebar: React.FC = () => {
                   </div>
                 </div>
               </NavLink>
-            
+
               {/* Hover tooltip */}
               {showTooltip === to && (
                 <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-4 z-50 animate-in fade-in-0 zoom-in-95 duration-200">
@@ -586,7 +585,7 @@ const TuteeSidebar: React.FC = () => {
                       <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2">
                         <div className="w-4 h-4 bg-white border-l-2 border-t-2 border-slate-200 rotate-45"></div>
                       </div>
-                      
+
                       {/* Content */}
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-1">
@@ -610,14 +609,14 @@ const TuteeSidebar: React.FC = () => {
           );
         })}
       </nav>
-      
+
       {/* Profile Section - clickable to open profile page for viewing/editing */}
       <div className="px-4 py-4 border-t border-slate-200">
         <NavLink to="/tutee-dashboard/profile" className="flex items-center space-x-3 group hover:bg-slate-50 p-2 rounded-md">
           <div className="relative">
             {user?.profile_image_url ? (
-              <img 
-                src={getFileUrl(user.profile_image_url)} 
+              <img
+                src={getFileUrl(user.profile_image_url)}
                 alt={user.name}
                 className="h-12 w-12 rounded-full object-cover border-2 border-slate-200"
                 onError={(e) => {

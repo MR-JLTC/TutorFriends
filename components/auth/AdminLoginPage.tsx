@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
-import Card from '../ui/Card';
-import Button from '../ui/Button';
-import { logoBase64 } from '../../assets/logo';
+import Logo from '../Logo';
 import ForgotPasswordModal from './ForgotPasswordModal';
 
 const LoginPage: React.FC = () => {
@@ -48,262 +46,176 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const inputStyles = "mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 focus:border-primary-600 bg-white text-slate-900 focus:bg-slate-50 transition-colors duration-200";
+  const inputStyles = "w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-[3px] focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all duration-300 font-medium text-slate-900 placeholder:text-slate-400 text-sm shadow-sm";
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-50 via-sky-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      {/* Decorative background */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 -right-32 w-80 h-80 bg-sky-400/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-24 w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-gradient-to-r from-sky-300/10 to-indigo-300/10 rounded-full blur-3xl" />
-        <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #0ea5e9 1px, transparent 0)', backgroundSize:'24px 24px'}} />
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-indigo-100 flex items-start sm:items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-sky-400/20 to-indigo-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-sky-400/20 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl">
-        {/* Unified card with slideshow + form */}
-        <div className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-2xl overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 items-stretch">
-            {/* Slideshow side */}
-            <div className="relative hidden md:block">
-              <div className="absolute inset-0">
-                <AdminLoginSlideshow />
-              </div>
-              <div className="relative h-full w-full min-h-[420px] bg-gradient-to-tr from-sky-600/10 to-indigo-600/10" />
-              {/* Removed redundant logo on left slideshow side */}
-              <div className="absolute bottom-4 left-4 right-4 text-white drop-shadow-lg">
-                <h2 className="text-xl font-bold">Admin Portal</h2>
-                <p className="text-sm text-white/90">Manage users, courses, payments, and tutor applications</p>
-              </div>
+      <div className="w-full max-w-6xl bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl overflow-hidden grid lg:grid-cols-2 relative z-10 max-h-[95vh] lg:max-h-[800px]">
+        {/* Left Side - Slideshow (Desktop Only) */}
+        <div className="relative hidden lg:block h-full min-h-[500px]">
+          <AdminLoginSlideshow />
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-max">
+            <div className="flex items-center bg-white/95 backdrop-blur-md border border-white/60 rounded-2xl shadow-xl px-5 py-2.5">
+              <span className="px-3 py-1 bg-sky-600 text-white rounded-full text-[10px] font-bold tracking-widest uppercase shadow-sm">Administrative</span>
             </div>
+          </div>
+        </div>
 
-            {/* Form side */}
-            <Card className="!p-10 bg-white/85 border-0 rounded-none md:rounded-l-none">
-              {/* Logo and Branding above form on right side */}
-              <div className="mb-6 flex flex-col items-center">
-                {/* Modern Logo Container */}
-                <div className="relative mb-4">
-                  {/* Animated gradient background */}
-                  <div className="absolute -inset-3 bg-gradient-to-r from-sky-500/30 via-indigo-500/30 to-sky-500/30 rounded-xl blur-xl animate-pulse"></div>
-                  
-                  {/* Logo with modern frame */}
-                  <div className="relative bg-gradient-to-br from-white via-sky-50/50 to-indigo-50/50 rounded-xl p-4 shadow-lg border border-sky-100/50 backdrop-blur-sm">
-                    {/* Decorative corner accents */}
-                    <div className="absolute top-0 left-0 w-8 h-8 bg-gradient-to-br from-sky-400/20 to-transparent rounded-tl-xl"></div>
-                    <div className="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-tl from-indigo-400/20 to-transparent rounded-br-xl"></div>
-                    
-                    {/* Logo */}
-                    <div className="relative z-10">
-                      <img 
-                        className="h-16 w-auto drop-shadow-lg transition-all duration-500 hover:scale-105 hover:rotate-1" 
-                        src={logoBase64} 
-                        alt="TutorLink" 
-                      />
+        {/* Right Side - Login Form */}
+        <div className="relative w-full min-h-full lg:h-full bg-white overflow-hidden flex flex-col">
+          {/* Decorative background blur for right side content */}
+          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-gradient-to-br from-sky-100/40 to-indigo-100/40 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative lg:absolute lg:inset-0 overflow-y-auto flex flex-col lg:justify-center px-6 sm:px-10 pt-10 pb-10 custom-scrollbar lg:[scrollbar-width:none] lg:[-ms-overflow-style:none] lg:[&::-webkit-scrollbar]:display-none">
+            <div className="relative z-10 w-full max-w-md mx-auto">
+              {/* Header Section */}
+              <div className="mb-8">
+                <div className="flex flex-col lg:flex-row items-center lg:justify-between lg:items-end gap-4">
+                  <div className="flex flex-col lg:flex-row items-center gap-0">
+                    <Logo className="h-11 w-auto text-sky-600" />
+                    <span className="text-2xl font-bold bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent tracking-tight text-center lg:text-left lg:-ml-1.5">TutorFriends</span>
+                  </div>
+                  <div className="text-center lg:text-right pb-0.5">
+                    <h1 className="text-base font-bold text-slate-900 leading-tight">
+                      Admin Portal
+                    </h1>
+                    <p className="text-slate-500 text-xs font-medium leading-tight mt-0.5">
+                      Secure Access
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-50/90 backdrop-blur-sm border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium shadow-lg mb-4">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      {error}
                     </div>
                   </div>
-                </div>
-                
-                {/* Branding Text */}
-                <div className="text-center space-y-1.5">
-                  <h1 className="text-2xl font-extrabold bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-600 bg-clip-text text-transparent">
-                    TutorLink
-                  </h1>
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="h-px w-8 bg-gradient-to-r from-transparent via-sky-400 to-sky-400"></div>
-                    <p className="text-sm font-semibold text-slate-600 tracking-wide">
-                      Connecting Minds, Building Futures
-                    </p>
-                    <div className="h-px w-8 bg-gradient-to-l from-transparent via-indigo-400 to-indigo-400"></div>
+                )}
+
+                <div className="space-y-1">
+                  <label htmlFor="email" className="block text-xs font-bold text-slate-600 uppercase tracking-wider ml-1">Email Address</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-slate-400 group-focus-within:text-sky-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
+                    </div>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                      className={inputStyles}
+                      placeholder="admin@university.edu"
+                    />
                   </div>
                 </div>
-              </div>
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50/90 backdrop-blur-sm border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium shadow-lg">
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  {error}
-                </div>
-              </div>
-            )}
-            
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => {
-                  let value = e.target.value.toLowerCase();
-                  
-                  // Extract local part (before @) and domain part
-                  const atIndex = value.indexOf('@');
-                  let localPart = '';
-                  let domainPart = '';
-                  
-                  if (atIndex !== -1) {
-                    localPart = value.slice(0, atIndex);
-                    domainPart = value.slice(atIndex);
-                  } else {
-                    localPart = value;
-                  }
-                  
-                  // Only allow letters, numbers, and one dot in local part
-                  let filteredLocal = localPart.replace(/[^a-zA-Z0-9.]/g, '');
-                  
-                  // Allow only one dot in local part
-                  const periodCount = (filteredLocal.match(/\./g) || []).length;
-                  if (periodCount > 1) {
-                    const firstPeriodIndex = filteredLocal.indexOf('.');
-                    filteredLocal = filteredLocal.slice(0, firstPeriodIndex + 1) + 
-                                   filteredLocal.slice(firstPeriodIndex + 1).replace(/\./g, '');
-                  }
-                  
-                  // If domain part exists, ensure it's @gmail.com format
-                  if (domainPart) {
-                    // Only allow @gmail.com
-                    if (domainPart.startsWith('@gmail.com')) {
-                      value = filteredLocal + '@gmail.com';
-                    } else if (domainPart.startsWith('@')) {
-                      // User is typing domain, only allow @gmail.com
-                      const domainInput = domainPart.replace(/[^a-z.]/g, '');
-                      if (domainInput.startsWith('gmail.com') || domainInput === 'gmail' || domainInput === 'gmail.') {
-                        value = filteredLocal + '@' + domainInput;
-                      } else {
-                        value = filteredLocal + '@';
-                      }
-                    }
-                  } else {
-                    value = filteredLocal;
-                  }
-                  
-                  setEmail(value);
-                }}
-                className={inputStyles}
-                placeholder="admin@gmail.com"
-              />
-            </div>
 
-            <div className="pt-1">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"} // This is the standard and best way
-                autoComplete="current-password"
-                data-form-type="other"
-                data-lpignore="true"
-                data-1p-ignore="true"
-                data-bwignore="true"
-                style={{
-                  // WebkitTextSecurity is redundant since you're already changing the 'type'
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'textfield'
-                }}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`${inputStyles} pr-10 
-                  [&::-ms-reveal]:hidden 
-                  [&::-webkit-credentials-auto-fill-button]:!hidden 
-                  [&::-webkit-strong-password-auto-fill-button]:!hidden`}
-                minLength={7}
-                maxLength={13}
-                placeholder="********"
-              />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
-                >
-                  {showPassword ? (
-                    // Swapped to a cleaner, known-good "Eye" SVG
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      strokeWidth={1.5} 
-                      stroke="currentColor" 
-                      className="h-5 w-5"
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center ml-1 mb-0">
+                    <label htmlFor="password" className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Password</label>
+                    <button type="button" onClick={() => setShowForgotPasswordModal(true)} className="text-xs font-bold text-sky-600 hover:text-sky-700 transition-colors">Forgot Password?</button>
+                  </div>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-slate-400 group-focus-within:text-sky-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    </div>
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      data-form-type="other"
+                      data-lpignore="true"
+                      data-1p-ignore="true"
+                      data-bwignore="true"
+                      className={`${inputStyles} pr-10 
+                      [&::-ms-reveal]:hidden 
+                      [&::-webkit-credentials-auto-fill-button]:!hidden 
+                      [&::-webkit-strong-password-auto-fill-button]:!hidden`}
+                      minLength={7}
+                      maxLength={13}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
                     >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" 
-                      />
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
-                      />
-                    </svg>
-                  ) : (
-                    // Swapped to a cleaner, known-good "EyeOff" SVG
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      strokeWidth={1.5} 
-                      stroke="currentColor" 
-                      className="h-5 w-5"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L6.228 6.228" 
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              
-              {/* Forgot Password Link */}
-              <div className="flex items-center justify-end pt-2">
-                <div className="text-sm">
+                      {showPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.049m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88L3 3m11.737 11.737l6.264 6.264M21 12c-1.274 4.057-5.064 7-9.542 7-1.307 0-2.542-.255-3.669-.714m5.94-11.526A8.959 8.959 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.97 9.97 0 01-1.563 3.049" /></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2">
                   <button
-                    type="button"
-                    onClick={() => setShowForgotPasswordModal(true)}
-                    className="font-medium text-sky-600 hover:text-sky-700 transition-colors"
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-2.5 px-4 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-sky-200 transition-all duration-300 transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                   >
-                    Forgot password?
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span>Signing In...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Sign In</span>
+                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                      </>
+                    )}
                   </button>
                 </div>
+
+                <div className="text-center text-sm text-slate-500 font-medium mt-2">
+                  Don't have an account?{' '}
+                  <Link
+                    to="/register"
+                    className="text-sky-600 hover:text-sky-700 font-bold transition-colors underline-offset-4 hover:underline"
+                  >
+                    Register here
+                  </Link>
+                </div>
+              </form>
+
+              <div className="mt-3 mb-2 flex justify-center">
+                <button
+                  onClick={() => navigate('/LandingPage')}
+                  className="group relative flex items-center justify-center text-slate-500 hover:text-sky-600 transition-all duration-300 text-sm font-semibold hover:translate-x-1 py-1"
+                >
+                  <span className="absolute -left-6 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">←</span>
+                  <span>Back to Home Page</span>
+                </button>
               </div>
             </div>
-
-            <div>
-              <Button type="submit" className="w-full justify-center shadow-lg hover:shadow-xl" disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </Button>
-            </div>
-          </form>
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <span>Don't have an account? </span>
-            <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500 underline underline-offset-2">
-              Register here
-            </Link>
-          </div>
-            </Card>
           </div>
         </div>
       </div>
 
-      {/* Forgot Password Modal */}
       <ForgotPasswordModal
         isOpen={showForgotPasswordModal}
         onClose={() => setShowForgotPasswordModal(false)}
-        onSuccess={() => {}}
+        onSuccess={() => { }}
         mode="admin"
       />
     </div>
@@ -312,7 +224,6 @@ const LoginPage: React.FC = () => {
 
 export default LoginPage;
 
-// Simple fading slideshow for admin-themed images
 const AdminLoginSlideshow: React.FC = () => {
   const [index, setIndex] = React.useState(0);
   const slides = React.useMemo(() => [
