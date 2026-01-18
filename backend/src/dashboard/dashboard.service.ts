@@ -32,19 +32,19 @@ export class DashboardService {
     private payoutsRepository: Repository<Payout>,
     @InjectRepository(BookingRequest)
     private bookingRequestRepository: Repository<BookingRequest>,
-  ) {}
+  ) { }
 
   async getStats() {
     const totalUsers = await this.usersRepository.count();
-    
+
     const totalTutors = await this.tutorsRepository.count({
       where: { status: 'approved' },
     });
-    
+
     const pendingApplications = await this.tutorsRepository.count({
       where: { status: 'pending' },
     });
-    
+
     const PLATFORM_SHARE = 0.13;
 
     // Calculate total revenue: 13% of payouts with status 'released'
@@ -54,11 +54,11 @@ export class DashboardService {
       .select('COALESCE(SUM(payout.amount_released), 0)', 'sum')
       .where('payout.status = :releasedStatus', { releasedStatus: 'released' })
       .getRawOne();
-      
+
     // Calculate 13% of the total payout amounts
     const totalAmount = Number(parseFloat(totalRevenueResult?.sum || '0') || 0);
     const totalRevenue = Number((totalAmount * PLATFORM_SHARE).toFixed(2));
-    
+
     console.log(`[Dashboard] Total Revenue Query:`, {
       result: totalRevenueResult,
       sum: totalRevenueResult?.sum,
@@ -117,9 +117,9 @@ export class DashboardService {
     const recentPaymentsSumRaw = await this.paymentsRepository
       .createQueryBuilder('payment')
       .select('COALESCE(SUM(payment.amount * :platformShare), 0)', 'sum')
-      .where('payment.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)')
-      .andWhere('(payment.status = :confirmed OR payment.status = :paid)', { 
-        confirmed: 'confirmed', 
+      .where('payment.created_at >= NOW() - INTERVAL \'30 days\'')
+      .andWhere('(payment.status = :confirmed OR payment.status = :paid)', {
+        confirmed: 'confirmed',
         paid: 'paid',
         platformShare: PLATFORM_SHARE
       })
@@ -135,15 +135,15 @@ export class DashboardService {
     // Payment trends: 13% of payments (last 6 months)
     const paymentTrendsRaw = await this.paymentsRepository
       .createQueryBuilder('payment')
-      .select("DATE_FORMAT(payment.created_at, '%Y-%m')", 'period')
-      .addSelect("DATE_FORMAT(payment.created_at, '%b %Y')", 'label')
+      .select("TO_CHAR(payment.created_at, 'YYYY-MM')", 'period')
+      .addSelect("TO_CHAR(payment.created_at, 'Mon YYYY')", 'label')
       .addSelect('COALESCE(SUM(payment.amount * :platformShare), 0)', 'sum')
-      .where('(payment.status = :confirmed OR payment.status = :paid)', { 
-        confirmed: 'confirmed', 
+      .where('(payment.status = :confirmed OR payment.status = :paid)', {
+        confirmed: 'confirmed',
         paid: 'paid',
         platformShare: PLATFORM_SHARE
       })
-      .andWhere('payment.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)')
+      .andWhere('payment.created_at >= NOW() - INTERVAL \'6 months\'')
       .groupBy('period')
       .addGroupBy('label')
       .orderBy('period', 'ASC')
@@ -256,7 +256,7 @@ export class DashboardService {
       .groupBy('booking.subject')
       .orderBy('sessions', 'DESC')
       .getRawMany();
-    
+
     const subjectSessions = subjectSessionsRaw.map((r: any) => {
       const subjectName = r.subject || 'Unknown';
       return {

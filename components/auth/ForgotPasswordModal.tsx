@@ -34,20 +34,20 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       console.log('Frontend: Sending email:', email);
       console.log('Frontend: Email type:', typeof email);
       console.log('Frontend: Email length:', email.length);
-      
+
       // First, check user type before submitting
       try {
         const userTypeResponse = await api.get(`/auth/password-reset/check-user-type?email=${encodeURIComponent(email)}`);
         const userType = userTypeResponse.data?.userType;
-        
+
         console.log('Frontend: User type check result:', userType);
-        
+
         if (!userType) {
           setError('This email address is not registered in our system. Cannot proceed with password reset. Please verify your email address or contact support if you believe this is an error.');
           setIsLoading(false);
           return;
         }
-        
+
         // Validate user type matches the mode
         if (isAdminMode && userType !== 'admin') {
           const userTypeLabel = userType === 'tutor' ? 'tutor' : userType === 'tutee' ? 'tutee' : userType;
@@ -55,7 +55,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           setIsLoading(false);
           return;
         }
-        
+
         if (!isAdminMode && userType === 'admin') {
           setError('This email belongs to an admin account. Admin password reset must be done through the Admin Login Page.');
           setIsLoading(false);
@@ -74,13 +74,13 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         // If check fails for other reasons, continue with the request (backend will validate)
         console.log('Frontend: User type check failed, continuing with request:', checkError);
       }
-      
+
       const requestBody = { email };
       console.log('Frontend: Request body:', requestBody);
-      
+
       const response = await api.post(requestEndpoint, requestBody);
       console.log('Frontend: Response received:', response.data);
-      
+
       if (response.data) {
         setSuccess(true);
         setShowProceedButton(true);
@@ -89,14 +89,14 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     } catch (err: any) {
       console.log('Frontend: Error occurred:', err);
       console.log('Frontend: Error response:', err.response?.data);
-      
+
       // Check for specific error cases
       const errorMessage = err.response?.data?.message || err.message || 'Failed to send verification code. Please try again.';
       const errorStatus = err.response?.status;
-      
+
       // Handle email not registered/found case
       if (
-        errorStatus === 404 || 
+        errorStatus === 404 ||
         errorMessage.toLowerCase().includes('not found') ||
         errorMessage.toLowerCase().includes('user not found') ||
         errorMessage.toLowerCase().includes('email not registered') ||
@@ -141,11 +141,11 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-sky-500 to-indigo-600"></div>
         </div>
 
-        <div className="relative z-10 p-6">
+        <div className="relative z-10 p-5">
           {/* Header */}
-          <div className="text-center mb-6">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-r from-sky-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-3">
+            <div className="mx-auto w-12 h-12 bg-gradient-to-r from-sky-500 to-indigo-600 rounded-full flex items-center justify-center mb-3">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
             </div>
@@ -159,8 +159,8 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
           {success ? (
             <div className="text-center">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -168,12 +168,12 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               <p className="text-green-700 text-sm mb-4">
                 We've sent a verification code to <strong>{email}</strong>. Please check your email and spam folder.
               </p>
-              <div className="flex items-center justify-center space-x-1 mb-6">
+              <div className="flex items-center justify-center space-x-1 mb-4">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
               </div>
-              
+
               {/* Proceed to Reset Password Button */}
               <div className="space-y-3">
                 <button
@@ -185,10 +185,10 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Proceed to Reset Password
+                    Reset Password
                   </span>
                 </button>
-                
+
                 <button
                   onClick={handleClose}
                   className="w-full py-2 px-4 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
@@ -198,12 +198,12 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               {/* Error Message */}
               {error && (
-                <div className="bg-red-50/90 backdrop-blur-sm border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium shadow-lg">
+                <div className="bg-red-50/90 backdrop-blur-sm border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs font-medium shadow-lg">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                     {error}
@@ -212,7 +212,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               )}
 
               {/* Email Field */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <label htmlFor="email" className="block text-sm font-semibold text-slate-800">
                   Email Address
                 </label>
@@ -230,18 +230,18 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-slate-200 rounded-lg focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all duration-300 placeholder-slate-400 font-medium shadow-lg hover:shadow-xl text-sm group-focus-within:shadow-xl"
+                    className="w-full pl-10 pr-4 py-2 bg-white/95 backdrop-blur-sm border-2 border-slate-200 rounded-lg focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all duration-300 placeholder-slate-400 font-medium shadow-lg hover:shadow-xl text-sm group-focus-within:shadow-xl"
                     placeholder="Enter your university email"
                   />
                 </div>
               </div>
 
               {/* Submit Button */}
-              <div className="pt-3">
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex justify-center items-center py-3 px-6 border border-transparent rounded-lg shadow-2xl text-sm font-bold text-white bg-gradient-to-r from-sky-600 via-sky-500 to-indigo-600 hover:from-sky-700 hover:via-sky-600 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 hover:shadow-3xl relative overflow-hidden group"
+                  className="w-full flex justify-center items-center py-2.5 px-6 border border-transparent rounded-lg shadow-2xl text-sm font-bold text-white bg-gradient-to-r from-sky-600 via-sky-500 to-indigo-600 hover:from-sky-700 hover:via-sky-600 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 hover:shadow-3xl relative overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   {isLoading ? (

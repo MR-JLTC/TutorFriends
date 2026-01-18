@@ -18,7 +18,7 @@ export class EmailVerificationRegistry {
   @Column({ nullable: true })
   verification_code: string;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   verification_expires: Date;
 
   @Column({ default: false })

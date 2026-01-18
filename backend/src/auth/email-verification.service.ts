@@ -15,7 +15,7 @@ export class EmailVerificationService {
     @InjectRepository(EmailVerificationRegistry)
     private emailVerificationRegistryRepository: Repository<EmailVerificationRegistry>,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   async sendVerificationCode(email: string, user_type: 'tutor' | 'tutee' | 'admin'): Promise<{ message: string }> {
     console.log('=== EMAIL VERIFICATION REQUEST DEBUG ===');
@@ -88,7 +88,7 @@ export class EmailVerificationService {
 
     // Send verification email
     await this.sendVerificationEmail(existingUser?.name || 'User', trimmedEmail, verificationCode);
-    
+
     console.log('=== EMAIL VERIFICATION SENT SUCCESSFULLY ===');
     return { message: 'Verification code sent to your email' };
   }
@@ -135,7 +135,7 @@ export class EmailVerificationService {
     if (!verificationEntry.is_verified && verificationEntry.verification_code && verificationEntry.verification_expires) {
       const now = new Date();
       const expiresAt = new Date(verificationEntry.verification_expires);
-      
+
       // Only return expiration if code hasn't expired yet
       if (expiresAt > now) {
         result.verification_expires = verificationEntry.verification_expires;
@@ -287,15 +287,15 @@ export class EmailVerificationService {
       });
 
       const mailOptions = {
-        from: `"TUTORLINK" <${gmailUser}>`,
+        from: `"TUTORFRIENDS" <${gmailUser}>`,
         to: email,
-        subject: 'TutorLink - Email Verification Code',
+        subject: 'TutorFriends - Email Verification Code',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
             <!-- Header with Logo -->
             <div style="text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 2px solid #e5e7eb;">
               <div style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 15px 30px; border-radius: 12px; margin-bottom: 15px;">
-                <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 1px;">TutorLink</h1>
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 1px;">TutorFriends</h1>
               </div>
               <h2 style="color: #374151; margin: 10px 0; font-size: 20px; font-weight: 600;">Email Verification</h2>
             </div>
@@ -351,7 +351,7 @@ export class EmailVerificationService {
       const result = await transporter.sendMail(mailOptions);
       console.log('✅ Verification email sent successfully');
       console.log('Message ID:', result.messageId);
-      
+
     } catch (error) {
       console.log('❌ Failed to send verification email:', error);
       throw new Error(`Failed to send verification email: ${error instanceof Error ? error.message : 'Unknown error'}`);

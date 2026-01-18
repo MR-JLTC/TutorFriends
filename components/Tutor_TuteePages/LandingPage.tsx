@@ -32,31 +32,41 @@ const LiveStats: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    const controller = new AbortController();
 
-    const backendIP = import.meta.env.VITE_BACKEND_LAPTOP_IP || 'localhost';
-    fetch(`http://${backendIP}:3000/api/landing/stats`, {
-      signal: controller.signal
-    })
-      .then(async (res) => {
+    // Function to fetch stats
+    const fetchStats = async () => {
+      try {
+        const backendIP = import.meta.env.VITE_BACKEND_LAPTOP_IP || 'localhost';
+        // Add timestamp to prevent caching
+        const res = await fetch(`http://${backendIP}:3000/api/landing/stats?_t=${Date.now()}`);
+
         if (!res.ok) throw new Error('Failed to load stats');
-        return res.json();
-      })
-      .then((data) => {
-        if (mounted) setStats(data);
-      })
-      .catch((e) => {
-        // Only set error if this is not an abort error
-        if (mounted && e.name !== 'AbortError') {
-          setError(e.message);
+
+        const data = await res.json();
+        if (mounted) {
+          setStats(data);
+          setError(null); // Clear any previous errors
         }
-      });
+      } catch (e: any) {
+        if (mounted) {
+          // On initial load, show error. on subsequent polls, maybe stay silent or log
+          // But here we rely on state. If we already have stats, maybe just keep them.
+          if (!stats) setError(e.message);
+        }
+      }
+    };
+
+    // Initial fetch
+    fetchStats();
+
+    // Poll every 1 second for "lively" updates
+    const intervalId = setInterval(fetchStats, 1000);
 
     return () => {
       mounted = false;
-      controller.abort();
+      clearInterval(intervalId);
     };
-  }, []);
+  }, []); // Remove dependency on 'stats' to avoid resetting interval constantly, or just leave empty deps
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-24">
@@ -298,29 +308,35 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    const controller = new AbortController();
 
-    (async () => {
+    const fetchUniversities = async () => {
       try {
-        const res = await apiClient.get('/universities', {
-          signal: controller.signal
-        });
+        // We use apiClient here since it might handle some base URL stuff, 
+        // though typically for polling we might want to avoid interceptor overhead if it fails often.
+        // But for consistency:
+        // Add timestamp to query to prevent caching
+        const res = await apiClient.get(`/universities?_t=${Date.now()}`);
+
         if (mounted) {
           const rows = Array.isArray(res.data) ? res.data : [];
           const active = rows.filter((u: any) => (u.status || 'active') === 'active');
+          // Only update if data changed (optional optimization, but React handles diffing well enough for small lists)
           setPartnerUniversities(active);
         }
       } catch (err) {
-        // Ignore AbortError
-        if (err.name !== 'AbortError') {
-          console.error('Failed to fetch universities:', err);
+        // Silent failure on polling
+        if (mounted) {
+          // console.error('Failed to fetch universities:', err);
         }
       }
-    })();
+    };
+
+    fetchUniversities();
+    const intervalId = setInterval(fetchUniversities, 1000); // Poll every 1 second
 
     return () => {
       mounted = false;
-      controller.abort();
+      clearInterval(intervalId);
     };
   }, []);
 
@@ -513,7 +529,7 @@ const LandingPage: React.FC = () => {
             {partnerUniversities.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 sm:gap-8">
                 {partnerUniversities.map((u) => (
-                  <div key={u.university_id} className="group flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 min-h-[160px]">
+                  <div key={u.university_id} className="group flex flex-col items-center justify-start h-full p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 min-h-[160px]">
                     <div className="flex items-center justify-center h-20 w-20 rounded-full bg-slate-50 border border-slate-100 group-hover:border-sky-100 group-hover:bg-sky-50 transition-colors duration-300 overflow-hidden mb-4 p-2">
                       {u.logo_url ? (
                         <img src={getFileUrl(u.logo_url)} alt={u.name} className="h-full w-full object-contain transition-all duration-300" />
@@ -521,7 +537,7 @@ const LandingPage: React.FC = () => {
                         <div className="h-full w-full bg-slate-200" />
                       )}
                     </div>
-                    <span className="font-medium text-xs sm:text-sm text-slate-600 group-hover:text-slate-900 text-center leading-snug transition-colors duration-300 line-clamp-2" title={u.name}>{u.name}</span>
+                    <span className="font-medium text-xs sm:text-sm text-slate-600 group-hover:text-slate-900 text-center leading-snug transition-colors duration-300" title={u.name}>{u.name}</span>
                   </div>
                 ))}
               </div>

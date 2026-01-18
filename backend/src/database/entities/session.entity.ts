@@ -29,10 +29,10 @@ export class Session {
   @JoinColumn({ name: 'subject_id' })
   subject: Subject;
 
-  @Column('datetime')
+  @Column({ type: 'timestamp' })
   start_time: Date;
 
-  @Column('datetime')
+  @Column({ type: 'timestamp' })
   end_time: Date;
 
   @Column({

@@ -322,7 +322,7 @@ const RegistrationPage: React.FC = () => {
     }
   };
 
-  const inputStyles = "w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-[3px] focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all duration-300 font-medium text-slate-900 placeholder:text-slate-400 text-sm shadow-sm";
+  const inputStyles = "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-[3px] focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all duration-300 font-medium text-slate-900 placeholder:text-slate-400 text-sm shadow-sm";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-indigo-100 flex items-start justify-center p-4 relative overflow-y-auto overflow-x-hidden">
@@ -350,8 +350,8 @@ const RegistrationPage: React.FC = () => {
           {/* Decorative background blur for right side content */}
           <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-gradient-to-br from-sky-100/40 to-indigo-100/40 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div className="relative lg:absolute lg:inset-0 lg:overflow-y-auto flex flex-col lg:justify-center px-6 sm:px-10 pt-12 pb-10 custom-scrollbar lg:[scrollbar-width:none] lg:[-ms-overflow-style:none] lg:[&::-webkit-scrollbar]:display-none">
-            <div className="relative z-10 w-full max-w-md mx-auto">
+          <div className={`relative lg:absolute lg:inset-0 flex flex-col px-6 sm:px-10 pt-12 pb-10 custom-scrollbar lg:[scrollbar-width:none] lg:[-ms-overflow-style:none] lg:[&::-webkit-scrollbar]:display-none ${isEmailVerified ? 'lg:overflow-y-auto' : 'lg:overflow-hidden'}`}>
+            <div className="relative z-10 w-full max-w-md mx-auto my-auto">
               <form className="space-y-4 pt-0" onSubmit={handleSubmit}>
                 {/* Email Verification Section - First */}
                 <div className="bg-gradient-to-r from-primary-50 to-primary-100 p-3 rounded-xl border border-primary-200 mt-2">
@@ -364,7 +364,7 @@ const RegistrationPage: React.FC = () => {
 
                   <div className="flex flex-col gap-2">
                     <div>
-                      <label className="block text-slate-700 font-semibold mb-1">University(Optional)</label>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider ml-1">University(Optional)</label>
                       <select
                         className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                         value={universityId}
@@ -378,7 +378,7 @@ const RegistrationPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-slate-700 font-semibold mb-1">Email Address</label>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider ml-1">Email Address</label>
                       <input
                         type="email"
                         value={email}
@@ -504,7 +504,7 @@ const RegistrationPage: React.FC = () => {
                 {isEmailVerified && (
                   <>
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="name" className="block text-xs font-bold text-slate-600 uppercase tracking-wider ml-1">
                         Full Name
                       </label>
                       <input
@@ -538,7 +538,7 @@ const RegistrationPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="password" className="block text-xs font-bold text-slate-600 uppercase tracking-wider ml-1">
                         Password
                       </label>
                       <div className="relative">
@@ -618,7 +618,7 @@ const RegistrationPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="confirm-password" className="block text-xs font-bold text-slate-600 uppercase tracking-wider ml-1">
                         Confirm Password
                       </label>
                       <div className="relative">
