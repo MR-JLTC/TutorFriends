@@ -34,24 +34,22 @@ const LiveStats: React.FC = () => {
     let mounted = true;
 
     // Function to fetch stats
+    // Function to fetch stats
     const fetchStats = async () => {
       try {
-        const backendIP = import.meta.env.VITE_BACKEND_LAPTOP_IP || 'localhost';
-        // Add timestamp to prevent caching
-        const res = await fetch(`http://${backendIP}:3000/api/landing/stats?_t=${Date.now()}`);
+        // Use apiClient which correctly handles the base URL from environment variables
+        // whether it's a full URL (https://...) or just an IP
+        const res = await apiClient.get(`/landing/stats?_t=${Date.now()}`);
 
-        if (!res.ok) throw new Error('Failed to load stats');
-
-        const data = await res.json();
         if (mounted) {
-          setStats(data);
+          setStats(res.data);
           setError(null); // Clear any previous errors
         }
       } catch (e: any) {
         if (mounted) {
           // On initial load, show error. on subsequent polls, maybe stay silent or log
           // But here we rely on state. If we already have stats, maybe just keep them.
-          if (!stats) setError(e.message);
+          if (!stats) setError(e.message || 'Failed to load stats');
         }
       }
     };
