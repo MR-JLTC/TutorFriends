@@ -930,7 +930,7 @@ const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 group-hover:text-sky-600 transition-colors">John Emmanuel De Vera</h3>
-                  <p className="text-sm font-semibold text-sky-500 uppercase tracking-widest mt-1">Lead Developer</p>
+                  <p className="text-sm font-semibold text-sky-500 uppercase tracking-widest mt-1">Project Manager</p>
                 </div>
 
                 {/* Developer 2 */}
@@ -946,7 +946,7 @@ const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 group-hover:text-sky-600 transition-colors">Jhon Lloyd T. Cruz</h3>
-                  <p className="text-sm font-semibold text-indigo-500 uppercase tracking-widest mt-1">Lead Developer</p>
+                  <p className="text-sm font-semibold text-indigo-500 uppercase tracking-widest mt-1">CEO/Software Developer</p>
                 </div>
               </div>
 
