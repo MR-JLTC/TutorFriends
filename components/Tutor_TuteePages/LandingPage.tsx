@@ -92,23 +92,23 @@ interface Slide {
 
 const slides: Slide[] = [
   {
-    src: 'assets/images/bgp1.jpg',
+    src: '/assets/images/bgp1.jpg',
     alt: 'A tutor helping a student with a laptop in a well-lit room'
   },
   {
-    src: 'assets/images/bg2.png',
+    src: '/assets/images/bg2.png',
     alt: 'A diverse group of young students studying together around a table'
   },
   {
-    src: 'assets/images/bg3.png',
+    src: '/assets/images/bg3.png',
     alt: 'Students in a university lecture hall, focused on learning'
   },
   {
-    src: 'assets/images/bgp4.jpg',
+    src: '/assets/images/bgp4.jpg',
     alt: 'Online tutoring session in progress'
   },
   {
-    src: 'assets/images/bg5.png',
+    src: '/assets/images/bg5.png',
     alt: 'Student studying with digital resources'
   },
 ];
@@ -169,7 +169,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
         >
           <div className="relative flex items-center justify-center h-32 w-32 rounded-full bg-gradient-to-br from-sky-400 to-sky-600 mb-6 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
             <img
-              src="assets/images/tutee.png"
+              src="/assets/images/tutee.png"
               alt="Student"
               className="w-full h-full object-cover rounded-full transform transition-transform duration-500 group-hover:scale-125"
             />
@@ -192,7 +192,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
         >
           <div className="relative flex items-center justify-center h-32 w-32 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 mb-6 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
             <img
-              src="assets/images/tutor.png"
+              src="/assets/images/tutor.png"
               alt="Tutor"
               className="w-full h-full object-cover rounded-full transform transition-transform duration-500 group-hover:scale-125"
             />

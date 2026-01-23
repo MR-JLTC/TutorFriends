@@ -11,7 +11,7 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ className = '', style }) => {
-  const logoSrc = "assets/images/tutorfriends-logo.png";
+  const logoSrc = "/assets/images/tutorfriends-logo.png";
   return <img src={logoSrc} alt="TutorFriends Logo" className={className} style={style} />;;
 };
 
