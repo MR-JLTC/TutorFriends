@@ -227,6 +227,35 @@ const LandingPage: React.FC = () => {
   const [tutorModalKey, setTutorModalKey] = useState(0);
   const [tuteeModalKey, setTuteeModalKey] = useState(0);
   const [partnerUniversities, setPartnerUniversities] = useState<Array<{ university_id: number; name: string; logo_url?: string; status?: string }>>([]);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setContactForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmitContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
+      setSubmitStatus({ type: 'error', message: 'Please fill in all fields.' });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitStatus(null);
+      await apiClient.post('/landing/contact', contactForm);
+      setSubmitStatus({ type: 'success', message: 'Message sent successfully! We will get back to you soon.' });
+      setContactForm({ name: '', email: '', message: '' });
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      setSubmitStatus({ type: 'error', message: 'Failed to send message. Please try again later.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const scrollToSection = (id: string) => {
     setActiveSection(id);
@@ -700,7 +729,7 @@ const LandingPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm text-slate-400">Email Support</p>
-                      <p className="text-white font-medium">darkages38@gmail.com</p>
+                      <p className="text-white font-medium">jactechnologies7@gmail.com</p>
                     </div>
                   </div>
 
@@ -730,20 +759,54 @@ const LandingPage: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/20 to-purple-500/20 rounded-3xl blur-2xl"></div>
                 <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl">
                   <h3 className="text-2xl font-bold text-white mb-6">Send us a message</h3>
-                  <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                  <form className="space-y-4" onSubmit={handleSubmitContact}>
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Name</label>
-                      <input type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all" placeholder="Your name" />
+                      <input
+                        type="text"
+                        name="name"
+                        value={contactForm.name}
+                        onChange={handleContactChange}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                        placeholder="Your name"
+                        required
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Email</label>
-                      <input type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all" placeholder="your@email.com" />
+                      <input
+                        type="email"
+                        name="email"
+                        value={contactForm.email}
+                        onChange={handleContactChange}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                        placeholder="your@email.com"
+                        required
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Message</label>
-                      <textarea className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all h-32" placeholder="How can we help?"></textarea>
+                      <textarea
+                        name="message"
+                        value={contactForm.message}
+                        onChange={handleContactChange}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all h-32"
+                        placeholder="How can we help?"
+                        required
+                      ></textarea>
                     </div>
-                    <button className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-sky-500/25 transition-all transform hover:-translate-y-0.5">Send Message</button>
+                    {submitStatus && (
+                      <div className={`text-sm p-3 rounded-lg ${submitStatus.type === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {submitStatus.message}
+                      </div>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? 'Sending...' : 'Send Message'}
+                    </button>
                   </form>
                 </div>
               </div>
@@ -870,7 +933,7 @@ const LandingPage: React.FC = () => {
                   email) under confidentiality and DPA‑compliant agreements.
                 </li>
                 <li>
-                  Contact: for privacy requests or concerns, email <span className="font-medium">darkages38@gmail.com</span>.
+                  Contact: for privacy requests or concerns, email <span className="font-medium">jactechnologies7@gmail.com</span>.
                 </li>
               </ul>
             </div>
@@ -896,7 +959,7 @@ const LandingPage: React.FC = () => {
                 <li>
                   Changes: we may update these terms and will indicate the effective date; continued use means acceptance.
                 </li>
-                <li>Contact: questions about these terms? Email us at <span className="font-medium">darkages38@gmail.com</span>.</li>
+                <li>Contact: questions about these terms? Email us at <span className="font-medium">jactechnologies7@gmail.com</span>.</li>
               </ul>
             </div>
           </Modal>
