@@ -16,13 +16,13 @@ const ProtectedRoute: React.FC = () => {
 
   if (!user) {
     // Decide redirect target based on attempted area
-    const path = location.pathname;
+    const path = location.pathname.toLowerCase();
     const isTutorOrTutee = path.startsWith('/tutor') || path.startsWith('/tutee');
     return <Navigate to={isTutorOrTutee ? "/login" : "/admin-login"} state={{ from: location }} replace />;
   }
 
   // Role-based route protection
-  const path = location.pathname;
+  const path = location.pathname.toLowerCase();
   if (path.startsWith('/admin')) {
     if (user.role !== 'admin' && user.user_type !== 'admin') {
       // If a non-admin tries to access admin routes, send them to the admin login

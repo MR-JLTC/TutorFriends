@@ -28,12 +28,32 @@ function AuthProvider({ children }: AuthProviderProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Initialize from storage on mount only
-    const storedUser = getActiveUser() as User | null;
-    const storedToken = getActiveToken();
+    // Initialize from storage on mount
+    const currentPath = window.location.pathname;
+    const resolvedRole = resolveRoleFromPath(currentPath);
+    console.log('AuthContext mount: Current path:', currentPath, 'Resolved role:', resolvedRole);
+
+    const storedUser = getActiveUser(currentPath) as User | null;
+    const storedToken = getActiveToken(currentPath);
+
     if (storedUser && storedToken) {
+      console.log('AuthContext mount: Found stored user and token');
       setUser(storedUser);
       setToken(storedToken);
+    } else {
+      console.log('AuthContext mount: No stored user/token found for this context');
+      // Fallback to general storage if role-specific check failed
+      const fallbackUser = localStorage.getItem('user');
+      const fallbackToken = localStorage.getItem('token');
+      if (fallbackUser && fallbackToken) {
+        console.log('AuthContext mount: Found fallback user/token');
+        try {
+          setUser(JSON.parse(fallbackUser));
+          setToken(fallbackToken);
+        } catch (e) {
+          console.error('AuthContext mount: Failed to parse fallback user');
+        }
+      }
     }
     setIsLoading(false);
   }, []); // Only run on mount
@@ -75,14 +95,14 @@ function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await apiClient.post('/auth/login', { email, password });
       const { user, accessToken } = response.data;
-      
+
       // Set both user_type and role to ensure consistent admin checking
       const userWithRole = {
         ...user,
         user_type: 'admin',
         role: 'admin'
       };
-      
+
       handleAuthSuccess({ user: userWithRole, accessToken });
       setActiveRole('admin');
     } catch (err: any) {
@@ -97,20 +117,20 @@ function AuthProvider({ children }: AuthProviderProps) {
       console.log('AuthContext: Making API request...');
       const response = await apiClient.post('/auth/login-tutor-tutee', { email, password });
       console.log('AuthContext: Received response:', response.data);
-      
+
       const { user, accessToken } = response.data;
       console.log('AuthContext: User data:', user);
-      
+
       // Ensure proper role mapping for both 'student' and 'tutee' user types
       const mappedRole = user.user_type === 'student' || user.user_type === 'tutee' ? 'tutee' : user.user_type;
       console.log('AuthContext: Mapped role:', mappedRole);
-      
+
       const userWithMappedRole = {
         ...user,
         role: mappedRole
       };
       console.log('AuthContext: User with mapped role:', userWithMappedRole);
-      
+
       // Update AuthContext state
       setUser(userWithMappedRole);
       setToken(accessToken);
@@ -121,7 +141,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         setRoleAuth(storageRole, userWithMappedRole, accessToken);
         setActiveRole(storageRole);
       }
-      
+
       console.log('AuthContext: State updated, returning mapped role');
       return mappedRole; // Return the mapped role instead of navigating
     } catch (err: any) {
@@ -129,7 +149,7 @@ function AuthProvider({ children }: AuthProviderProps) {
       throw err;
     }
   };
-  
+
   const register = async (details: { name: string; email: string; password: string; university_id?: number }) => {
     try {
       const response = await apiClient.post('/auth/register', { ...details, user_type: 'admin' });
@@ -150,7 +170,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         // Don't block logout if this fails
       }
     }
-    
+
     const storageRole: AuthRoleKey | null = mapRoleToStorageKey(user?.role) ?? mapRoleToStorageKey(user?.user_type);
     if (storageRole) {
       clearRoleAuth(storageRole);

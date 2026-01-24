@@ -20,9 +20,10 @@ export const mapRoleToStorageKey = (role?: string | null): AuthRoleKey | null =>
 
 export const resolveRoleFromPath = (path: string): AuthRoleKey | null => {
   if (!path) return null;
-  if (path.startsWith('/admin')) return 'admin';
-  if (path.startsWith('/tutor-dashboard') || path.startsWith('/tutor')) return 'tutor';
-  if (path.startsWith('/tutee-dashboard') || path.startsWith('/tutee')) return 'tutee';
+  const normalizedPath = path.toLowerCase();
+  if (normalizedPath.startsWith('/admin')) return 'admin';
+  if (normalizedPath.startsWith('/tutor-dashboard') || normalizedPath.startsWith('/tutor')) return 'tutor';
+  if (normalizedPath.startsWith('/tutee-dashboard') || normalizedPath.startsWith('/tutee')) return 'tutee';
   return null;
 };
 

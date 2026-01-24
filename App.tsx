@@ -56,10 +56,10 @@ const App: React.FC = () => {
         } />
 
         {/* Tutor routes */}
-        <Route path="tutor-dashboard/*" element={<TutorDashboard />} />
+        <Route path="/tutor-dashboard/*" element={<TutorDashboard />} />
 
         {/* Tutee routes */}
-        <Route path="tutee-dashboard/*" element={<TuteeDashboard />} />
+        <Route path="/tutee-dashboard/*" element={<TuteeDashboard />} />
 
         {/* Shared: Upcoming Sessions */}
       </Route>
