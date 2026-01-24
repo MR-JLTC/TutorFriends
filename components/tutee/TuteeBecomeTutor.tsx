@@ -72,7 +72,7 @@ const TuteeBecomeTutor: React.FC = () => {
     show: boolean;
     message: string;
     onConfirm: () => void;
-  }>({ show: boolean = false, message: '', onConfirm: () => { } } as any);
+  }>({ show: false, message: '', onConfirm: () => { } });
 
   // Validation Logic
   const sessionRateError = useMemo(() => {
