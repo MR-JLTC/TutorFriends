@@ -44,8 +44,24 @@ function AuthProvider({ children }: AuthProviderProps) {
     const resolvedRole = resolveRoleFromPath(currentPath);
     console.log('AuthProvider init:', { currentPath, resolvedRole });
 
-    const storedUser = getActiveUser(currentPath) as User | null;
-    const storedToken = getActiveToken(currentPath);
+    let storedUser = getActiveUser(currentPath) as User | null;
+    let storedToken = getActiveToken(currentPath);
+
+    // Fallback: If no user found for specific path/role, try generic 'user' storage
+    // This prevents redirects on refresh if the role-specific key (e.g., user:tutee) is missing but the user is logged in
+    if (!storedUser) {
+      const rawUser = localStorage.getItem('user');
+      const rawToken = localStorage.getItem('token');
+      if (rawUser && rawToken) {
+        try {
+          storedUser = JSON.parse(rawUser);
+          storedToken = rawToken;
+          console.log('AuthContext: Restored user from generic storage fallback');
+        } catch (e) {
+          console.error('AuthContext: Failed to parse generic user storage', e);
+        }
+      }
+    }
 
     if (storedUser && storedToken) {
       setUser(storedUser);

@@ -492,32 +492,71 @@ const TuteeBecomeTutor: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name</label>
-              <div className="p-3 bg-slate-50 rounded-xl text-slate-700 font-medium flex items-center gap-2 border border-slate-100">
-                {tuteeFullName}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={tuteeFullName}
+                  readOnly
+                  disabled
+                  className="w-full p-3 bg-slate-50 rounded-xl text-slate-700 font-medium border border-slate-100 focus:outline-none"
+                />
               </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email Address</label>
-              <div className="p-3 bg-slate-50 rounded-xl text-slate-700 font-medium flex items-center gap-2 border border-slate-100">
-                <Mail className="w-4 h-4 text-slate-400" /> {tuteeEmail}
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <input
+                  type="text"
+                  value={tuteeEmail}
+                  readOnly
+                  disabled
+                  className="w-full p-3 bg-slate-50 rounded-xl text-slate-700 font-medium border border-slate-100 pl-10 focus:outline-none"
+                />
               </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">University</label>
-              <div className="p-3 bg-slate-50 rounded-xl text-slate-700 font-medium flex items-center gap-2 border border-slate-100">
-                {tuteeUniversityName}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={tuteeUniversityName}
+                  readOnly
+                  disabled
+                  className="w-full p-3 bg-slate-50 rounded-xl text-slate-700 font-medium border border-slate-100 focus:outline-none"
+                />
               </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Course</label>
-              <div className="p-3 bg-slate-50 rounded-xl text-slate-700 font-medium flex items-center gap-2 border border-slate-100">
-                <BookOpen className="w-4 h-4 text-slate-400" /> {tuteeCourseName}
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <input
+                  type="text"
+                  value={tuteeCourseName}
+                  readOnly
+                  disabled
+                  className="w-full p-3 bg-slate-50 rounded-xl text-slate-700 font-medium border border-slate-100 pl-10 focus:outline-none"
+                />
               </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Year Level</label>
-              <div className="p-3 bg-slate-50 rounded-xl text-slate-700 font-medium flex items-center gap-2 border border-slate-100">
-                <YearLevelIcon className="w-4 h-4 text-slate-400" /> {tuteeYearLevel} Year
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <YearLevelIcon className="w-4 h-4" />
+                </div>
+                <input
+                  type="text"
+                  value={tuteeYearLevel ? `${tuteeYearLevel} Year` : ''}
+                  readOnly
+                  disabled
+                  className="w-full p-3 bg-slate-50 rounded-xl text-slate-700 font-medium border border-slate-100 pl-10 focus:outline-none"
+                />
               </div>
             </div>
             <div className="space-y-1">
