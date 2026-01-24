@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { GraduationCap, Lock, Mail, User, BookOpen, GraduationCap as YearLevelIcon, Info, Image as ImageIcon, QrCode, FileText, Upload, Plus, Trash2, CheckCircle, Info as InfoIcon, X } from 'lucide-react';
+import { GraduationCap, Lock, Mail, User, BookOpen, GraduationCap as YearLevelIcon, Info, Image as ImageIcon, QrCode, FileText, Upload, Plus, Trash2, CheckCircle, Info as InfoIcon, X, Calendar } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import apiClient from '../../services/api';
 import { mapRoleToStorageKey, setRoleAuth } from '../../utils/authRole';
