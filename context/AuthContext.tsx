@@ -22,41 +22,37 @@ interface AuthProviderProps {
 }
 
 function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(() => getActiveUser() as User | null);
-  const [token, setToken] = useState<string | null>(() => getActiveToken());
+  // Sync initialization from storage based on current path
+  const getInitialUser = () => {
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    return getActiveUser(path) as User | null;
+  };
+
+  const getInitialToken = () => {
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    return getActiveToken(path);
+  };
+
+  const [user, setUser] = useState<User | null>(getInitialUser);
+  const [token, setToken] = useState<string | null>(getInitialToken);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Initialize from storage on mount
+    // Re-verify on mount to ensure consistency
     const currentPath = window.location.pathname;
     const resolvedRole = resolveRoleFromPath(currentPath);
-    console.log('AuthContext mount: Current path:', currentPath, 'Resolved role:', resolvedRole);
+    console.log('AuthProvider init:', { currentPath, resolvedRole });
 
     const storedUser = getActiveUser(currentPath) as User | null;
     const storedToken = getActiveToken(currentPath);
 
     if (storedUser && storedToken) {
-      console.log('AuthContext mount: Found stored user and token');
       setUser(storedUser);
       setToken(storedToken);
-    } else {
-      console.log('AuthContext mount: No stored user/token found for this context');
-      // Fallback to general storage if role-specific check failed
-      const fallbackUser = localStorage.getItem('user');
-      const fallbackToken = localStorage.getItem('token');
-      if (fallbackUser && fallbackToken) {
-        console.log('AuthContext mount: Found fallback user/token');
-        try {
-          setUser(JSON.parse(fallbackUser));
-          setToken(fallbackToken);
-        } catch (e) {
-          console.error('AuthContext mount: Failed to parse fallback user');
-        }
-      }
     }
     setIsLoading(false);
-  }, []); // Only run on mount
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

@@ -53,23 +53,9 @@ apiClient.interceptors.request.use(
     if (token) {
       // Always add token if available
       config.headers.Authorization = `Bearer ${token}`;
-    } else if (!isAuthEndpoint && !isPublicEndpoint) {
-      // If no token and trying to access protected route (not an auth or public endpoint), redirect to login
-      // But don't redirect if we're already on a login/registration/landing page
-      const path = window.location.pathname.toLowerCase();
-      const isAuthPage = path.includes('/login') ||
-        path.includes('/admin-login') ||
-        path.includes('/landingpage') ||
-        path.includes('/tuteeregistrationpage') ||
-        path.includes('/tutorregistrationpage') ||
-        path.includes('/register') ||
-        path.includes('/password-reset');
-      if (!isAuthPage) {
-        // Determine which login page to redirect to based on the route being accessed
-        const isTutorOrTuteeRoute = path.startsWith('/tutor') || path.startsWith('/tutee');
-        window.location.href = isTutorOrTuteeRoute ? '/login' : '/admin-login';
-      }
     }
+    // Removed aggressive redirect to login from request interceptor to prevent race conditions during app boot.
+    // Redirection is handled by ProtectedRoute component.
     // If no token but it's an auth or public endpoint, allow the request to proceed
     return config;
   },
@@ -201,9 +187,9 @@ apiClient.interceptors.response.use(
         }
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        const path = window.location.pathname.toLowerCase();
-        const isTutorOrTutee = path.startsWith('/tutor') || path.startsWith('/tutee');
-        window.location.href = isTutorOrTutee ? '/login' : '/admin-login';
+        // Let the application state (AuthContext) handle the logout and redirection
+        // instead of a hard browser redirect which causes page reloads and lost state.
+        console.warn('API 401 Unauthorized - user logged out');
       }
       // For auth endpoints or when already on a login/public page, do not redirect
       // The error will be caught and displayed by the login page component

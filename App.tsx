@@ -26,17 +26,10 @@ const App: React.FC = () => {
   return (
     <Routes>
       {/* Public routes */}
+      {/* Default redirect for empty path */}
       <Route path="/" element={<Navigate to="/LandingPage" replace />} />
-      <Route path="/LandingPage" element={<LandingPage />} />
-      <Route path="/landingpage" element={<LandingPage />} />
-      <Route path="/TuteeRegistrationPage" element={<TuteeRegistrationPageFull />} />
-      <Route path="/TutorRegistrationPage" element={<TutorRegistrationPageFull />} />
-      <Route path="/login" element={<UnifiedLoginPage />} />
-      <Route path="/password-reset" element={<PasswordResetPage />} />
-      <Route path="/admin-login" element={<LoginPage />} />
-      <Route path="/register" element={<RegistrationPage />} />
 
-      {/* Protected routes */}
+      {/* Protected routes - Move to top for higher priority matching */}
       <Route element={<ProtectedRoute />}>
         {/* Admin routes */}
         <Route path="/admin/*" element={
@@ -63,6 +56,16 @@ const App: React.FC = () => {
 
         {/* Shared: Upcoming Sessions */}
       </Route>
+
+      {/* Public routes */}
+      <Route path="/LandingPage" element={<LandingPage />} />
+      <Route path="/landingpage" element={<LandingPage />} />
+      <Route path="/TuteeRegistrationPage" element={<TuteeRegistrationPageFull />} />
+      <Route path="/TutorRegistrationPage" element={<TutorRegistrationPageFull />} />
+      <Route path="/login" element={<UnifiedLoginPage />} />
+      <Route path="/password-reset" element={<PasswordResetPage />} />
+      <Route path="/admin-login" element={<LoginPage />} />
+      <Route path="/register" element={<RegistrationPage />} />
 
       {/* Default redirect for unmatched paths */}
       <Route path="*" element={<Navigate to="/LandingPage" replace />} />
