@@ -92,6 +92,14 @@ interface Slide {
 
 const slides: Slide[] = [
   {
+    src: '/assets/images/dev_slideMain.jpg',
+    alt: 'The CEO & Developer of the company'
+  },
+  {
+    src: '/assets/images/dev_slide1.png',
+    alt: 'The Project Manager of the company'
+  },
+  {
     src: '/assets/images/bgp1.jpg',
     alt: 'A tutor helping a student with a laptop in a well-lit room'
   },
@@ -106,11 +114,7 @@ const slides: Slide[] = [
   {
     src: '/assets/images/bgp4.jpg',
     alt: 'Online tutoring session in progress'
-  },
-  {
-    src: '/assets/images/bg5.png',
-    alt: 'Student studying with digital resources'
-  },
+  }
 ];
 
 const HeroImageSlider = () => {
@@ -968,15 +972,20 @@ const LandingPage: React.FC = () => {
           <Modal
             isOpen={developersOpen}
             onClose={() => setDevelopersOpen(false)}
-            title="Meet the Developers"
+            title="BahandiSoft"
             maxWidth="2xl"
           >
-            <div className="space-y-8 py-4 px-2">
-              <div className="text-center space-y-3">
-                <p className="text-slate-600 font-medium text-lg italic">
-                  "Meet the creative minds behind TutorFriends"
-                </p>
-                <div className="h-1 w-20 bg-sky-500 mx-auto rounded-full"></div>
+            <div className="space-y-6 py-4 px-2">
+              <div className="flex flex-col items-center justify-center space-y-4 mb-8">
+                <div className="w-48 h-auto">
+                  <img src="/assets/images/bahandisoft.png" alt="BahandiSoft Logo" className="w-full h-full object-contain" />
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-slate-600 font-medium text-lg italic">
+                    "Innovating Education, One Line of Code at a Time"
+                  </p>
+                  <div className="h-1 w-20 bg-sky-500 mx-auto rounded-full"></div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -993,7 +1002,7 @@ const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 group-hover:text-sky-600 transition-colors">John Emmanuel De Vera</h3>
-                  <p className="text-sm font-semibold text-sky-500 uppercase tracking-widest mt-1">Project Manager</p>
+                  <p className="text-sm font-semibold text-sky-500 uppercase tracking-widest mt-1">COO</p>
                 </div>
 
                 {/* Developer 2 */}
@@ -1009,7 +1018,7 @@ const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 group-hover:text-sky-600 transition-colors">Jhon Lloyd T. Cruz</h3>
-                  <p className="text-sm font-semibold text-indigo-500 uppercase tracking-widest mt-1">CEO/Software Developer</p>
+                  <p className="text-sm font-semibold text-indigo-500 uppercase tracking-widest mt-1">CEO</p>
                 </div>
               </div>
 
@@ -1033,7 +1042,12 @@ const LandingPage: React.FC = () => {
           <div className="border-t border-gradient-to-r from-transparent via-slate-600 to-transparent pt-7 sm:pt-10 text-center relative">
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 h-px bg-gradient-to-r from-transparent via-sky-500 to-transparent"></div>
             <p className="text-slate-400 text-base font-medium">&copy; {new Date().getFullYear()} TutorFriends. All rights reserved.</p>
-            <p className="text-slate-500 text-sm mt-2">Empowering education through technology</p>
+            <button
+              onClick={() => setDevelopersOpen(true)}
+              className="mt-3 text-sm text-slate-500 hover:text-sky-400 transition-colors"
+            >
+              Developed by <span className="font-bold text-sky-500">BahandiSoft</span>
+            </button>
           </div>
         </div>
       </footer>
