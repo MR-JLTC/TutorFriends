@@ -35,6 +35,16 @@
   scrollbar-color: #0ea5e9 rgba(148, 163, 184, 0.1);
 }
 
+/* Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 /* Global styles for better consistency */
 html {
   scroll-behavior: smooth;

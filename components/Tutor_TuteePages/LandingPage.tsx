@@ -974,6 +974,7 @@ const LandingPage: React.FC = () => {
             onClose={() => setDevelopersOpen(false)}
             title=""
             maxWidth="4xl"
+            hideScrollbar={true}
           >
             <div className="relative">
               {/* Header Section - Logo Removed */}

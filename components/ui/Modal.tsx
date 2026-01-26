@@ -9,9 +9,10 @@ interface ModalProps {
   footer?: React.ReactNode;
   className?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '5xl' | '6xl' | '7xl';
+  hideScrollbar?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, className = '', maxWidth = '2xl' }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, className = '', maxWidth = '2xl', hideScrollbar = false }) => {
   if (!isOpen) return null;
 
   const maxWidthClasses = {
@@ -32,8 +33,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer,
         {title && (
           <div className="flex justify-between items-center p-4 sm:p-5 border-b border-slate-200 flex-shrink-0">
             <h2 className="text-lg sm:text-xl font-bold text-slate-800 pr-2">{title}</h2>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="text-slate-500 hover:text-slate-800 active:text-slate-900 text-2xl sm:text-3xl leading-none p-1 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors touch-manipulation flex-shrink-0"
               style={{ WebkitTapHighlightColor: 'transparent' }}
               aria-label="Close modal"
@@ -44,8 +45,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer,
         )}
         {!title && (
           <div className="absolute top-3 right-3 z-10">
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="text-slate-500 hover:text-slate-800 active:text-slate-900 text-2xl leading-none bg-white/90 hover:bg-white rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center shadow-lg hover:shadow-xl transition-all touch-manipulation"
               style={{ WebkitTapHighlightColor: 'transparent' }}
               aria-label="Close modal"
@@ -54,7 +55,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer,
             </button>
           </div>
         )}
-        <div className={`flex-1 overflow-y-auto min-h-0 ${!title ? 'p-4 sm:p-6' : 'p-4 sm:p-6'}`}>
+        <div className={`flex-1 overflow-y-auto min-h-0 ${!title ? 'p-4 sm:p-6' : 'p-4 sm:p-6'} ${hideScrollbar ? 'no-scrollbar' : ''}`}>
           {children}
         </div>
         {footer && (
