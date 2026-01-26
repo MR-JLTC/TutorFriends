@@ -1,5 +1,0 @@
-It seems there is no 'Reschedule' button currently present in the SessionHandling.tsx file. The 'RescheduleModal' component is used in 'components/shared/UpcomingSessionsPage.tsx'.
-
-Could you please clarify:
-1. Do you want me to add a 'Reschedule' button to SessionHandling.tsx first, and then place the 'Mark as done' button below it?
-2. Or were you referring to a different file or context where a 'Reschedule' button already exists?
