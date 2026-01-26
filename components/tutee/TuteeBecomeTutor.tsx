@@ -580,46 +580,46 @@ const TuteeBecomeTutor: React.FC = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">University</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">University</label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <GraduationCap className="h-5 w-5" />
+                  <GraduationCap className="w-4 h-4" />
                 </div>
                 <input
                   type="text"
                   value={initialUniversityName || fetchedUniversityName || 'Loading...'}
                   disabled
-                  className="w-full pl-10 pr-3 py-2 text-sm sm:text-base border border-slate-300 rounded-lg bg-slate-100 text-slate-500 cursor-not-allowed"
+                  className="w-full p-3 bg-slate-50 rounded-xl text-slate-700 font-medium border border-slate-100 pl-10 focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="w-full sm:col-span-2 lg:col-span-4">
-              <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">Course</label>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Course</label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <BookOpen className="h-5 w-5" />
+                  <BookOpen className="w-4 h-4" />
                 </div>
                 <input
                   type="text"
                   value={initialCourseName || fetchedCourseName || 'Loading...'}
                   disabled
-                  className="w-full pl-10 pr-3 py-2 text-sm sm:text-base border border-slate-300 rounded-lg bg-slate-100 text-slate-500 cursor-not-allowed"
+                  className="w-full p-3 bg-slate-50 rounded-xl text-slate-700 font-medium border border-slate-100 pl-10 focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="w-full sm:col-span-1 lg:col-span-3">
-              <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">Year Level</label>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Year Level</label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <YearLevelIcon className="h-5 w-5" />
+                  <YearLevelIcon className="w-4 h-4" />
                 </div>
                 <input
                   type="text"
                   value={tuteeYearLevel ? `${tuteeYearLevel}${['st', 'nd', 'rd'][Number(tuteeYearLevel) - 1] || 'th'} Year` : ''}
                   disabled
-                  className="w-full pl-10 pr-3 py-2 text-sm sm:text-base border border-slate-300 rounded-lg bg-slate-100 text-slate-500 cursor-not-allowed"
+                  className="w-full p-3 bg-slate-50 rounded-xl text-slate-700 font-medium border border-slate-100 pl-10 focus:outline-none"
                 />
               </div>
             </div>
