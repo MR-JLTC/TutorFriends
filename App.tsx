@@ -73,7 +73,8 @@ const App: React.FC = () => {
         {/* Default redirect for unmatched paths */}
         <Route path="*" element={<Navigate to="/LandingPage" replace />} />
       </Routes>
-      );
+    </>
+  );
 };
 
-      export default App;
+export default App;

@@ -88,6 +88,12 @@ const TuteeBecomeTutor: React.FC = () => {
     onConfirm: () => void;
   }>({ show: false, message: '', onConfirm: () => { } });
 
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
+
   // Validation Logic
   const sessionRateError = useMemo(() => {
     if (!sessionRate) return null;
@@ -101,6 +107,8 @@ const TuteeBecomeTutor: React.FC = () => {
 
   const addedDays = useMemo(() => Object.keys(availability), [availability]);
   const remainingDays = useMemo(() => daysOfWeek.filter(d => !addedDays.includes(d)), [addedDays]);
+
+  // ... [keep other effects]
 
   // Effects
   // Fetch missing University/Course names and Subjects
@@ -452,16 +460,55 @@ const TuteeBecomeTutor: React.FC = () => {
     setTimeout(() => { if (e.target) e.target.value = ''; setIsFileSelecting(false); }, 100);
   };
 
+  const handleSendVerificationCode = async () => {
+    if (!tuteeEmail) return;
 
+    setIsSendingCode(true);
+    setVerificationError('');
+    try {
+      await apiClient.post('/auth/email-verification/send-code', {
+        email: tuteeEmail,
+        user_type: 'tutor'
+      });
+      notify('Verification code sent to your email!', 'success');
+      setShowVerificationModal(true);
+    } catch (err: any) {
+      console.error('Verification code error:', err);
+      const msg = err.response?.data?.message || 'Failed to send verification code.';
+      notify(msg, 'error');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!password || password.length < 7) { notify('Password must be at least 7 characters.', 'error'); return; }
-    if (!gcashNumber || gcashNumber.length !== 11) { notify('Invalid GCash number.', 'error'); return; }
-    if (selectedSubjects.size === 0) { notify('Select at least one subject.', 'error'); return; }
-    if (!acceptedTerms) { notify('Please accept the terms.', 'error'); return; }
-    if (!termsViewed) { notify('Please read the terms first.', 'error'); return; }
+  const handleVerifyCode = async () => {
+    if (!verificationCode.trim()) {
+      setVerificationError('Please enter the verification code');
+      return;
+    }
 
+    setIsVerifyingCode(true);
+    setVerificationError('');
+
+    try {
+      await apiClient.post('/auth/email-verification/verify-code', {
+        email: tuteeEmail,
+        code: verificationCode,
+        user_type: 'tutor'
+      });
+      notify('Email verified successfully!', 'success');
+      setShowVerificationModal(false);
+      submitApplication(); // Proceed to submission
+    } catch (err: any) {
+      console.error('Verification error:', err);
+      const msg = err.response?.data?.message || 'Invalid verification code.';
+      setVerificationError(msg);
+    } finally {
+      setIsVerifyingCode(false);
+    }
+  };
+
+  const submitApplication = async () => {
     setIsSubmitting(true);
     try {
       const payload = {
@@ -524,6 +571,18 @@ const TuteeBecomeTutor: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password || password.length < 7) { notify('Password must be at least 7 characters.', 'error'); return; }
+    if (!gcashNumber || gcashNumber.length !== 11) { notify('Invalid GCash number.', 'error'); return; }
+    if (selectedSubjects.size === 0) { notify('Select at least one subject.', 'error'); return; }
+    if (!acceptedTerms) { notify('Please accept the terms.', 'error'); return; }
+    if (!termsViewed) { notify('Please read the terms first.', 'error'); return; }
+
+    // Start verification process
+    handleSendVerificationCode();
   };
 
   return (
@@ -1108,6 +1167,71 @@ const TuteeBecomeTutor: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Verification Modal */}
+      {showVerificationModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 max-w-md w-full relative overflow-hidden animate-in zoom-in duration-300">
+            <div className="absolute inset-0 opacity-5 pointer-events-none">
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500 to-indigo-700"></div>
+            </div>
+
+            <div className="relative z-10 p-6">
+              <div className="text-center mb-6">
+                <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 text-white">
+                  <Mail className="w-8 h-8" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">Verify Your Email</h2>
+                <p className="text-slate-600 text-sm">We've sent a code to <strong>{tuteeEmail}</strong>. Please enter it below to submit your application.</p>
+              </div>
+
+              {verificationError && (
+                <div className="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm mb-4 flex items-center border border-red-100">
+                  <InfoIcon className="w-4 h-4 mr-2" />
+                  {verificationError}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  className="w-full text-center text-3xl tracking-widest font-mono p-4 border rounded-xl border-slate-300 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all uppercase"
+                  placeholder="CODE"
+                  maxLength={6}
+                />
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowVerificationModal(false)}
+                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+                    disabled={isVerifyingCode}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleVerifyCode}
+                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center"
+                    disabled={isVerifyingCode}
+                  >
+                    {isVerifyingCode ? 'Verifying...' : 'Verify & Submit'}
+                  </button>
+                </div>
+                <div className="text-center">
+                  <button
+                    onClick={handleSendVerificationCode}
+                    disabled={isSendingCode}
+                    className="text-xs text-blue-600 hover:underline disabled:text-slate-400"
+                  >
+                    {isSendingCode ? 'Resending...' : 'Resend Code'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
