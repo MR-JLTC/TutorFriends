@@ -21,56 +21,59 @@ import TuteeDashboard from './components/Tutor_TuteePages/TuteeDashboard';
 import UnifiedLoginPage from './components/auth/UnifiedLoginPage';
 import PasswordResetPage from './components/auth/PasswordResetPage';
 import BookingsPage from './components/shared/BookingsPage';
+import NetworkMonitor from './components/shared/NetworkMonitor';
 
 const App: React.FC = () => {
   return (
-    <Routes>
-      {/* Public routes */}
-      {/* Default redirect for empty path */}
-      <Route path="/" element={<Navigate to="/LandingPage" replace />} />
+    <>
+      <NetworkMonitor />
+      <Routes>
+        {/* Public routes */}
+        {/* Default redirect for empty path */}
+        <Route path="/" element={<Navigate to="/LandingPage" replace />} />
 
-      {/* Protected routes - Move to top for higher priority matching */}
-      <Route element={<ProtectedRoute />}>
-        {/* Admin routes */}
-        <Route path="/admin/*" element={
-          <DashboardLayout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="tutors" element={<TutorManagement />} />
-              <Route path="universities" element={<UniversityManagement />} />
-              <Route path="courses" element={<CourseManagement />} />
-              <Route path="payments" element={<PaymentManagement />} />
-              <Route path="profile" element={<AdminProfile />} />
-              <Route path="*" element={<Navigate to="/admin" replace />} />
-            </Routes>
-          </DashboardLayout>
-        } />
+        {/* Protected routes - Move to top for higher priority matching */}
+        <Route element={<ProtectedRoute />}>
+          {/* Admin routes */}
+          <Route path="/admin/*" element={
+            <DashboardLayout>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="tutors" element={<TutorManagement />} />
+                <Route path="universities" element={<UniversityManagement />} />
+                <Route path="courses" element={<CourseManagement />} />
+                <Route path="payments" element={<PaymentManagement />} />
+                <Route path="profile" element={<AdminProfile />} />
+                <Route path="*" element={<Navigate to="/admin" replace />} />
+              </Routes>
+            </DashboardLayout>
+          } />
 
-        {/* Tutor routes */}
-        <Route path="/tutor-dashboard/*" element={<TutorDashboard />} />
+          {/* Tutor routes */}
+          <Route path="/tutor-dashboard/*" element={<TutorDashboard />} />
 
-        {/* Tutee routes */}
-        <Route path="/tutee-dashboard/*" element={<TuteeDashboard />} />
+          {/* Tutee routes */}
+          <Route path="/tutee-dashboard/*" element={<TuteeDashboard />} />
 
-        {/* Shared: Upcoming Sessions */}
-      </Route>
+          {/* Shared: Upcoming Sessions */}
+        </Route>
 
-      {/* Public routes */}
-      <Route path="/LandingPage" element={<LandingPage />} />
-      <Route path="/landingpage" element={<LandingPage />} />
-      <Route path="/TuteeRegistrationPage" element={<TuteeRegistrationPageFull />} />
-      <Route path="/TutorRegistrationPage" element={<TutorRegistrationPageFull />} />
-      <Route path="/login" element={<UnifiedLoginPage />} />
-      <Route path="/password-reset" element={<PasswordResetPage />} />
-      <Route path="/admin-login" element={<LoginPage />} />
-      <Route path="/register" element={<RegistrationPage />} />
+        {/* Public routes */}
+        <Route path="/LandingPage" element={<LandingPage />} />
+        <Route path="/landingpage" element={<LandingPage />} />
+        <Route path="/TuteeRegistrationPage" element={<TuteeRegistrationPageFull />} />
+        <Route path="/TutorRegistrationPage" element={<TutorRegistrationPageFull />} />
+        <Route path="/login" element={<UnifiedLoginPage />} />
+        <Route path="/password-reset" element={<PasswordResetPage />} />
+        <Route path="/admin-login" element={<LoginPage />} />
+        <Route path="/register" element={<RegistrationPage />} />
 
-      {/* Default redirect for unmatched paths */}
-      <Route path="*" element={<Navigate to="/LandingPage" replace />} />
-    </Routes>
-  );
+        {/* Default redirect for unmatched paths */}
+        <Route path="*" element={<Navigate to="/LandingPage" replace />} />
+      </Routes>
+      );
 };
 
-export default App;
+      export default App;

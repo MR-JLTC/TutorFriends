@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import Logo from '../../components/Logo';
 import Modal from '../../components/ui/Modal';
 import { TutorRegistrationModal } from './TutorRegistrationPage';
@@ -807,9 +808,16 @@ const LandingPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      {isSubmitting ? 'Sending...' : 'Send Message'}
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="animate-spin h-5 w-5" />
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        'Send Message'
+                      )}
                     </button>
                   </form>
                 </div>
