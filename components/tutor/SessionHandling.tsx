@@ -595,19 +595,47 @@ const SessionHandlingContent: React.FC = () => {
 
       {/* Calendar View */}
       <Card className="p-4 sm:p-5 md:p-6 bg-white rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary-600" />
-            <span>{currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-          </h2>
-          <div className="flex gap-2">
-            <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="p-2 bg-primary-50 rounded-lg">
+              <Calendar className="h-5 w-5 text-primary-600" />
+            </div>
+            <div className="flex gap-2">
+              <select
+                value={currentDate.getMonth()}
+                onChange={(e) => setCurrentDate(new Date(currentDate.getFullYear(), parseInt(e.target.value), 1))}
+                className="bg-transparent font-bold text-slate-800 text-lg border-none focus:ring-0 cursor-pointer py-0 pl-0 pr-8 bg-none"
+              >
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <option key={i} value={i}>
+                    {new Date(2000, i, 1).toLocaleString('default', { month: 'long' })}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={currentDate.getFullYear()}
+                onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), currentDate.getMonth(), 1))}
+                className="bg-transparent font-bold text-slate-800 text-lg border-none focus:ring-0 cursor-pointer py-0 pl-0 pr-8 bg-none"
+              >
+                {Array.from({ length: 10 }).map((_, i) => {
+                  const year = new Date().getFullYear() - 2 + i;
+                  return <option key={year} value={year}>{year}</option>;
+                })}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+            <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+            <button
+              onClick={() => setCurrentDate(new Date())}
+              className="px-4 py-2 text-sm font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-xl transition-all border border-primary-200"
+            >
               Today
             </button>
-            <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors">
+            <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
@@ -684,8 +712,8 @@ const SessionHandlingContent: React.FC = () => {
               key={tab.key}
               onClick={() => setFilter(tab.key as any)}
               className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md hover:shadow-lg touch-manipulation ${filter === tab.key
-                  ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
-                  : 'text-slate-600 hover:text-slate-800 bg-white border-2 border-slate-200 hover:border-primary-300'
+                ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
+                : 'text-slate-600 hover:text-slate-800 bg-white border-2 border-slate-200 hover:border-primary-300'
                 }`}
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
@@ -737,8 +765,8 @@ const SessionHandlingContent: React.FC = () => {
               <Card
                 key={request.id}
                 className={`group relative bg-gradient-to-br from-white to-primary-50/30 rounded-xl sm:rounded-2xl shadow-lg border-2 ${isOverdue(request)
-                    ? 'border-red-300 hover:border-red-400 bg-red-50/50'
-                    : 'border-slate-200 hover:border-primary-300'
+                  ? 'border-red-300 hover:border-red-400 bg-red-50/50'
+                  : 'border-slate-200 hover:border-primary-300'
                   } p-4 sm:p-5 md:p-6 transition-all duration-300 overflow-hidden`}
               >
                 {/* Decorative gradient bar */}
