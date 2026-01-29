@@ -124,7 +124,7 @@ const UnifiedLoginPage: React.FC = () => {
           break;
         case 'tutor':
           console.log('Navigating to tutor dashboard...');
-          navigate('/tutor-dashboard', { replace: true });
+          navigate('/tutor-dashboard/sessions', { replace: true });
           break;
         default:
           console.error('Invalid role received:', role);
