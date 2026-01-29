@@ -493,21 +493,23 @@ const TutorManagement: React.FC = () => {
                 )}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-2xl sm:text-3xl font-bold mb-2 drop-shadow-lg">{selectedTutor.user?.name}</h3>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-white/95">
+                  <div className="flex flex-col gap-1.5 text-white/95">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <p className="text-sm sm:text-base truncate">{selectedTutor.user?.email}</p>
                     </div>
-                    {(selectedTutor as any).university?.name && (
-                      <div className="flex items-center gap-2">
-                        <School className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                        <p className="text-sm sm:text-base truncate">{(selectedTutor as any).university?.name}</p>
-                      </div>
-                    )}
+                    {/* Course - Now below email */}
                     {(selectedTutor as any).course?.course_name && (
                       <div className="flex items-center gap-2">
                         <Book className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                         <p className="text-sm sm:text-base truncate">{(selectedTutor as any).course?.course_name}</p>
+                      </div>
+                    )}
+                    {/* University - Now below course */}
+                    {(selectedTutor as any).university?.name && (
+                      <div className="flex items-center gap-2">
+                        <School className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                        <p className="text-sm sm:text-base truncate">{(selectedTutor as any).university?.name}</p>
                       </div>
                     )}
                   </div>
@@ -515,12 +517,11 @@ const TutorManagement: React.FC = () => {
               </div>
             </div>
 
-            {/* Content grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
-              {/* Left Column */}
-              <div className="space-y-4 sm:space-y-5">
+            {/* Content Body - Row Layout */}
+            <div className="space-y-6 sm:space-y-8">
 
-
+              {/* Row 1: Bio and Session Rate */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* Bio Card */}
                 <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border border-slate-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
                   <div className="flex items-center gap-3 mb-3 sm:mb-4">
@@ -534,64 +535,6 @@ const TutorManagement: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Expert Subjects Card */}
-                <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border border-slate-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                    <div className="p-2.5 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex-shrink-0 shadow-lg">
-                      <Book className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                    </div>
-                    <h4 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Expert Subjects</h4>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(selectedTutor as any).subjects?.length ? (selectedTutor as any).subjects.map((ts: any) => (
-                      <span key={(ts as any).tutor_subject_id} className="px-3 py-1.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 border border-primary-400/30">
-                        {(ts as any).subject?.subject_name}
-                      </span>
-                    )) : <span className="text-xs sm:text-sm text-slate-400 italic bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">No subjects submitted.</span>}
-                  </div>
-                </div>
-
-                {/* Availability Card */}
-                <div className="bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border-2 border-primary-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                    <div className="p-2.5 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex-shrink-0 shadow-lg">
-                      <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                    </div>
-                    <h4 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Availability</h4>
-                  </div>
-                  <ul className="grid grid-cols-1 gap-2.5">
-                    {(selectedTutor as any).availabilities?.length ? (() => {
-                      // Group availabilities by day_of_week
-                      const grouped = (selectedTutor as any).availabilities.reduce((acc: any, a: any) => {
-                        const day = (a as any).day_of_week;
-                        if (!acc[day]) {
-                          acc[day] = [];
-                        }
-                        acc[day].push(a);
-                        return acc;
-                      }, {} as Record<string, any[]>);
-
-                      return Object.entries(grouped).map(([day, slots]) => (
-                        <li key={day} className="bg-white p-3.5 sm:p-4 rounded-xl border-2 border-primary-200/50 hover:border-primary-400 hover:shadow-lg transition-all duration-200 shadow-sm">
-                          <div className="flex items-start justify-between gap-3">
-                            <span className="font-bold text-slate-800 text-sm sm:text-base flex-shrink-0 min-w-[100px]">{day}</span>
-                            <div className="flex flex-wrap gap-2 flex-1 justify-end">
-                              {slots.map((slot: any) => (
-                                <span key={slot.availability_id} className="text-primary-700 font-semibold text-xs sm:text-sm bg-gradient-to-r from-primary-50 to-primary-100/50 px-2.5 py-1.5 rounded-lg border border-primary-200 whitespace-nowrap">
-                                  {slot.start_time} - {slot.end_time}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </li>
-                      ));
-                    })() : <li className="text-sm text-slate-400 italic bg-white p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 text-center">No availability submitted.</li>}
-                  </ul>
-                </div>
-              </div>
-
-              {/* Right Column */}
-              <div className="space-y-4 sm:space-y-5">
                 {/* Session Rate Card */}
                 <div className="bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border-2 border-primary-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
                   <div className="flex items-center gap-3 mb-3">
@@ -609,92 +552,147 @@ const TutorManagement: React.FC = () => {
                     </p>
                   </div>
                 </div>
+              </div>
 
-                {/* GCash Information Card */}
-                <div className="bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border-2 border-primary-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2.5 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex-shrink-0 shadow-lg">
-                      <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                    </div>
-                    <h4 className="text-base sm:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">GCash Payment</h4>
+              {/* Row 2: Expert Subjects Card */}
+              <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border border-slate-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                  <div className="p-2.5 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex-shrink-0 shadow-lg">
+                    <Book className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <div className="space-y-2.5 sm:space-y-3">
-                    {(selectedTutor as any).gcash_number && (
-                      <div className="bg-white p-3 rounded-xl border-2 border-primary-200/50 shadow-lg">
-                        <span className="text-xs text-slate-500 font-semibold uppercase tracking-wide block mb-1.5">GCash Number</span>
-                        <p className="text-primary-700 font-bold text-sm sm:text-base">
-                          {(selectedTutor as any).gcash_number}
-                        </p>
-                      </div>
-                    )}
-                    {(selectedTutor as any).gcash_qr_url && (
-                      <div className="bg-white p-3 rounded-xl border-2 border-primary-200/50 shadow-lg">
-                        <span className="text-xs text-slate-500 font-semibold uppercase tracking-wide block mb-2">GCash QR Code</span>
-                        <div className="flex justify-center bg-gradient-to-br from-primary-50 to-primary-100/50 p-2 rounded-xl border border-primary-200/50">
-                          <img
-                            src={getFileUrl((selectedTutor as any).gcash_qr_url)}
-                            alt="GCash QR Code"
-                            className="max-w-full h-auto rounded-xl border-2 border-primary-300 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
-                            style={{ maxHeight: '180px' }}
-                            onClick={() => handleOpenDocument(getFileUrl((selectedTutor as any).gcash_qr_url), 'image/*')}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                              const parent = (e.target as HTMLImageElement).parentElement;
-                              if (parent) {
-                                parent.innerHTML = '<p class="text-xs text-slate-400 italic">QR code image not available</p>';
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {!(selectedTutor as any).gcash_number && !(selectedTutor as any).gcash_qr_url && (
-                      <div className="bg-white p-3 rounded-xl border-2 border-primary-200/50 shadow-lg">
-                        <p className="text-xs text-slate-400 italic text-center">No GCash information provided.</p>
-                      </div>
-                    )}
-                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Expert Subjects</h4>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  {(selectedTutor as any).subjects?.length ? (selectedTutor as any).subjects.map((ts: any) => (
+                    <span key={(ts as any).tutor_subject_id} className="px-3 py-1.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 border border-primary-400/30">
+                      {(ts as any).subject?.subject_name}
+                    </span>
+                  )) : <span className="text-xs sm:text-sm text-slate-400 italic bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">No subjects submitted.</span>}
+                </div>
+              </div>
 
-                {/* Submitted Documents Card */}
-                <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border border-slate-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                    <div className="p-2.5 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex-shrink-0 shadow-lg">
-                      <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                    </div>
-                    <h4 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Submitted Documents</h4>
+              {/* Row 3: Availability Card */}
+              <div className="bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border-2 border-primary-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                  <div className="p-2.5 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex-shrink-0 shadow-lg">
+                    <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <ul className="space-y-2.5">
-                    {selectedTutor.documents?.length ? selectedTutor.documents.map(doc => (
-                      <li key={doc.document_id} className="flex items-center justify-between bg-gradient-to-r from-slate-50 via-primary-50/50 to-slate-50 rounded-xl p-3 border-2 border-slate-200/50 hover:border-primary-300 hover:shadow-lg transition-all duration-200">
-                        <div className="flex items-center min-w-0 flex-1">
-                          <div className="p-1.5 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg mr-2.5 flex-shrink-0">
-                            <FileText className="h-4 w-4 text-primary-600" />
+                  <h4 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Availability</h4>
+                </div>
+                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {(selectedTutor as any).availabilities?.length ? (() => {
+                    // Group availabilities by day_of_week
+                    const grouped = (selectedTutor as any).availabilities.reduce((acc: any, a: any) => {
+                      const day = (a as any).day_of_week;
+                      if (!acc[day]) {
+                        acc[day] = [];
+                      }
+                      acc[day].push(a);
+                      return acc;
+                    }, {} as Record<string, any[]>);
+
+                    return Object.entries(grouped).map(([day, slots]) => (
+                      <li key={day} className="bg-white p-3.5 sm:p-4 rounded-xl border-2 border-primary-200/50 hover:border-primary-400 hover:shadow-lg transition-all duration-200 shadow-sm">
+                        <div className="flex flex-col gap-2">
+                          <span className="font-bold text-slate-800 text-sm sm:text-base flex-shrink-0 min-w-[100px]">{day}</span>
+                          <div className="flex flex-wrap gap-2">
+                            {slots.map((slot: any) => (
+                              <span key={slot.availability_id} className="text-primary-700 font-semibold text-xs sm:text-sm bg-gradient-to-r from-primary-50 to-primary-100/50 px-2.5 py-1.5 rounded-lg border border-primary-200 whitespace-nowrap">
+                                {slot.start_time} - {slot.end_time}
+                              </span>
+                            ))}
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenDocument(getFileUrl(doc.file_url), (doc as any).file_type)}
-                            className="text-primary-700 hover:text-primary-900 hover:underline truncate text-left text-xs sm:text-sm font-semibold"
-                            title="Open file"
-                          >
-                            {doc.file_name}
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-shrink-0 ml-2.5">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenDocument(getFileUrl(doc.file_url), (doc as any).file_type)}
-                            className="text-xs px-2.5 py-1.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                          >
-                            Open
-                          </button>
-                          <a href={getFileUrl(doc.file_url)} download className="text-xs px-2.5 py-1.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200">
-                            Download
-                          </a>
                         </div>
                       </li>
-                    )) : <li className="text-xs sm:text-sm text-slate-400 italic bg-slate-50 p-3 rounded-xl border-2 border-slate-200 text-center">No documents uploaded.</li>}
-                  </ul>
+                    ));
+                  })() : <li className="text-sm text-slate-400 italic bg-white p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 text-center col-span-full">No availability submitted.</li>}
+                </ul>
+              </div>
+
+              {/* Row 4: Submitted Documents Card */}
+              <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border border-slate-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                  <div className="p-2.5 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex-shrink-0 shadow-lg">
+                    <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Submitted Documents</h4>
+                </div>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {selectedTutor.documents?.length ? selectedTutor.documents.map(doc => (
+                    <li key={doc.document_id} className="flex items-center justify-between bg-gradient-to-r from-slate-50 via-primary-50/50 to-slate-50 rounded-xl p-3 border-2 border-slate-200/50 hover:border-primary-300 hover:shadow-lg transition-all duration-200">
+                      <div className="flex items-center min-w-0 flex-1">
+                        <div className="p-1.5 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg mr-2.5 flex-shrink-0">
+                          <FileText className="h-4 w-4 text-primary-600" />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDocument(getFileUrl(doc.file_url), (doc as any).file_type)}
+                          className="text-primary-700 hover:text-primary-900 hover:underline truncate text-left text-xs sm:text-sm font-semibold"
+                          title="Open file"
+                        >
+                          {doc.file_name}
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0 ml-2.5">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDocument(getFileUrl(doc.file_url), (doc as any).file_type)}
+                          className="text-xs px-2.5 py-1.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                        >
+                          Open
+                        </button>
+                        <a href={getFileUrl(doc.file_url)} download className="text-xs px-2.5 py-1.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200">
+                          Download
+                        </a>
+                      </div>
+                    </li>
+                  )) : <li className="text-xs sm:text-sm text-slate-400 italic bg-slate-50 p-3 rounded-xl border-2 border-slate-200 text-center col-span-full">No documents uploaded.</li>}
+                </ul>
+              </div>
+
+              {/* Row 5: GCash Information Card */}
+              <div className="bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xl border-2 border-primary-200/50 hover:shadow-2xl hover:border-primary-300 transition-all duration-300">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2.5 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex-shrink-0 shadow-lg">
+                    <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                  </div>
+                  <h4 className="text-base sm:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">GCash Payment</h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(selectedTutor as any).gcash_number && (
+                    <div className="bg-white p-3 rounded-xl border-2 border-primary-200/50 shadow-lg">
+                      <span className="text-xs text-slate-500 font-semibold uppercase tracking-wide block mb-1.5">GCash Number</span>
+                      <p className="text-primary-700 font-bold text-sm sm:text-base">
+                        {(selectedTutor as any).gcash_number}
+                      </p>
+                    </div>
+                  )}
+                  {(selectedTutor as any).gcash_qr_url && (
+                    <div className="bg-white p-3 rounded-xl border-2 border-primary-200/50 shadow-lg">
+                      <span className="text-xs text-slate-500 font-semibold uppercase tracking-wide block mb-2">GCash QR Code</span>
+                      <div className="flex justify-center bg-gradient-to-br from-primary-50 to-primary-100/50 p-2 rounded-xl border border-primary-200/50">
+                        <img
+                          src={getFileUrl((selectedTutor as any).gcash_qr_url)}
+                          alt="GCash QR Code"
+                          className="max-w-full h-auto rounded-xl border-2 border-primary-300 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
+                          style={{ maxHeight: '180px' }}
+                          onClick={() => handleOpenDocument(getFileUrl((selectedTutor as any).gcash_qr_url), 'image/*')}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            const parent = (e.target as HTMLImageElement).parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<p class="text-xs text-slate-400 italic">QR code image not available</p>';
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {!(selectedTutor as any).gcash_number && !(selectedTutor as any).gcash_qr_url && (
+                    <div className="bg-white p-3 rounded-xl border-2 border-primary-200/50 shadow-lg col-span-full">
+                      <p className="text-xs text-slate-400 italic text-center">No GCash information provided.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
