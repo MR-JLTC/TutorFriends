@@ -734,16 +734,16 @@ const SessionHandlingContent: React.FC = () => {
                       <button
                         onClick={() => setSelectedDate(isSelected ? null : date)}
                         className={`
-                                    relative h-8 sm:h-9 w-full rounded-lg flex flex-col items-center justify-center transition-all text-sm
+                                    relative h-9 sm:h-11 w-full rounded-xl flex flex-col items-center justify-center transition-all text-sm
                                     ${isSelected
                             ? 'bg-primary-600 text-white shadow-md transform scale-105 z-10 font-bold'
                             : 'hover:bg-white text-slate-600 hover:text-slate-900 border border-transparent hover:border-slate-200 hover:shadow-sm'}
                                     ${isToday && !isSelected ? 'bg-primary-50 text-primary-700 font-bold border-primary-100' : ''}
                                 `}
                       >
-                        <span>{day}</span>
+                        <span className="z-10 relative">{day}</span>
                         {hasSession && (
-                          <span className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-primary-500'}`} />
+                          <span className={`absolute bottom-1.5 w-5 h-1.5 rounded-full shadow-sm transition-all duration-300 ${isSelected ? 'bg-white/90' : 'bg-primary-500'}`} />
                         )}
                       </button>
 
