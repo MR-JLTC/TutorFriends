@@ -81,11 +81,20 @@ const SessionHandlingContent: React.FC = () => {
       d1.getFullYear() === d2.getFullYear();
   };
 
-  const hasSessionOnDate = (date: Date) => {
-    return bookingRequests.some(req => {
+  const getSessionsOnDate = (date: Date) => {
+    return bookingRequests.filter(req => {
       const reqDate = new Date(req.date);
-      return isSameDay(reqDate, date) &&
-        ['upcoming', 'confirmed', 'pending', 'payment_approved'].includes(req.status);
+      // Include all relevant statuses that a tutor should be aware of on the calendar
+      const relevantStatuses = [
+        'upcoming',
+        'confirmed',
+        'pending',
+        'payment_approved',
+        'awaiting_payment',
+        'accepted',
+        'completed'
+      ];
+      return isSameDay(reqDate, date) && relevantStatuses.includes(req.status);
     });
   };
 
@@ -718,31 +727,64 @@ const SessionHandlingContent: React.FC = () => {
                   <div key={`empty-${i}`} className="h-8 sm:h-9" />
                 ))}
 
-                {Array.from({ length: getDaysInMonth(currentDate) }).map((_, i) => {
-                  const day = i + 1;
-                  const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                  const isSelected = selectedDate && isSameDay(date, selectedDate);
-                  const isToday = isSameDay(date, new Date());
-                  const hasSession = hasSessionOnDate(date);
+                const day = i + 1;
+                const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                const isSelected = selectedDate && isSameDay(date, selectedDate);
+                const isToday = isSameDay(date, new Date());
 
-                  return (
-                    <button
-                      key={day}
-                      onClick={() => setSelectedDate(isSelected ? null : date)}
-                      className={`
-                                  relative h-8 sm:h-9 rounded-lg flex flex-col items-center justify-center transition-all text-sm
-                                  ${isSelected
-                          ? 'bg-primary-600 text-white shadow-md transform scale-105 z-10 font-bold'
-                          : 'hover:bg-white text-slate-600 hover:text-slate-900 border border-transparent hover:border-slate-200 hover:shadow-sm'}
-                                  ${isToday && !isSelected ? 'bg-primary-50 text-primary-700 font-bold border-primary-100' : ''}
-                              `}
-                    >
-                      <span>{day}</span>
-                      {hasSession && (
-                        <span className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-primary-500'}`} />
-                      )}
-                    </button>
-                  );
+                // Get all sessions for this date
+                const sessionsOnDate = getSessionsOnDate(date);
+                  const hasSession = sessionsOnDate.length > 0;
+
+                return (
+                <div key={day} className="relative group">
+                  <button
+                    onClick={() => setSelectedDate(isSelected ? null : date)}
+                    className={`
+                                    relative h-8 sm:h-9 w-full rounded-lg flex flex-col items-center justify-center transition-all text-sm
+                                    ${isSelected
+                        ? 'bg-primary-600 text-white shadow-md transform scale-105 z-10 font-bold'
+                        : 'hover:bg-white text-slate-600 hover:text-slate-900 border border-transparent hover:border-slate-200 hover:shadow-sm'}
+                                    ${isToday && !isSelected ? 'bg-primary-50 text-primary-700 font-bold border-primary-100' : ''}
+                                `}
+                  >
+                    <span>{day}</span>
+                    {hasSession && (
+                      <span className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-primary-500'}`} />
+                    )}
+                  </button>
+
+                  {/* Tooltip for sessions */}
+                  {hasSession && (
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-white text-slate-700 text-xs rounded-lg shadow-xl border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 overflow-hidden">
+                      <div className="bg-slate-50 px-3 py-1.5 border-b border-slate-100">
+                        <p className="font-bold text-slate-800">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                      </div>
+                      <div className="p-1 space-y-0.5 max-h-32 overflow-y-auto">
+                        {sessionsOnDate.slice(0, 3).map((session) => (
+                          <div key={session.id} className="px-2 py-1.5 hover:bg-slate-50 rounded flex flex-col gap-0.5">
+                            <span className="font-semibold text-primary-700 truncate">{session.subject}</span>
+                            <div className="flex items-center justify-between text-[10px] text-slate-500">
+                              <span>{session.time}</span>
+                              <span className={`px-1 rounded-full text-[9px] ${session.status === 'confirmed' || session.status === 'upcoming' ? 'bg-green-100 text-green-700' :
+                                  session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-slate-100 text-slate-600'
+                                }`}>
+                                {session.status === 'awaiting_payment' ? 'payment' : session.status}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        {sessionsOnDate.length > 3 && (
+                          <div className="px-2 py-1 text-center text-primary-600 font-medium italic">
+                            +{sessionsOnDate.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                );
                 })}
               </div>
             </div>
