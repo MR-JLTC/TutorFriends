@@ -156,6 +156,26 @@ const TuteeBecomeTutor: React.FC = () => {
     fetchData();
   }, [tuteeUniversityId, tuteeCourseId, initialUniversityName, initialCourseName, fetchedUniversityName, fetchedCourseName]);
 
+  // Effect to reuse existing profile image
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      // If we already have a file or no URL to fetch, skip
+      if (profileImage || !user?.profile_image_url) return;
+
+      try {
+        const url = apiClient.defaults.baseURL + '/uploads/profiles/' + user.profile_image_url;
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const file = new File([blob], "profile_image.jpg", { type: blob.type });
+        setProfileImage(file);
+      } catch (error) {
+        console.error("Failed to load existing profile image:", error);
+      }
+    };
+
+    loadProfileImage();
+  }, [user?.profile_image_url]);
+
   const handleAddSubject = () => {
     if (subjectToAdd && !selectedSubjects.has(subjectToAdd)) {
       setSelectedSubjects(prev => new Set(prev).add(subjectToAdd));
