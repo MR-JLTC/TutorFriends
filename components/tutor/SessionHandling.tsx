@@ -109,7 +109,7 @@ const SessionHandlingContent: React.FC = () => {
   };
 
   const getSessionsOnDate = (date: Date) => {
-    return bookingRequests.filter(req => {
+    const sessions = bookingRequests.filter(req => {
       const reqDate = new Date(req.date);
       // Include all relevant statuses that a tutor should be aware of on the calendar
       const relevantStatuses = [
@@ -123,6 +123,11 @@ const SessionHandlingContent: React.FC = () => {
       ];
       return isSameDay(reqDate, date) && relevantStatuses.includes(req.status);
     });
+    // Debug logging for specific dates that have sessions
+    if (sessions.length > 0) {
+      // console.log(`[Calendar] Found ${sessions.length} sessions for ${date.toDateString()}:`, sessions.map(s => s.id));
+    }
+    return sessions;
   };
 
   useEffect(() => {
@@ -754,20 +759,23 @@ const SessionHandlingContent: React.FC = () => {
                             <p className="font-bold text-slate-800">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
                           </div>
                           <div className="p-1 space-y-0.5 max-h-64 overflow-y-auto">
-                            {sessionsOnDate.map((session) => (
-                              <div key={session.id} className="px-2 py-1.5 hover:bg-slate-50 rounded flex flex-col gap-0.5">
-                                <span className="font-semibold text-primary-700 truncate">{session.subject}</span>
-                                <div className="flex items-center justify-between text-[10px] text-slate-500">
-                                  <span>{session.time}</span>
-                                  <span className={`px-1 rounded-full text-[9px] ${session.status === 'confirmed' || session.status === 'upcoming' ? 'bg-green-100 text-green-700' :
-                                    session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                      'bg-slate-100 text-slate-600'
-                                    }`}>
-                                    {session.status === 'awaiting_payment' ? 'payment' : session.status}
-                                  </span>
+                            {(() => {
+                              // console.log(`[Tooltip] Rendering ${sessionsOnDate.length} sessions for ${date.toDateString()}`);
+                              return sessionsOnDate.map((session) => (
+                                <div key={session.id} className="px-2 py-1.5 hover:bg-slate-50 rounded flex flex-col gap-0.5">
+                                  <span className="font-semibold text-primary-700 truncate">{session.subject}</span>
+                                  <div className="flex items-center justify-between text-[10px] text-slate-500">
+                                    <span>{session.time}</span>
+                                    <span className={`px-1 rounded-full text-[9px] ${session.status === 'confirmed' || session.status === 'upcoming' ? 'bg-green-100 text-green-700' :
+                                      session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-slate-100 text-slate-600'
+                                      }`}>
+                                      {session.status === 'awaiting_payment' ? 'payment' : session.status}
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))
+                            })()}
                           </div>
                         </div>
                       )}
