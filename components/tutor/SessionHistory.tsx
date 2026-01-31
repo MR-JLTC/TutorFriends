@@ -97,12 +97,21 @@ const SessionHistory: React.FC = () => {
   const hasSessionDurationCompleted = (b: BookingRequest): boolean => {
     const start = parseSessionStart(b.date, b.time);
     if (!start) return false;
-    
+
     const durationHours = b.duration || 1.0;
     const endTime = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
-    
+
     // Use the 'now' state variable that updates every minute for accurate time checks
     return now.getTime() > endTime.getTime();
+  };
+
+  // Helper: Check if a session has started (current time is past start time)
+  // This is used to display "Session Started" status for upcoming sessions
+  const hasSessionStarted = (b: BookingRequest): boolean => {
+    if (b.status !== 'upcoming') return false;
+    const start = parseSessionStart(b.date, b.time);
+    if (!start) return false;
+    return now.getTime() >= start.getTime();
   };
 
   const fetchHistory = async () => {
@@ -136,7 +145,7 @@ const SessionHistory: React.FC = () => {
         apiClient.get(`/tutors/${fetchedTutorId}/payments`).catch(() => ({ data: [] })),
         apiClient.get(`/tutors/${fetchedTutorId}/payouts`).catch(() => ({ data: [] }))
       ]);
-      
+
       // Get payment IDs that have payouts (convert to numbers for consistent comparison)
       // Use the same logic as paymentIdsWithPayoutsForCalc to ensure consistency
       const payoutPaymentIds = (payoutsRes.data || []).map((p: any) => {
@@ -148,19 +157,19 @@ const SessionHistory: React.FC = () => {
         }
         return null;
       }).filter((pid: any) => pid !== null && !isNaN(pid));
-      
+
       const paymentIdsWithPayouts = new Set(payoutPaymentIds);
-      
+
       console.log('[SessionHistory] Payouts data:', payoutsRes.data);
       console.log('[SessionHistory] Payment IDs with payouts:', Array.from(paymentIdsWithPayouts));
-      
+
       // Get all payments for this tutor (for checking which sessions have payments with payouts)
       // We need to check ALL payments, not just confirmed ones, to see which bookings have payouts
       const allTutorPayments = (tutorPaymentsRes.data || []);
-      
+
       console.log('[SessionHistory] All tutor payments:', allTutorPayments);
       console.log('[SessionHistory] Payment IDs with payouts:', Array.from(paymentIdsWithPayouts));
-      
+
       // Create a map of booking_request_id to payment_id for quick lookup
       // Map all payments (regardless of status) to their booking IDs
       const bookingIdToPaymentId = new Map<number, number>();
@@ -176,9 +185,9 @@ const SessionHistory: React.FC = () => {
           }
         }
       });
-      
+
       console.log('[SessionHistory] Booking ID to Payment ID map:', Array.from(bookingIdToPaymentId.entries()));
-      
+
       // Store booking IDs that have payments with payouts (to exclude from upcoming sessions)
       const bookingIdsWithPayouts = new Set<number>();
       bookingIdToPaymentId.forEach((paymentId, bookingId) => {
@@ -189,26 +198,26 @@ const SessionHistory: React.FC = () => {
           console.log(`[SessionHistory] Booking ${bookingIdNum} has payment ${paymentIdNum} with payout - will be excluded`);
         }
       });
-      
+
       console.log('[SessionHistory] Booking IDs with payouts (final):', Array.from(bookingIdsWithPayouts));
-      
+
       // Filter payments for this tutor with status "confirmed" that don't have payouts
       const tutorPayments = allTutorPayments.filter((p: any) => {
         const paymentId = p.payment_id || p.id;
         const paymentIdNum = paymentId ? Number(paymentId) : null;
-        
+
         // Only include payments with status "confirmed" that don't have payouts
-        return p.status === 'confirmed' && 
-               paymentIdNum !== null &&
-               !isNaN(paymentIdNum) &&
-               !paymentIdsWithPayouts.has(paymentIdNum);
+        return p.status === 'confirmed' &&
+          paymentIdNum !== null &&
+          !isNaN(paymentIdNum) &&
+          !paymentIdsWithPayouts.has(paymentIdNum);
       });
-      
+
       // Store all tutor payments (not just confirmed without payouts) so we can find payments for expected earnings
       setPayments(allTutorPayments);
       setPayouts(payoutsRes.data || []);
       setBookingIdsWithPayouts(bookingIdsWithPayouts);
-      
+
       let allBookings = [];
       if (Array.isArray(res.data)) {
         allBookings = res.data;
@@ -217,7 +226,7 @@ const SessionHistory: React.FC = () => {
       } else if (res.data?.bookings && Array.isArray(res.data.bookings)) {
         allBookings = res.data.bookings;
       }
-      
+
       const sessionsWithRatings = allBookings.map((b: any) => {
         // Prefer rating info baked into the booking payload to avoid hitting legacy endpoints
         const ratingSources = [
@@ -235,8 +244,8 @@ const SessionHistory: React.FC = () => {
             typeof rawValue === 'number'
               ? rawValue
               : typeof rawValue === 'string'
-              ? Number(rawValue)
-              : null;
+                ? Number(rawValue)
+                : null;
 
           if (parsedValue !== null && !Number.isNaN(parsedValue)) {
             rating = parsedValue;
@@ -252,7 +261,7 @@ const SessionHistory: React.FC = () => {
           session_rate_per_hour: b.session_rate_per_hour || b.tutor?.session_rate_per_hour || null
         };
       });
-      
+
       const historySessions = sessionsWithRatings.filter((b: BookingRequest) => {
         // Show sessions with status "upcoming" (for marking as done)
         // Also show "awaiting_confirmation" sessions (after tutor has marked as done with proof, waiting for tutee confirmation)
@@ -278,30 +287,30 @@ const SessionHistory: React.FC = () => {
     // Find payment with status='confirmed', matching booking_request_id
     // Match by booking_request_id and student (via user_id from student.user or direct student_id)
     const sessionStudentUserId = session.student?.user_id;
-    
+
     const payment = payments.find(p => {
       // Must have status='confirmed' and matching booking_request_id
       if (p.status !== 'confirmed' || p.booking_request_id !== session.id) {
         return false;
       }
-      
+
       // Match by student.user.user_id if available (payment includes student relation)
       const paymentStudentUserId = (p as any).student?.user?.user_id;
       if (paymentStudentUserId && sessionStudentUserId && paymentStudentUserId === sessionStudentUserId) {
         return true;
       }
-      
+
       // If payment doesn't have student relation loaded, we can't match by student_id
       // So we'll match only by booking_request_id and status (assuming one payment per booking)
       // This is a fallback - ideally payments should include student relations
       return true;
     });
-    
+
     if (payment && payment.amount) {
       // Deduct 13% platform fee from the payment amount
       return Number(payment.amount) * 0.87;
     }
-    
+
     // Return 0 if no payment found (don't fallback to calculated amount)
     return 0;
   };
@@ -311,9 +320,8 @@ const SessionHistory: React.FC = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${
-          i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'
-        }`}
+        className={`h-4 w-4 ${i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'
+          }`}
       />
     ));
   };
@@ -332,7 +340,7 @@ const SessionHistory: React.FC = () => {
         return null;
       })
       .filter((pid: any) => pid !== null && !isNaN(pid));
-    
+
     return new Set(payoutPaymentIds);
   }, [payouts]);
 
@@ -340,27 +348,27 @@ const SessionHistory: React.FC = () => {
   // Must be defined before upcomingSessionsWithData
   const confirmedPaymentsWithoutPayouts = useMemo(() => {
     const confirmedPayments = payments.filter((p: any) => p.status === 'confirmed');
-    
+
     const filtered = confirmedPayments.filter((p: any) => {
       const paymentId = p.payment_id || p.id;
       const paymentIdNum = paymentId ? Number(paymentId) : null;
-      
+
       // Exclude if payment ID is invalid
       if (paymentIdNum === null || isNaN(paymentIdNum)) {
         return false;
       }
-      
+
       const hasPayout = paymentIdsWithPayoutsForCalc.has(paymentIdNum);
       return !hasPayout;
     });
-    
+
     return filtered;
   }, [payments, paymentIdsWithPayoutsForCalc]);
 
   // Get upcoming sessions for the table (only show "upcoming" status sessions that don't have payments with payouts)
   const upcomingSessionsWithData = useMemo(() => {
     const upcomingSessions = sessions.filter(s => s.status === 'upcoming');
-    
+
     // Create a set of booking IDs that have confirmed payments without payouts
     // Sessions should only be shown if they have a payment in confirmedPaymentsWithoutPayouts
     // OR if they don't have any payment yet (will calculate from rate)
@@ -371,46 +379,46 @@ const SessionHistory: React.FC = () => {
         bookingIdsWithConfirmedPaymentsWithoutPayouts.add(Number(bookingId));
       }
     });
-    
+
     const filtered = upcomingSessions.filter(s => {
       const sessionId = Number(s.id);
-      
+
       // Check if this session has a payment that already has a payout
       // If the session ID is in bookingIdsWithPayouts, it means it has a payment with a payout
       const hasPayout = bookingIdsWithPayouts.has(sessionId);
-      
+
       if (hasPayout) {
         console.log(`[SessionHistory] Excluding upcoming session ${sessionId} - has payment with payout`);
         return false;
       }
-      
+
       // Also check: if there's a payment for this booking that's NOT in confirmedPaymentsWithoutPayouts,
       // it means it has a payout, so exclude it
       // We already check bookingIdsWithPayouts above, but let's also verify by checking payments directly
       const paymentForThisSession = payments.find((p: any) => {
         const paymentId = p.payment_id || p.id;
         const paymentIdNum = paymentId ? Number(paymentId) : null;
-        return p.booking_request_id === sessionId && 
-               paymentIdNum !== null &&
-               !isNaN(paymentIdNum) &&
-               paymentIdsWithPayoutsForCalc.has(paymentIdNum);
+        return p.booking_request_id === sessionId &&
+          paymentIdNum !== null &&
+          !isNaN(paymentIdNum) &&
+          paymentIdsWithPayoutsForCalc.has(paymentIdNum);
       });
-      
+
       if (paymentForThisSession) {
         console.log(`[SessionHistory] Excluding upcoming session ${sessionId} - payment ${paymentForThisSession.payment_id || paymentForThisSession.id} has payout`);
         return false;
       }
-      
+
       return true;
     });
-    
+
     console.log(`[SessionHistory] Total sessions: ${sessions.length}`);
     console.log(`[SessionHistory] Upcoming sessions (before filter): ${upcomingSessions.length}`);
     console.log(`[SessionHistory] Upcoming sessions (after filter): ${filtered.length}`);
     console.log(`[SessionHistory] Booking IDs with payouts:`, Array.from(bookingIdsWithPayouts));
     console.log(`[SessionHistory] Payment IDs with payouts:`, Array.from(paymentIdsWithPayoutsForCalc));
     console.log(`[SessionHistory] Upcoming session IDs (after filter):`, filtered.map(s => s.id));
-    
+
     return filtered;
   }, [sessions, bookingIdsWithPayouts, confirmedPaymentsWithoutPayouts, payments, paymentIdsWithPayoutsForCalc]);
 
@@ -425,7 +433,7 @@ const SessionHistory: React.FC = () => {
     if (!upcomingSessionsWithData || upcomingSessionsWithData.length === 0) {
       return 0;
     }
-    
+
     return upcomingSessionsWithData.reduce((sum, session) => {
       // Find payment with booking_request_id matching this session
       const payment = payments.find((p: any) => {
@@ -433,7 +441,7 @@ const SessionHistory: React.FC = () => {
         const sessionId = session.id;
         return bookingId === sessionId || bookingId === Number(sessionId) || Number(bookingId) === sessionId;
       });
-      
+
       // Use actual payment amount * 0.87 if payment exists
       // If no payment exists, calculate from session rate as fallback
       let expectedEarnings = 0;
@@ -445,7 +453,7 @@ const SessionHistory: React.FC = () => {
         const duration = Number(session.duration ?? 0);
         expectedEarnings = ratePerHour * duration * 0.87;
       }
-      
+
       return sum + expectedEarnings;
     }, 0);
   }, [upcomingSessionsWithData, payments, sessionRate]);
@@ -485,7 +493,7 @@ const SessionHistory: React.FC = () => {
       formData.append('status', 'awaiting_confirmation'); // Set status to awaiting_confirmation after proof upload (waiting for tutee to confirm)
 
       const res = await apiClient.post(
-        `/tutors/booking-requests/${proofTarget.id}/complete`, 
+        `/tutors/booking-requests/${proofTarget.id}/complete`,
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -510,7 +518,7 @@ const SessionHistory: React.FC = () => {
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
       <ToastContainer aria-label="Notification messages" />
-      
+
       {/* Header */}
       <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-2xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
         <div className="absolute inset-0 opacity-20">
@@ -555,23 +563,22 @@ const SessionHistory: React.FC = () => {
             const isAwaitingConfirmation = session.status === 'awaiting_confirmation';
             const isCompleted = session.status === 'completed';
             const isAdminPaymentPending = session.status === 'admin_payment_pending';
-            
+
             return (
-              <Card 
-                key={session.id} 
+              <Card
+                key={session.id}
                 className="group relative bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-slate-200/50 hover:border-primary-300 p-4 sm:p-5 md:p-6 -mx-2 sm:-mx-3 md:mx-0 transition-all duration-300 overflow-hidden hover:shadow-2xl"
               >
                 {/* Decorative gradient bar */}
-                <div className={`absolute top-0 left-0 right-0 h-1 ${
-                  isCompleted || isAdminPaymentPending
+                <div className={`absolute top-0 left-0 right-0 h-1 ${isCompleted || isAdminPaymentPending
                     ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
-                  isAwaitingConfirmation
-                    ? 'bg-gradient-to-r from-yellow-500 to-amber-500' :
-                  isUpcoming
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
-                    'bg-gradient-to-r from-primary-500 to-primary-700'
-                }`} />
-                
+                    isAwaitingConfirmation
+                      ? 'bg-gradient-to-r from-yellow-500 to-amber-500' :
+                      isUpcoming
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
+                        'bg-gradient-to-r from-primary-500 to-primary-700'
+                  }`} />
+
                 <div className="flex flex-col gap-4 sm:gap-5">
                   {/* Header Row */}
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
@@ -624,10 +631,15 @@ const SessionHistory: React.FC = () => {
                         </div>
                       )}
                       {isUpcoming && !isSessionEligibleForMarkAsDone(session) && (
-                        <div className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-bold flex items-center gap-1.5 sm:gap-2 shadow-md text-blue-700 bg-blue-50 border-2 border-blue-400">
+                        <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-bold flex items-center gap-1.5 sm:gap-2 shadow-md border-2 ${hasSessionStarted(session)
+                            ? "text-green-700 bg-green-50 border-green-400"
+                            : "text-blue-700 bg-blue-50 border-blue-400"
+                          }`}>
                           <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
-                          <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                          <span className="whitespace-nowrap">Upcoming</span>
+                          <span className={`h-2.5 w-2.5 rounded-full ${hasSessionStarted(session) ? "bg-green-500" : "bg-blue-500"}`} />
+                          <span className="whitespace-nowrap">
+                            {hasSessionStarted(session) ? "Session Started" : "Upcoming"}
+                          </span>
                         </div>
                       )}
                       {isSessionEligibleForMarkAsDone(session) && (
@@ -643,21 +655,21 @@ const SessionHistory: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Session Details */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-primary-50 via-primary-100/50 to-primary-50 rounded-xl border-2 border-primary-200/50 shadow-sm">
                     <div className="flex items-center gap-2">
                       <span className="text-xs sm:text-sm font-semibold text-slate-700">Created:</span>
                       <span className="text-xs sm:text-sm md:text-base font-medium text-slate-900">
-                        {new Date(session.created_at).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
+                        {new Date(session.created_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
                         })}
                       </span>
                     </div>
                   </div>
-                  
+
                   {/* Tutee Rating */}
                   {session.rating && (
                     <div className="p-3 sm:p-4 bg-gradient-to-br from-yellow-50 via-amber-50/50 to-yellow-50 border-2 border-yellow-200 rounded-xl shadow-sm">
@@ -681,7 +693,7 @@ const SessionHistory: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Student Notes */}
                   {session.student_notes && (
                     <div className="p-3 sm:p-4 bg-gradient-to-br from-slate-50 via-primary-50/50 to-slate-50 rounded-xl border-2 border-slate-200/50 shadow-sm">
@@ -775,7 +787,7 @@ const SessionHistory: React.FC = () => {
                         const bookingId = p.booking_request_id || (p.bookingRequest as any)?.id;
                         const sessionId = session.id;
                         const matches = bookingId === sessionId || bookingId === Number(sessionId) || Number(bookingId) === sessionId;
-                        
+
                         if (index === 0) {
                           console.log('[SessionHistory] Payment matching:', {
                             paymentId: p.payment_id || p.id,
@@ -786,10 +798,10 @@ const SessionHistory: React.FC = () => {
                             allPayments: payments.length
                           });
                         }
-                        
+
                         return matches;
                       });
-                      
+
                       // Use actual payment amount * 0.87 if payment exists
                       // If no payment exists, calculate from session rate as fallback
                       let expectedEarnings = 0;
@@ -814,16 +826,15 @@ const SessionHistory: React.FC = () => {
                           });
                         }
                       }
-                      
+
                       const ratePerHour = session.session_rate_per_hour || sessionRate || 0;
                       const duration = Number(session.duration ?? 0);
-                      
+
                       return (
                         <tr
                           key={session.id}
-                          className={`group hover:bg-gradient-to-r hover:from-primary-50/80 hover:via-primary-50/40 hover:to-transparent transition-all duration-300 cursor-pointer ${
-                            index % 2 === 0 ? 'bg-white' : 'bg-slate-50/20'
-                          }`}
+                          className={`group hover:bg-gradient-to-r hover:from-primary-50/80 hover:via-primary-50/40 hover:to-transparent transition-all duration-300 cursor-pointer ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/20'
+                            }`}
                         >
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div className="flex items-center gap-2">
@@ -947,7 +958,7 @@ const SessionHistory: React.FC = () => {
                 const bookingId = p.booking_request_id || (p.bookingRequest as any)?.id;
                 return bookingId === session.id || bookingId === Number(session.id);
               });
-              
+
               // Use actual payment amount * 0.87 if payment exists
               // If no payment exists, calculate from session rate as fallback
               let expectedEarnings = 0;
@@ -959,10 +970,10 @@ const SessionHistory: React.FC = () => {
                 const duration = Number(session.duration ?? 0);
                 expectedEarnings = ratePerHour * duration * 0.87;
               }
-              
+
               const ratePerHour = session.session_rate_per_hour || sessionRate || 0;
               const duration = Number(session.duration ?? 0);
-              
+
               return (
                 <div
                   key={session.id}
@@ -1122,15 +1133,15 @@ const SessionHistory: React.FC = () => {
           onClose={() => { setProofModalOpen(false); setProofTarget(null); setProofFile(null); }}
           title="Upload Session Proof"
           footer={<>
-            <Button 
-              onClick={handleMarkDone} 
+            <Button
+              onClick={handleMarkDone}
               disabled={loading || !proofFile}
               className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl"
             >
               {loading ? 'Uploading...' : 'Confirm'}
             </Button>
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               onClick={() => { setProofModalOpen(false); setProofTarget(null); setProofFile(null); }}
             >
               Cancel
@@ -1145,9 +1156,9 @@ const SessionHistory: React.FC = () => {
               <label className="block text-sm font-semibold text-slate-800">
                 Select Image
               </label>
-              <input 
-                type="file" 
-                accept="image/*" 
+              <input
+                type="file"
+                accept="image/*"
                 onChange={(e) => setProofFile(e.target.files ? e.target.files[0] : null)}
                 className="w-full text-xs sm:text-sm md:text-base file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 transition-colors"
               />

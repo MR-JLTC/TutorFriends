@@ -81,6 +81,33 @@ const SessionHandlingContent: React.FC = () => {
       d1.getFullYear() === d2.getFullYear();
   };
 
+  const parseSessionStart = (dateStr: string, timeStr: string): Date | null => {
+    if (!dateStr || !timeStr) return null;
+    let sessionDate = new Date(`${dateStr.split('T')[0]}T${timeStr}`);
+    if (!isNaN(sessionDate.getTime())) return sessionDate;
+
+    sessionDate = new Date(dateStr);
+    if (isNaN(sessionDate.getTime())) return null;
+
+    const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+    if (timeMatch) {
+      let hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      const ampm = timeMatch[3];
+      if (ampm && ampm.toLowerCase() === 'pm' && hours < 12) hours += 12;
+      if (ampm && ampm.toLowerCase() === 'am' && hours === 12) hours = 0;
+      sessionDate.setHours(hours, minutes, 0, 0);
+      return sessionDate;
+    }
+    return null;
+  };
+
+  const hasSessionStarted = (request: BookingRequest): boolean => {
+    if (request.status !== 'upcoming') return false;
+    const start = parseSessionStart(request.date, request.time);
+    return start ? now >= start : false;
+  };
+
   const getSessionsOnDate = (date: Date) => {
     return bookingRequests.filter(req => {
       const reqDate = new Date(req.date);
@@ -337,42 +364,7 @@ const SessionHandlingContent: React.FC = () => {
     }
   };
 
-  const parseSessionStart = (dateStr: string, timeStr: string): Date | null => {
-    if (!dateStr || !timeStr) {
-      return null;
-    }
 
-    // Attempt to combine and parse directly. This works for 'YYYY-MM-DD' and 'HH:mm:ss' or 'HH:mm'
-    let sessionDate = new Date(`${dateStr.split('T')[0]}T${timeStr}`);
-    if (!isNaN(sessionDate.getTime())) {
-      return sessionDate;
-    }
-
-    // Fallback for other formats, like time with AM/PM
-    sessionDate = new Date(dateStr);
-    if (isNaN(sessionDate.getTime())) {
-      return null; // Invalid date string
-    }
-
-    const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
-    if (timeMatch) {
-      let hours = parseInt(timeMatch[1], 10);
-      const minutes = parseInt(timeMatch[2], 10);
-      const ampm = timeMatch[3];
-
-      if (ampm && ampm.toLowerCase() === 'pm' && hours < 12) {
-        hours += 12;
-      }
-      if (ampm && ampm.toLowerCase() === 'am' && hours === 12) {
-        hours = 0;
-      }
-
-      sessionDate.setHours(hours, minutes, 0, 0);
-      return sessionDate;
-    }
-
-    return null; // Could not parse the time
-  };
 
   const handleMarkDone = async (bookingId: number) => {
     setLoading(true);
@@ -909,8 +901,13 @@ const SessionHandlingContent: React.FC = () => {
                       <div className="mb-3">
                         <div className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-bold gap-1.5 sm:gap-2 shadow-md border-2 ${getStatusColor(request.status)}`}>
                           {getStatusIcon(request.status)}
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: request.status === 'pending' ? '#eab308' : request.status === 'confirmed' ? '#16a34a' : request.status === 'awaiting_payment' ? '#f97316' : request.status === 'declined' ? '#dc2626' : '#3b82f6' }} />
-                          <span className="whitespace-nowrap">{request.status.replace('_', ' ').charAt(0).toUpperCase() + request.status.replace('_', ' ').slice(1)}</span>
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: request.status === 'pending' ? '#eab308' : request.status === 'confirmed' ? '#16a34a' : request.status === 'awaiting_payment' ? '#f97316' : request.status === 'declined' ? '#dc2626' : hasSessionStarted(request) ? '#22c55e' : '#3b82f6' }} />
+                          <span className="whitespace-nowrap">
+                            {hasSessionStarted(request)
+                              ? "Session Started"
+                              : (request.status.replace('_', ' ').charAt(0).toUpperCase() + request.status.replace('_', ' ').slice(1))
+                            }
+                          </span>
                         </div>
                       </div>
 
