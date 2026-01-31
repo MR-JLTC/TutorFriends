@@ -752,33 +752,7 @@ const SessionHandlingContent: React.FC = () => {
                         )}
                       </button>
 
-                      {/* Tooltip for sessions */}
-                      {hasSession && (
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-48 bg-white text-slate-700 text-xs rounded-lg shadow-xl border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 overflow-hidden">
-                          <div className="bg-slate-50 px-3 py-1.5 border-b border-slate-100">
-                            <p className="font-bold text-slate-800">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
-                          </div>
-                          <div className="p-1 space-y-0.5 max-h-64 overflow-y-auto">
-                            {(() => {
-                              // console.log(`[Tooltip] Rendering ${sessionsOnDate.length} sessions for ${date.toDateString()}`);
-                              return sessionsOnDate.map((session) => (
-                                <div key={session.id} className="px-2 py-1.5 hover:bg-slate-50 rounded flex flex-col gap-0.5">
-                                  <span className="font-semibold text-primary-700 truncate">{session.subject}</span>
-                                  <div className="flex items-center justify-between text-[10px] text-slate-500">
-                                    <span>{session.time}</span>
-                                    <span className={`px-1 rounded-full text-[9px] ${session.status === 'confirmed' || session.status === 'upcoming' ? 'bg-green-100 text-green-700' :
-                                      session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-slate-100 text-slate-600'
-                                      }`}>
-                                      {session.status === 'awaiting_payment' ? 'payment' : session.status}
-                                    </span>
-                                  </div>
-                                </div>
-                              ))
-                            })()}
-                          </div>
-                        </div>
-                      )}
+
                     </div>
                   );
                 })}
