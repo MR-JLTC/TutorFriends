@@ -143,8 +143,10 @@ const EarningsHistory: React.FC = () => {
         apiClient.get(`/tutors/${tutorId}/earnings-stats`),
         apiClient.get(`/tutors/${tutorId}/booking-requests`)
       ]);
-      
+
       setSessions(sessionsRes.data);
+      console.log('[EarningsHistory] Raw Payments Data:', paymentsRes.data);
+      console.log('[EarningsHistory] Raw Payouts Data:', payoutsRes.data);
       setPayments(paymentsRes.data);
       setPayouts(payoutsRes.data || []);
       setStats(statsRes.data);
@@ -207,46 +209,46 @@ const EarningsHistory: React.FC = () => {
         return null;
       })
       .filter((pid: any) => pid !== null && !isNaN(pid));
-    
+
     // Debug logging
     if (payouts.length > 0) {
       console.log('[EarningsHistory] Payouts:', payouts);
       console.log('[EarningsHistory] Payment IDs from payouts:', payoutPaymentIds);
     }
-    
+
     return new Set(payoutPaymentIds);
   }, [payouts]);
 
   // Filter payments: only show "confirmed" payments that don't have payouts
   const confirmedPaymentsWithoutPayouts = useMemo(() => {
     const confirmedPayments = payments.filter(p => p.status === 'confirmed');
-    
+
     const filtered = confirmedPayments.filter(p => {
       const paymentId = p.payment_id || p.id;
       const paymentIdNum = paymentId ? Number(paymentId) : null;
-      
+
       // Exclude if payment ID is invalid
       if (paymentIdNum === null || isNaN(paymentIdNum)) {
         console.warn('[EarningsHistory] Payment with invalid ID:', p);
         return false;
       }
-      
+
       const hasPayout = paymentIdsWithPayouts.has(paymentIdNum);
-      
+
       // Debug logging for payments with payouts
       if (hasPayout) {
         console.log(`[EarningsHistory] Excluding payment ${paymentIdNum} - has payout`);
       }
-      
+
       return !hasPayout;
     });
-    
+
     // Debug logging
     console.log(`[EarningsHistory] Total payments: ${payments.length}`);
     console.log(`[EarningsHistory] Confirmed payments: ${confirmedPayments.length}`);
     console.log(`[EarningsHistory] Confirmed without payouts: ${filtered.length}`);
     console.log(`[EarningsHistory] Payment IDs with payouts:`, Array.from(paymentIdsWithPayouts));
-    
+
     return filtered;
   }, [payments, paymentIdsWithPayouts]);
 
@@ -267,9 +269,9 @@ const EarningsHistory: React.FC = () => {
     return payments.filter(p => {
       const paymentId = p.payment_id || p.id;
       const paymentIdNum = paymentId ? Number(paymentId) : null;
-      return p.status === 'confirmed' && 
-             paymentIdNum !== null &&
-             !paymentIdsWithPayouts.has(paymentIdNum);
+      return p.status === 'confirmed' &&
+        paymentIdNum !== null &&
+        !paymentIdsWithPayouts.has(paymentIdNum);
     });
   }, [payments, paymentIdsWithPayouts]);
 
@@ -290,8 +292,8 @@ const EarningsHistory: React.FC = () => {
       const monthPayouts = payouts.filter(p => {
         if (!p.created_at) return false;
         const payoutDate = new Date(p.created_at);
-        return payoutDate.getMonth() === monthIndex && 
-               payoutDate.getFullYear() === year;
+        return payoutDate.getMonth() === monthIndex &&
+          payoutDate.getFullYear() === year;
       });
 
       // Calculate totals from payouts
@@ -324,7 +326,7 @@ const EarningsHistory: React.FC = () => {
     if (!confirmedPaymentsWithoutPayoutsForCalc || confirmedPaymentsWithoutPayoutsForCalc.length === 0) {
       return 0;
     }
-    
+
     return confirmedPaymentsWithoutPayoutsForCalc.reduce((sum, p) => {
       const amount = Number(p.amount) || 0;
       const netAmount = amount * 0.87; // After 13% service fee
@@ -337,7 +339,7 @@ const EarningsHistory: React.FC = () => {
     if (!confirmedPaymentsWithoutPayoutsForCalc || confirmedPaymentsWithoutPayoutsForCalc.length === 0) {
       return 0;
     }
-    
+
     return confirmedPaymentsWithoutPayoutsForCalc.reduce((sum, p) => {
       const amount = Number(p.amount) || 0;
       const serviceFee = amount * 0.13; // 13% service fee
@@ -350,7 +352,7 @@ const EarningsHistory: React.FC = () => {
     if (!confirmedPaymentsWithoutPayoutsForCalc || confirmedPaymentsWithoutPayoutsForCalc.length === 0) {
       return 0;
     }
-    
+
     return confirmedPaymentsWithoutPayoutsForCalc.reduce((sum, p) => {
       const amount = Number(p.amount) || 0;
       return sum + amount;
@@ -361,16 +363,15 @@ const EarningsHistory: React.FC = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${
-          i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'
-        }`}
+        className={`h-4 w-4 ${i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'
+          }`}
       />
     ));
   };
 
   // Calculate exact count of completed sessions from booking requests
   const exactCompletedSessions = useMemo(() => {
-    return bookingRequests.filter(booking => 
+    return bookingRequests.filter(booking =>
       booking.status && booking.status.toLowerCase() === 'completed'
     ).length;
   }, [bookingRequests]);
@@ -378,7 +379,7 @@ const EarningsHistory: React.FC = () => {
   // Calculate average rating per subject
   const subjectRatings = useMemo(() => {
     const ratingsBySubject: Record<string, number[]> = {};
-    
+
     bookingRequests.forEach(booking => {
       if (booking.tutee_rating && booking.tutee_rating > 0 && booking.subject) {
         if (!ratingsBySubject[booking.subject]) {
@@ -509,8 +510,8 @@ const EarningsHistory: React.FC = () => {
             <div className="flex justify-between items-center">
               <span className="text-[10px] sm:text-xs md:text-sm text-slate-600">Average Session Duration</span>
               <span className="text-xs sm:text-sm md:text-base font-semibold text-slate-800">
-                {exactCompletedSessions > 0 
-                  ? (stats.total_hours / exactCompletedSessions).toFixed(1) 
+                {exactCompletedSessions > 0
+                  ? (stats.total_hours / exactCompletedSessions).toFixed(1)
                   : '0'
                 } hours
               </span>
@@ -518,8 +519,8 @@ const EarningsHistory: React.FC = () => {
             <div className="flex justify-between items-center">
               <span className="text-[10px] sm:text-xs md:text-sm text-slate-600">Average Hourly Rate</span>
               <span className="text-xs sm:text-sm md:text-base font-semibold text-slate-800">
-                ₱{stats.total_hours > 0 
-                  ? (stats.total_earnings / stats.total_hours).toFixed(0) 
+                ₱{stats.total_hours > 0
+                  ? (stats.total_earnings / stats.total_hours).toFixed(0)
                   : '0'
                 }
               </span>
@@ -534,7 +535,7 @@ const EarningsHistory: React.FC = () => {
             </div>
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Upcoming Payouts</h2>
           </div>
-          
+
           {/* Service Fee Information */}
           <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 rounded-xl border-2 border-amber-200 shadow-sm">
             <div className="flex items-start gap-3">
@@ -544,7 +545,7 @@ const EarningsHistory: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <h3 className="text-xs sm:text-sm font-bold text-amber-900 mb-1.5">Service Fee Information</h3>
                 <p className="text-[10px] sm:text-xs text-amber-800 mb-2">
-                A <span className="font-bold">13% service fee</span> will be deducted from each payment you receive through TutorLink platform.
+                  A <span className="font-bold">13% service fee</span> will be deducted from each payment you receive through TutorLink platform.
                 </p>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3 text-[10px] sm:text-xs">
                   <div className="bg-white/60 rounded-lg p-2">
@@ -562,7 +563,7 @@ const EarningsHistory: React.FC = () => {
                 </div>
                 <div className="mt-2 pt-2 border-t border-amber-200 bg-white/60 rounded-lg p-2">
                   <p className="text-[10px] sm:text-xs text-amber-700">
-                  Upcoming Earnings are calculated as <span className="font-bold">87%</span> of each confirmed payment. The system admin receives the tutee’s payment first and will transfer your earnings after you complete the tutoring session.
+                    Upcoming Earnings are calculated as <span className="font-bold">87%</span> of each confirmed payment. The system admin receives the tutee’s payment first and will transfer your earnings after you complete the tutoring session.
                   </p>
                 </div>
               </div>
@@ -599,27 +600,27 @@ const EarningsHistory: React.FC = () => {
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis 
-                dataKey="month" 
+              <XAxis
+                dataKey="month"
                 tick={{ fontSize: 11, fill: '#64748b' }}
                 stroke="#cbd5e1"
               />
-              <YAxis 
+              <YAxis
                 tick={{ fontSize: 11, fill: '#64748b' }}
                 stroke="#cbd5e1"
                 tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value: number) => [`₱${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, '']}
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e2e8f0', 
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                   padding: '8px 12px',
                   fontSize: '12px'
                 }}
               />
-              <Legend 
+              <Legend
                 wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}
                 iconType="rect"
               />
@@ -644,11 +645,10 @@ const EarningsHistory: React.FC = () => {
               <button
                 key={tab.key}
                 onClick={() => setPaymentsFilter(tab.key as any)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md hover:shadow-lg touch-manipulation ${
-                  paymentsFilter === tab.key
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md hover:shadow-lg touch-manipulation ${paymentsFilter === tab.key
                     ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
                     : 'text-slate-600 hover:text-slate-800 bg-white border-2 border-slate-200 hover:border-primary-300'
-                }`}
+                  }`}
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 {tab.label}
@@ -676,7 +676,7 @@ const EarningsHistory: React.FC = () => {
                   {payment.subject && (
                     <span className="ml-2">• Subject: {payment.subject}</span>
                   )}
-                  { (payment.status === 'confirmed' || payment.status === 'admin_confirmed' || payment.status === 'admin_paid') && payment.admin_note && (
+                  {(payment.status === 'confirmed' || payment.status === 'admin_confirmed' || payment.status === 'admin_paid') && payment.admin_note && (
                     <span className="ml-2 text-green-600">✓ Approved by Admin</span>
                   )}
 

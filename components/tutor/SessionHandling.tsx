@@ -753,8 +753,8 @@ const SessionHandlingContent: React.FC = () => {
                           <div className="bg-slate-50 px-3 py-1.5 border-b border-slate-100">
                             <p className="font-bold text-slate-800">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
                           </div>
-                          <div className="p-1 space-y-0.5 max-h-32 overflow-y-auto">
-                            {sessionsOnDate.slice(0, 3).map((session) => (
+                          <div className="p-1 space-y-0.5 max-h-64 overflow-y-auto">
+                            {sessionsOnDate.map((session) => (
                               <div key={session.id} className="px-2 py-1.5 hover:bg-slate-50 rounded flex flex-col gap-0.5">
                                 <span className="font-semibold text-primary-700 truncate">{session.subject}</span>
                                 <div className="flex items-center justify-between text-[10px] text-slate-500">
@@ -768,11 +768,6 @@ const SessionHandlingContent: React.FC = () => {
                                 </div>
                               </div>
                             ))}
-                            {sessionsOnDate.length > 3 && (
-                              <div className="px-2 py-1 text-center text-primary-600 font-medium italic">
-                                +{sessionsOnDate.length - 3} more
-                              </div>
-                            )}
                           </div>
                         </div>
                       )}
