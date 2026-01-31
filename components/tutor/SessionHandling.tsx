@@ -607,145 +607,160 @@ const SessionHandlingContent: React.FC = () => {
         {/* Upcoming widget removed from Session Handling — upcoming sessions live in the dedicated Upcoming Sessions sidebar page. */}
       </div>
 
-      {/* Calendar View */}
-      <Card className="p-4 sm:p-5 md:p-6 bg-white rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="p-2 bg-primary-50 rounded-lg">
-              <Calendar className="h-5 w-5 text-primary-600" />
+      {/* Unified Filter & Calendar Section */}
+      <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50">
+        <div className="space-y-6">
+          {/* Status Filter Tabs */}
+          <div>
+            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-primary-500 rounded-full"></span>
+              Filter by Status
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'all', label: 'All Requests' },
+                { key: 'pending', label: 'Pending' },
+                { key: 'awaiting_payment', label: 'Awaiting Payment' },
+                { key: 'confirmed', label: 'Confirmed' },
+                { key: 'upcoming', label: 'Upcoming' },
+                { key: 'declined', label: 'Declined' }
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setFilter(tab.key as any)}
+                  className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm hover:shadow-md touch-manipulation ${filter === tab.key
+                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-primary-500/30'
+                    : 'text-slate-600 hover:text-slate-800 bg-white border border-slate-200 hover:border-primary-300'
+                    }`}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <span className="inline-flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
+                    <span>{tab.label}</span>
+                    {tab.key === 'pending' && hasUnreviewedBookings && (
+                      <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
+                        {stats.pending}
+                      </span>
+                    )}
+                    {tab.key === 'awaiting_payment' && hasUnreviewedPaymentProof && (
+                      <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
+                        !
+                      </span>
+                    )}
+                  </span>
+                </button>
+              ))}
             </div>
-            <div className="flex gap-2">
-              <select
-                value={currentDate.getMonth()}
-                onChange={(e) => setCurrentDate(new Date(currentDate.getFullYear(), parseInt(e.target.value), 1))}
-                className="bg-transparent font-bold text-slate-800 text-lg border-none focus:ring-0 cursor-pointer py-0 pl-0 pr-8 bg-none"
-              >
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <option key={i} value={i}>
-                    {new Date(2000, i, 1).toLocaleString('default', { month: 'long' })}
-                  </option>
+          </div>
+
+          <div className="h-px bg-slate-200/60 w-full" />
+
+          {/* Calendar Filter */}
+          <div>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2 mr-2">
+                  <span className="w-1 h-4 bg-primary-500 rounded-full"></span>
+                  Filter by Date
+                </h3>
+                <div className="flex gap-2 items-center bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                  <Calendar className="h-4 w-4 text-primary-500" />
+                  <select
+                    value={currentDate.getMonth()}
+                    onChange={(e) => setCurrentDate(new Date(currentDate.getFullYear(), parseInt(e.target.value), 1))}
+                    className="bg-transparent font-semibold text-slate-700 text-sm border-none focus:ring-0 cursor-pointer py-1 pr-6 pl-0"
+                  >
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <option key={i} value={i}>
+                        {new Date(2000, i, 1).toLocaleString('default', { month: 'short' })}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={currentDate.getFullYear()}
+                    onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), currentDate.getMonth(), 1))}
+                    className="bg-transparent font-semibold text-slate-700 text-sm border-none focus:ring-0 cursor-pointer py-1 pr-6 pl-0"
+                  >
+                    {Array.from({ length: 10 }).map((_, i) => {
+                      const year = new Date().getFullYear() - 2 + i;
+                      return <option key={year} value={year}>{year}</option>;
+                    })}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentDate(new Date())}
+                  className="px-3 py-1.5 text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-all border border-primary-200"
+                >
+                  Today
+                </button>
+                <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+              <div className="grid grid-cols-7 gap-1 text-center mb-1">
+                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(day => (
+                  <div key={day} className="text-[10px] font-bold text-slate-400 uppercase">
+                    {day}
+                  </div>
                 ))}
-              </select>
-              <select
-                value={currentDate.getFullYear()}
-                onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), currentDate.getMonth(), 1))}
-                className="bg-transparent font-bold text-slate-800 text-lg border-none focus:ring-0 cursor-pointer py-0 pl-0 pr-8 bg-none"
-              >
-                {Array.from({ length: 10 }).map((_, i) => {
-                  const year = new Date().getFullYear() - 2 + i;
-                  return <option key={year} value={year}>{year}</option>;
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
+                {Array.from({ length: getFirstDayOfMonth(currentDate) }).map((_, i) => (
+                  <div key={`empty-${i}`} className="h-8 sm:h-9" />
+                ))}
+
+                {Array.from({ length: getDaysInMonth(currentDate) }).map((_, i) => {
+                  const day = i + 1;
+                  const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                  const isSelected = selectedDate && isSameDay(date, selectedDate);
+                  const isToday = isSameDay(date, new Date());
+                  const hasSession = hasSessionOnDate(date);
+
+                  return (
+                    <button
+                      key={day}
+                      onClick={() => setSelectedDate(isSelected ? null : date)}
+                      className={`
+                                  relative h-8 sm:h-9 rounded-lg flex flex-col items-center justify-center transition-all text-sm
+                                  ${isSelected
+                          ? 'bg-primary-600 text-white shadow-md transform scale-105 z-10 font-bold'
+                          : 'hover:bg-white text-slate-600 hover:text-slate-900 border border-transparent hover:border-slate-200 hover:shadow-sm'}
+                                  ${isToday && !isSelected ? 'bg-primary-50 text-primary-700 font-bold border-primary-100' : ''}
+                              `}
+                    >
+                      <span>{day}</span>
+                      {hasSession && (
+                        <span className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-primary-500'}`} />
+                      )}
+                    </button>
+                  );
                 })}
-              </select>
+              </div>
             </div>
+
+            {selectedDate && (
+              <div className="mt-3 flex justify-between items-center bg-primary-50 px-3 py-2 rounded-lg border border-primary-100 animate-in fade-in slide-in-from-top-1">
+                <p className="text-xs text-primary-800 font-medium">
+                  Viewing: <span className="font-bold">{selectedDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                </p>
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="text-xs font-bold text-primary-600 hover:text-primary-800 hover:underline"
+                >
+                  Clear Date
+                </button>
+              </div>
+            )}
           </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-            <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setCurrentDate(new Date())}
-              className="px-4 py-2 text-sm font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-xl transition-all border border-primary-200"
-            >
-              Today
-            </button>
-            <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-7 gap-1 text-center mb-2">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-            <div key={day} className="text-xs font-semibold text-slate-500 uppercase py-2">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: getFirstDayOfMonth(currentDate) }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-10 sm:h-12 md:h-14" />
-          ))}
-
-          {Array.from({ length: getDaysInMonth(currentDate) }).map((_, i) => {
-            const day = i + 1;
-            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-            const isSelected = selectedDate && isSameDay(date, selectedDate);
-            const isToday = isSameDay(date, new Date());
-            const hasSession = hasSessionOnDate(date);
-
-            return (
-              <button
-                key={day}
-                onClick={() => setSelectedDate(isSelected ? null : date)}
-                className={`
-                            relative h-10 sm:h-12 md:h-14 rounded-lg flex flex-col items-center justify-center transition-all
-                            ${isSelected
-                    ? 'bg-primary-600 text-white shadow-md transform scale-105 z-10'
-                    : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-transparent hover:border-slate-200'}
-                            ${isToday && !isSelected ? 'bg-primary-50 text-primary-700 font-bold border-primary-200' : ''}
-                        `}
-              >
-                <span className={`text-sm ${isSelected || isToday ? 'font-bold' : ''}`}>{day}</span>
-                {hasSession && (
-                  <span className={`mt-1 h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-primary-500'}`} />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {selectedDate && (
-          <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-            <p className="text-sm text-slate-600">
-              Viewing sessions for <span className="font-semibold text-slate-900">{selectedDate.toLocaleDateString()}</span>
-            </p>
-            <button
-              onClick={() => setSelectedDate(null)}
-              className="text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline"
-            >
-              Clear Filter
-            </button>
-          </div>
-        )}
-      </Card>
-
-      {/* Filter Tabs */}
-      <Card className="p-3 sm:p-4 md:p-5 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { key: 'all', label: 'All Requests' },
-            { key: 'pending', label: 'Pending' },
-            { key: 'awaiting_payment', label: 'Awaiting Payment' },
-            { key: 'confirmed', label: 'Confirmed' },
-            { key: 'upcoming', label: 'Upcoming' },
-            { key: 'declined', label: 'Declined' }
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setFilter(tab.key as any)}
-              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md hover:shadow-lg touch-manipulation ${filter === tab.key
-                ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
-                : 'text-slate-600 hover:text-slate-800 bg-white border-2 border-slate-200 hover:border-primary-300'
-                }`}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
-            >
-              <span className="inline-flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                <span>{tab.label}</span>
-                {tab.key === 'pending' && hasUnreviewedBookings && (
-                  <span className="inline-flex items-center justify-center px-1 sm:px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200">
-                    {stats.pending}
-                  </span>
-                )}
-                {tab.key === 'awaiting_payment' && hasUnreviewedPaymentProof && (
-                  <span className="inline-flex items-center justify-center px-1 sm:px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200">
-                    New
-                  </span>
-                )}
-              </span>
-            </button>
-          ))}
         </div>
       </Card>
 
