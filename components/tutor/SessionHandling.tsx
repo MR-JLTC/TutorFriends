@@ -749,7 +749,7 @@ const SessionHandlingContent: React.FC = () => {
 
                       {/* Tooltip for sessions */}
                       {hasSession && (
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-white text-slate-700 text-xs rounded-lg shadow-xl border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 overflow-hidden">
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-48 bg-white text-slate-700 text-xs rounded-lg shadow-xl border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 overflow-hidden">
                           <div className="bg-slate-50 px-3 py-1.5 border-b border-slate-100">
                             <p className="font-bold text-slate-800">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
                           </div>
