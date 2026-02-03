@@ -166,6 +166,11 @@ function AuthProvider({ children }: AuthProviderProps) {
       const response = await apiClient.post('/auth/login-tutor-tutee', { email, password, user_type });
       console.log('AuthContext: Received response:', response.data);
 
+      if (response.data.multiple_accounts) {
+        console.log('AuthContext: Multiple accounts found, returning raw response');
+        return response.data;
+      }
+
       const { user, accessToken } = response.data;
       console.log('AuthContext: User data:', user);
 
