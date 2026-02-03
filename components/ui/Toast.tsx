@@ -84,7 +84,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
       <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
         {toasts.map((t) => {
-          const style = stylesByType[t.type];
+          const style = stylesByType[t.type] || stylesByType.info;
           const Icon = style.icon;
 
           return (
