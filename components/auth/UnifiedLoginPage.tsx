@@ -357,8 +357,12 @@ const UnifiedLoginPage: React.FC = () => {
                           <p className="font-bold text-slate-800 group-hover:text-sky-700 capitalize text-lg">{account.user_type}</p>
                           <p className="text-xs text-slate-500 group-hover:text-sky-600">Continue as {account.user_type}</p>
                         </div>
-                        <div className="h-8 w-8 bg-slate-100 group-hover:bg-white rounded-full flex items-center justify-center group-hover:shadow-sm transition-all">
-                          <svg className="w-4 h-4 text-slate-400 group-hover:text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        <div className="h-12 w-12 bg-slate-100 group-hover:bg-white rounded-full flex items-center justify-center group-hover:shadow-sm transition-all overflow-hidden border border-slate-200">
+                          <img
+                            src={account.user_type === 'tutor' ? '/assets/images/tutor.png' : '/assets/images/tutee.png'}
+                            alt={account.user_type}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                       </div>
                     </button>
