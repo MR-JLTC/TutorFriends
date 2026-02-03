@@ -81,6 +81,34 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [user]);
 
+  // Listen for global 401 unauthorized events from api.ts
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      console.log('AuthContext: Received auth:unauthorized event');
+      // If we are already logged out, do nothing
+      if (!user && !token) return;
+
+      // Perform logout cleanup
+      setUser(null);
+      setToken(null);
+
+      const storageRole: AuthRoleKey | null = mapRoleToStorageKey(user?.role) ?? mapRoleToStorageKey(user?.user_type);
+      if (storageRole) {
+        clearRoleAuth(storageRole);
+        setActiveRole(null);
+      }
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+
+      navigate('/login');
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, [user, token, navigate]);
+
   const handleAuthSuccess = React.useCallback((data: { user: User; accessToken: string }) => {
     // Batch state updates
     Promise.resolve().then(() => {
