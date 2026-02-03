@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '../components/ui/Toast';
 import { notificationService } from '../services/notificationService';
-import {  Notification } from '../types/index';
+import { Notification } from '../types/index';
 import { useAuth } from './AuthContext';
 import { getActiveToken } from '../utils/authRole';
 
@@ -38,12 +38,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const lastSettledUserIdRef = useRef<number | null>(null);
 
   const refreshNotifications = useCallback(async () => {
-    // Only proceed if we have a token
+    // Only proceed if we have a token AND an authenticated user in state
     const token = getActiveToken();
     const currentUserId = authUser?.user_id ?? null;
     const currentRole = authUser?.role;
 
-    if (!token || !currentUserId) {
+    // Strict check: both token (storage) and user (state) must exist
+    if (!token || !currentUserId || !authUser) {
       activeUserIdRef.current = null;
       lastSettledUserIdRef.current = null;
       setState(prev => ({
@@ -61,13 +62,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setState(prev => (
         isNewUser
           ? {
-              ...initialState,
-              isLoading: true,
-              error: null
-            }
+            ...initialState,
+            isLoading: true,
+            error: null
+          }
           : { ...prev, isLoading: true, error: null }
       ));
-      
+
       // Each service method now handles its own errors and returns safe defaults
       // Pass user role when checking upcoming sessions to ensure the backend
       // can return role-specific upcoming session info when supported.
@@ -119,20 +120,30 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [refreshNotifications]);
 
   // Poll for new notifications periodically while the user is authenticated.
-  // This provides near-real-time updates without adding a WS layer.
   useEffect(() => {
-    let interval: any = null;
-    const token = getActiveToken();
-    if (token) {
-      // Poll every 10 seconds
-      interval = setInterval(() => {
-        refreshNotifications();
-      }, 10000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
+    let timeoutId: NodeJS.Timeout | null = null;
+    let isMounted = true;
+
+    const poll = async () => {
+      // Double check active state
+      if (!authUser || !getActiveToken()) return;
+
+      await refreshNotifications();
+
+      if (isMounted && authUser) {
+        timeoutId = setTimeout(poll, 10000);
+      }
     };
-  }, [refreshNotifications]);
+
+    if (authUser && getActiveToken()) {
+      poll();
+    }
+
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [refreshNotifications, authUser]);
 
   const markAsRead = async (notificationId: number | string) => {
     try {

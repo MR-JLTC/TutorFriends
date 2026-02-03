@@ -189,10 +189,12 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('user');
         // Let the application state (AuthContext) handle the logout and redirection
         // instead of a hard browser redirect which causes page reloads and lost state.
-        console.warn('API 401 Unauthorized - user logged out');
+        console.warn('API 401 Unauthorized - user logged out, dispatching event');
 
         // Dispatch custom event so AuthContext can sync state immediately
         window.dispatchEvent(new Event('auth:unauthorized'));
+      } else {
+        console.warn('API 401 received but no logout triggered:', { isAuthEndpoint, isOnLoginPage, isOnPublicPage });
       }
       // For auth endpoints or when already on a login/public page, do not redirect
       // The error will be caught and displayed by the login page component
