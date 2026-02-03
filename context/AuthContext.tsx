@@ -100,7 +100,15 @@ function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
 
-      navigate('/login');
+      // Only redirect if we are not on a public page
+      const currentPath = window.location.pathname.toLowerCase();
+      const isPublic = currentPath.startsWith('/landing') ||
+        currentPath.startsWith('/tuteeregistration') ||
+        currentPath.startsWith('/tutorregistration');
+
+      if (!isPublic) {
+        navigate('/login');
+      }
     };
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);

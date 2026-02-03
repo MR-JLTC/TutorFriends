@@ -180,21 +180,31 @@ apiClient.interceptors.response.use(
         currentPath.includes('/tuteeregistrationpage') ||
         currentPath.includes('/tutorregistrationpage');
 
-      if (!isAuthEndpoint && !isOnLoginPage && !isOnPublicPage) {
+      if (!isAuthEndpoint) {
+        // ALWAYS clear invalid credentials on 401, regardless of which page we are on.
+        // This prevents infinite loops where the app keeps using a known-bad token.
         const role = getRoleForContext();
         if (role) {
           clearRoleAuth(role);
         }
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        // Let the application state (AuthContext) handle the logout and redirection
-        // instead of a hard browser redirect which causes page reloads and lost state.
-        console.warn('API 401 Unauthorized - user logged out, dispatching event');
+        console.warn('API 401 Unauthorized - cleared auth storage');
 
-        // Dispatch custom event so AuthContext can sync state immediately
-        window.dispatchEvent(new Event('auth:unauthorized'));
-      } else {
-        console.warn('API 401 received but no logout triggered:', { isAuthEndpoint, isOnLoginPage, isOnPublicPage });
+        // Only force a redirect/state-reset if we are NOT on a public/login page.
+        // If we are on a public page, clearing storage is enough to stop polling (via NotificationContext checks).
+        if (!isOnLoginPage && !isOnPublicPage) {
+          console.warn('Dispatching auth:unauthorized to redirect user');
+          window.dispatchEvent(new Event('auth:unauthorized'));
+        } else {
+          // On public pages, we also dispatch the event but AuthContext might redirect. 
+          // If we want to stay on landing page, we should perhaps Silent update?
+          // Actually, it's safer to just let AuthContext sync the state to null. 
+          // If AuthContext redirects, strictly speaking that is "correct" (you were logged in, now you aren't).
+          // But to avoid jarring jumps, we can conditionally redirect in AuthContext. 
+          // For now, let's DISPATCH it so React state (user=null) matches Storage state.
+          window.dispatchEvent(new Event('auth:unauthorized'));
+        }
       }
       // For auth endpoints or when already on a login/public page, do not redirect
       // The error will be caught and displayed by the login page component
