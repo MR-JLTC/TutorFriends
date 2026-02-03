@@ -21,12 +21,13 @@ import TuteeDashboard from './components/Tutor_TuteePages/TuteeDashboard';
 import UnifiedLoginPage from './components/auth/UnifiedLoginPage';
 import PasswordResetPage from './components/auth/PasswordResetPage';
 import BookingsPage from './components/shared/BookingsPage';
-import NetworkMonitor from './components/shared/NetworkMonitor';
+import { useNetworkStatus } from './hooks/useNetworkStatus';
 
 const App: React.FC = () => {
+  useNetworkStatus(); // Initialize network monitoring
+
   return (
     <>
-      <NetworkMonitor />
       <Routes>
         {/* Public routes */}
         {/* Default redirect for empty path */}
