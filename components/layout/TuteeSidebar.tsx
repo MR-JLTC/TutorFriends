@@ -194,456 +194,456 @@ const TuteeSidebar: React.FC = () => {
   // }, [user?.user_id]);
 
   useEffect(() => {
-    useEffect(() => {
-      const checkPendingPayments = async () => {
-        // Don't check payments if user is not logged in or doesn't have an ID
-        if (!user?.user_id) {
+    const checkPendingPayments = async () => {
+      // Don't check payments if user is not logged in or doesn't have an ID
+      if (!user?.user_id) {
+        setHasPendingPayments(false);
+        return;
+      }
+      try {
+        const [bookingsResponse, paymentsResponse] = await Promise.all([
+          apiClient.get('/users/me/bookings'),
+          apiClient.get('/payments').catch(() => ({ data: [] }))
+        ]);
+
+        if (!Array.isArray(bookingsResponse.data)) {
+          console.warn('checkPendingPayments: unexpected bookings response, clearing pending flag', bookingsResponse.data); // Re-adding some logging if useful, or keeping it clean
           setHasPendingPayments(false);
           return;
         }
-        try {
-          const [bookingsResponse, paymentsResponse] = await Promise.all([
-            apiClient.get('/users/me/bookings'),
-            apiClient.get('/payments').catch(() => ({ data: [] }))
-          ]);
 
-          if (!Array.isArray(bookingsResponse.data)) {
-            setHasPendingPayments(false);
-            return;
-          }
+        const allBookings = bookingsResponse.data || [];
+        const allPayments = paymentsResponse.data || [];
 
-          const allBookings = bookingsResponse.data || [];
-          const allPayments = paymentsResponse.data || [];
-
-          // Filter payments for current user
-          const userPayments = allPayments.filter((p: any) => {
-            if (!user?.user_id) return false;
-            return (
-              p.student?.user?.user_id === user.user_id
-            );
-          });
-
-          // Bookings that require payment attention
-          const relevantBookings = allBookings.filter((booking: any) => {
-            const status = (booking?.status || '').toLowerCase().trim();
-            return (
-              status === 'awaiting_payment' ||
-              status === 'payment_pending' ||
-              status === 'payment_rejected'
-            );
-          });
-
-          let shouldShowDot = false;
-
-          for (const booking of relevantBookings) {
-            // Match payment by booking_id
-            const matchingPayment = userPayments.find((p: any) => p.booking_id === booking.id);
-
-            if (!matchingPayment) {
-              // No payment yet → show dot
-              shouldShowDot = true;
-              break;
-            }
-
-            const paymentStatus = (matchingPayment.status || '').toLowerCase().trim();
-
-            // Only show dot for 'pending' or 'rejected'
-            if (paymentStatus === 'pending' || paymentStatus === 'rejected') {
-              shouldShowDot = true;
-              break;
-            }
-
-            // 'confirmed', 'admin_confirmed', 'refunded' → no dot
-          }
-
-          setHasPendingPayments(shouldShowDot);
-
-        } catch (err) {
-          console.error('Failed to check pending payments', err);
-          setHasPendingPayments(false);
-        }
-      };
-
-      checkPendingPayments();
-      const interval = setInterval(checkPendingPayments, 8000);
-      const onFocus = () => checkPendingPayments();
-
-      window.addEventListener('focus', onFocus);
-      return () => {
-        clearInterval(interval);
-        window.removeEventListener('focus', onFocus);
-      };
-    }, [user?.user_id]);
-
-
-
-    // Fetch booking data and check for new items
-    useEffect(() => {
-      let mounted = true;
-      const load = async () => {
-        if (!user?.user_id) {
-          if (mounted) {
-            setUpcomingCount(0);
-            setPendingBookingsCount(0);
-            setHasCompletedSessionsForFeedback(false);
-          }
-          return;
-        }
-        try {
-          // Fetch bookings
-          const bookingsRes = await apiClient.get('/users/me/bookings');
-          const allBookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
-
-          // Parse session start time helper
-          const parseSessionStart = (dateStr: string, timeStr: string): Date | null => {
-            if (!dateStr || !timeStr) return null;
-            let sessionDate = new Date(`${dateStr.split('T')[0]}T${timeStr}`);
-            if (!isNaN(sessionDate.getTime())) return sessionDate;
-            sessionDate = new Date(dateStr);
-            if (isNaN(sessionDate.getTime())) return null;
-            const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
-            if (timeMatch) {
-              let hours = parseInt(timeMatch[1], 10);
-              const minutes = parseInt(timeMatch[2], 10);
-              const ampm = timeMatch[3];
-              if (ampm && ampm.toLowerCase() === 'pm' && hours < 12) hours += 12;
-              if (ampm && ampm.toLowerCase() === 'am' && hours === 12) hours = 0;
-              sessionDate.setHours(hours, minutes, 0, 0);
-            }
-            return sessionDate;
-          };
-
-          const now = new Date();
-
-          // Count upcoming sessions - only future sessions (matching UpcomingSessionsPage logic)
-          const upcoming = allBookings.filter((b: any) => {
-            if (!['upcoming', 'confirmed'].includes(b.status)) return false;
-            const start = parseSessionStart(b.date, b.time);
-            return start && start > now;
-          });
-          if (mounted) setUpcomingCount(upcoming.length);
-
-          // Count pending bookings (awaiting tutor response) - matching TuteeMyBookings filter logic
-          // TuteeMyBookings filters out 'upcoming' and 'completed', so we count the rest
-          const pending = allBookings.filter((b: any) => {
-            const status = (b.status || '').toLowerCase();
-            return status !== 'upcoming' && status !== 'completed';
-          });
-          if (mounted) setPendingBookingsCount(pending.length);
-
-          // Check for completed sessions that might need feedback
-          const completedForFeedback = allBookings.filter((b: any) =>
-            b.status === 'completed' && !b.tutee_rating
+        // Filter payments for current user
+        const userPayments = allPayments.filter((p: any) => {
+          if (!user?.user_id) return false;
+          return (
+            p.student?.user?.user_id === user.user_id
           );
-          if (mounted) setHasCompletedSessionsForFeedback(completedForFeedback.length > 0);
-        } catch (err) {
-          console.error('Failed to load booking data (tutee):', err);
-          if (mounted) {
-            setUpcomingCount(0);
-            setPendingBookingsCount(0);
-            setHasCompletedSessionsForFeedback(false);
-          }
-        }
-      };
-      load();
-      // Update count every 30 seconds to reflect changes quickly
-      const interval = setInterval(load, 30000);
-      const onFocus = () => load();
-      window.addEventListener('focus', onFocus);
-      return () => {
-        mounted = false;
-        clearInterval(interval);
-        window.removeEventListener('focus', onFocus);
-      };
-    }, [user?.user_id]);
+        });
 
-    // Check for become tutor application updates
-    useEffect(() => {
-      let mounted = true;
-      const checkTutorApplication = async () => {
-        if (!user?.user_id) {
-          if (mounted) setHasBecomeTutorUpdate(false);
-          return;
-        }
+        // Bookings that require payment attention
+        const relevantBookings = allBookings.filter((booking: any) => {
+          const status = (booking?.status || '').toLowerCase().trim();
+          return (
+            status === 'awaiting_payment' ||
+            status === 'payment_pending' ||
+            status === 'payment_rejected'
+          );
+        });
 
-        try {
-          // First check if user has a tutor profile/application
-          let hasTutorProfile = false;
-          try {
-            const tutorRes = await apiClient.get(`/tutors/by-user/${user.user_id}/tutor-id`);
-            if (tutorRes.data?.tutor_id) {
-              hasTutorProfile = true;
-            }
-          } catch (err: any) {
-            // 404 means no tutor profile exists yet - this is fine
-            if (err.response?.status !== 404) {
-              console.error('Error checking tutor profile:', err);
-            }
+        let shouldShowDot = false;
+
+        for (const booking of relevantBookings) {
+          // Match payment by booking_id
+          const matchingPayment = userPayments.find((p: any) => p.booking_id === booking.id);
+
+          if (!matchingPayment) {
+            // No payment yet → show dot
+            shouldShowDot = true;
+            break;
           }
 
-          // Only show dot if user has a tutor profile AND there are relevant unread notifications
-          if (hasTutorProfile) {
-            const tutorNotifications = notifications.filter(
-              (n: any) =>
-                !n.is_read &&
-                (n.message?.toLowerCase().includes('tutor') ||
-                  n.message?.toLowerCase().includes('application') ||
-                  n.message?.toLowerCase().includes('approved') ||
-                  n.message?.toLowerCase().includes('rejected'))
-            );
-            if (mounted) setHasBecomeTutorUpdate(tutorNotifications.length > 0);
-          } else {
-            // No tutor profile yet, don't show dot
-            if (mounted) setHasBecomeTutorUpdate(false);
+          const paymentStatus = (matchingPayment.status || '').toLowerCase().trim();
+
+          // Only show dot for 'pending' or 'rejected'
+          if (paymentStatus === 'pending' || paymentStatus === 'rejected') {
+            shouldShowDot = true;
+            break;
           }
-        } catch (err) {
-          console.error('Failed to check tutor application status:', err);
-          if (mounted) setHasBecomeTutorUpdate(false);
+
+          // 'confirmed', 'admin_confirmed', 'refunded' → no dot
         }
-      };
 
-      checkTutorApplication();
-      // Re-check when notifications change
-      const interval = setInterval(checkTutorApplication, 10000);
-      return () => {
-        mounted = false;
-        clearInterval(interval);
-      };
-    }, [notifications, user?.user_id]);
+        setHasPendingPayments(shouldShowDot);
 
-    // Mark page as viewed when user navigates to it
-    useEffect(() => {
-      const currentPath = location.pathname;
-      // Check if current path matches any sidebar route
-      tuteeNavLinks.forEach(({ to }) => {
-        if (currentPath === to || currentPath.startsWith(to + '/')) {
-          setViewedPages(prev => new Set(prev).add(to));
-        }
-      });
-    }, [location.pathname]);
-
-    const { unreadCount, hasUpcomingSessions } = useNotifications();
-    const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-    const [showTooltip, setShowTooltip] = useState<string | null>(null);
-    const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
-
-    const handleMouseEnter = (to: string) => {
-      setHoveredItem(to);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      const id = setTimeout(() => {
-        setShowTooltip(to);
-      }, 500);
-      setTimeoutId(id);
-    };
-
-    const handleMouseLeave = () => {
-      setHoveredItem(null);
-      setShowTooltip(null);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        setTimeoutId(null);
+      } catch (err) {
+        console.error('Failed to check pending payments', err);
+        setHasPendingPayments(false);
       }
     };
 
-    useEffect(() => {
-      return () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
+    checkPendingPayments();
+    const interval = setInterval(checkPendingPayments, 8000);
+    const onFocus = () => checkPendingPayments();
+
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [user?.user_id]);
+
+
+
+  // Fetch booking data and check for new items
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!user?.user_id) {
+        if (mounted) {
+          setUpcomingCount(0);
+          setPendingBookingsCount(0);
+          setHasCompletedSessionsForFeedback(false);
         }
-      };
-    }, [timeoutId]);
+        return;
+      }
+      try {
+        // Fetch bookings
+        const bookingsRes = await apiClient.get('/users/me/bookings');
+        const allBookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
 
-    const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
+        // Parse session start time helper
+        const parseSessionStart = (dateStr: string, timeStr: string): Date | null => {
+          if (!dateStr || !timeStr) return null;
+          let sessionDate = new Date(`${dateStr.split('T')[0]}T${timeStr}`);
+          if (!isNaN(sessionDate.getTime())) return sessionDate;
+          sessionDate = new Date(dateStr);
+          if (isNaN(sessionDate.getTime())) return null;
+          const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+          if (timeMatch) {
+            let hours = parseInt(timeMatch[1], 10);
+            const minutes = parseInt(timeMatch[2], 10);
+            const ampm = timeMatch[3];
+            if (ampm && ampm.toLowerCase() === 'pm' && hours < 12) hours += 12;
+            if (ampm && ampm.toLowerCase() === 'am' && hours === 12) hours = 0;
+            sessionDate.setHours(hours, minutes, 0, 0);
+          }
+          return sessionDate;
+        };
 
-      if (!file.type.startsWith('image/')) {
-        notify('Please select a valid image file.', 'error');
+        const now = new Date();
+
+        // Count upcoming sessions - only future sessions (matching UpcomingSessionsPage logic)
+        const upcoming = allBookings.filter((b: any) => {
+          if (!['upcoming', 'confirmed'].includes(b.status)) return false;
+          const start = parseSessionStart(b.date, b.time);
+          return start && start > now;
+        });
+        if (mounted) setUpcomingCount(upcoming.length);
+
+        // Count pending bookings (awaiting tutor response) - matching TuteeMyBookings filter logic
+        // TuteeMyBookings filters out 'upcoming' and 'completed', so we count the rest
+        const pending = allBookings.filter((b: any) => {
+          const status = (b.status || '').toLowerCase();
+          return status !== 'upcoming' && status !== 'completed';
+        });
+        if (mounted) setPendingBookingsCount(pending.length);
+
+        // Check for completed sessions that might need feedback
+        const completedForFeedback = allBookings.filter((b: any) =>
+          b.status === 'completed' && !b.tutee_rating
+        );
+        if (mounted) setHasCompletedSessionsForFeedback(completedForFeedback.length > 0);
+      } catch (err) {
+        console.error('Failed to load booking data (tutee):', err);
+        if (mounted) {
+          setUpcomingCount(0);
+          setPendingBookingsCount(0);
+          setHasCompletedSessionsForFeedback(false);
+        }
+      }
+    };
+    load();
+    // Update count every 30 seconds to reflect changes quickly
+    const interval = setInterval(load, 30000);
+    const onFocus = () => load();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [user?.user_id]);
+
+  // Check for become tutor application updates
+  useEffect(() => {
+    let mounted = true;
+    const checkTutorApplication = async () => {
+      if (!user?.user_id) {
+        if (mounted) setHasBecomeTutorUpdate(false);
         return;
       }
 
-      setIsUploading(true);
       try {
-        const formData = new FormData();
-        formData.append('file', file);
+        // First check if user has a tutor profile/application
+        let hasTutorProfile = false;
+        try {
+          const tutorRes = await apiClient.get(`/tutors/by-user/${user.user_id}/tutor-id`);
+          if (tutorRes.data?.tutor_id) {
+            hasTutorProfile = true;
+          }
+        } catch (err: any) {
+          // 404 means no tutor profile exists yet - this is fine
+          if (err.response?.status !== 404) {
+            console.error('Error checking tutor profile:', err);
+          }
+        }
 
-        const response = await apiClient.post(`/users/${user?.user_id}/profile-image`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-
-        // Update local storage with new profile image URL
-        const updatedUser = { ...user, profile_image_url: response.data.profile_image_url };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        updateRoleUser(updatedUser as any);
-
-        // Trigger re-render by reloading the page
-        window.location.reload();
-
-        notify('Profile image updated successfully!', 'success');
-      } catch (error) {
-        console.error('Failed to upload profile image:', error);
-        notify('Failed to upload profile image. Please try again.', 'error');
-      } finally {
-        setIsUploading(false);
-        e.target.value = '';
+        // Only show dot if user has a tutor profile AND there are relevant unread notifications
+        if (hasTutorProfile) {
+          const tutorNotifications = notifications.filter(
+            (n: any) =>
+              !n.is_read &&
+              (n.message?.toLowerCase().includes('tutor') ||
+                n.message?.toLowerCase().includes('application') ||
+                n.message?.toLowerCase().includes('approved') ||
+                n.message?.toLowerCase().includes('rejected'))
+          );
+          if (mounted) setHasBecomeTutorUpdate(tutorNotifications.length > 0);
+        } else {
+          // No tutor profile yet, don't show dot
+          if (mounted) setHasBecomeTutorUpdate(false);
+        }
+      } catch (err) {
+        console.error('Failed to check tutor application status:', err);
+        if (mounted) setHasBecomeTutorUpdate(false);
       }
     };
 
-    return (
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
-        <div className="px-4 py-4 border-b border-slate-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img src={logoBase64} alt="TutorFriends Logo" className="h-14 w-auto object-contain" />
-              <div>
-                <h1 className="text-lg font-bold text-slate-800">TutorFriends</h1>
-                <p className="text-xs text-slate-600 font-medium">Student Dashboard</p>
-              </div>
+    checkTutorApplication();
+    // Re-check when notifications change
+    const interval = setInterval(checkTutorApplication, 10000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [notifications, user?.user_id]);
+
+  // Mark page as viewed when user navigates to it
+  useEffect(() => {
+    const currentPath = location.pathname;
+    // Check if current path matches any sidebar route
+    tuteeNavLinks.forEach(({ to }) => {
+      if (currentPath === to || currentPath.startsWith(to + '/')) {
+        setViewedPages(prev => new Set(prev).add(to));
+      }
+    });
+  }, [location.pathname]);
+
+  const { unreadCount, hasUpcomingSessions } = useNotifications();
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleMouseEnter = (to: string) => {
+    setHoveredItem(to);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    const id = setTimeout(() => {
+      setShowTooltip(to);
+    }, 500);
+    setTimeoutId(id);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredItem(null);
+    setShowTooltip(null);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      setTimeoutId(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [timeoutId]);
+
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      notify('Please select a valid image file.', 'error');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await apiClient.post(`/users/${user?.user_id}/profile-image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      // Update local storage with new profile image URL
+      const updatedUser = { ...user, profile_image_url: response.data.profile_image_url };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      updateRoleUser(updatedUser as any);
+
+      // Trigger re-render by reloading the page
+      window.location.reload();
+
+      notify('Profile image updated successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to upload profile image:', error);
+      notify('Failed to upload profile image. Please try again.', 'error');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  return (
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
+      <div className="px-4 py-4 border-b border-slate-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <img src={logoBase64} alt="TutorFriends Logo" className="h-14 w-auto object-contain" />
+            <div>
+              <h1 className="text-lg font-bold text-slate-800">TutorFriends</h1>
+              <p className="text-xs text-slate-600 font-medium">Student Dashboard</p>
             </div>
-            {/* Removed notification bell and badge from tutee sidebar as requested */}
           </div>
+          {/* Removed notification bell and badge from tutee sidebar as requested */}
         </div>
+      </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {tuteeNavLinks.map(({ to, icon: Icon, label, description, showNotification, showUpcoming }) => {
-            return (
-              <div key={to} className="relative">
-                <NavLink
-                  to={to}
-                  className={({ isActive }) =>
-                    `block p-3 rounded-lg transition-all duration-200 group ${isActive
-                      ? 'bg-blue-50 text-blue-700 shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }`
-                  }
-                  onMouseEnter={() => handleMouseEnter(to)}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => {
-                    setViewedPages(prev => new Set(prev).add(to));
-                  }}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center space-x-3">
-                      <Icon className={`h-5 w-5 ${hoveredItem === to ? 'text-blue-600' : 'text-slate-500'}`} />
-                      <span className="font-medium text-sm">{label}</span>
-                    </div>
-
-                    <div className="ml-auto flex items-center gap-2">
-                      {/* My Bookings - Show dot if there are pending bookings or booking updates AND page not viewed */}
-                      {to === '/tutee-dashboard/my-bookings' && !viewedPages.has(to) && (
-                        <>
-                          {pendingBookingsCount > 0 && (
-                            <div className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse"></div>
-                          )}
-                          {notifications.some(
-                            (n: any) => !n.is_read && (
-                              n.type === 'booking_update' ||
-                              n.message?.toLowerCase().includes('booking') ||
-                              n.message?.toLowerCase().includes('accepted') ||
-                              n.message?.toLowerCase().includes('declined')
-                            )
-                          ) && (
-                              <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse"></div>
-                            )}
-                        </>
-                      )}
-
-                      {/* Payment - Show dot if there are pending payments AND page not viewed */}
-                      {to === '/tutee-dashboard/payment' &&
-                        !viewedPages.has(to) &&
-                        hasPendingPayments && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></div>
-                        )}
-
-                      {/* After Session - Show dot if there are completed sessions needing feedback AND page not viewed */}
-                      {to === '/tutee-dashboard/after-session' &&
-                        !viewedPages.has(to) &&
-                        hasCompletedSessionsForFeedback && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-purple-500 animate-pulse"></div>
-                        )}
-
-                      {/* Become a Tutor - Show dot if there are application updates AND page not viewed */}
-                      {to === '/tutee-dashboard/become-tutor' &&
-                        !viewedPages.has(to) &&
-                        hasBecomeTutorUpdate && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
-                        )}
-
-                      {/* Upcoming Sessions - Show numeric badge */}
-                      {showUpcoming && upcomingCount > 0 && (
-                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white">
-                          {upcomingCount > 99 ? '99+' : upcomingCount}
-                        </span>
-                      )}
-                    </div>
+      <nav className="flex-1 px-3 py-4 space-y-1">
+        {tuteeNavLinks.map(({ to, icon: Icon, label, description, showNotification, showUpcoming }) => {
+          return (
+            <div key={to} className="relative">
+              <NavLink
+                to={to}
+                className={({ isActive }) =>
+                  `block p-3 rounded-lg transition-all duration-200 group ${isActive
+                    ? 'bg-blue-50 text-blue-700 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`
+                }
+                onMouseEnter={() => handleMouseEnter(to)}
+                onMouseLeave={handleMouseLeave}
+                onClick={() => {
+                  setViewedPages(prev => new Set(prev).add(to));
+                }}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center space-x-3">
+                    <Icon className={`h-5 w-5 ${hoveredItem === to ? 'text-blue-600' : 'text-slate-500'}`} />
+                    <span className="font-medium text-sm">{label}</span>
                   </div>
-                </NavLink>
 
-                {/* Hover tooltip */}
-                {showTooltip === to && (
-                  <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-4 z-50 animate-in fade-in-0 zoom-in-95 duration-200">
-                    <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-2xl w-80">
-                      <div className="relative">
-                        {/* Arrow */}
-                        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2">
-                          <div className="w-4 h-4 bg-white border-l-2 border-t-2 border-slate-200 rotate-45"></div>
+                  <div className="ml-auto flex items-center gap-2">
+                    {/* My Bookings - Show dot if there are pending bookings or booking updates AND page not viewed */}
+                    {to === '/tutee-dashboard/my-bookings' && !viewedPages.has(to) && (
+                      <>
+                        {pendingBookingsCount > 0 && (
+                          <div className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse"></div>
+                        )}
+                        {notifications.some(
+                          (n: any) => !n.is_read && (
+                            n.type === 'booking_update' ||
+                            n.message?.toLowerCase().includes('booking') ||
+                            n.message?.toLowerCase().includes('accepted') ||
+                            n.message?.toLowerCase().includes('declined')
+                          )
+                        ) && (
+                            <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse"></div>
+                          )}
+                      </>
+                    )}
+
+                    {/* Payment - Show dot if there are pending payments AND page not viewed */}
+                    {to === '/tutee-dashboard/payment' &&
+                      !viewedPages.has(to) &&
+                      hasPendingPayments && (
+                        <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></div>
+                      )}
+
+                    {/* After Session - Show dot if there are completed sessions needing feedback AND page not viewed */}
+                    {to === '/tutee-dashboard/after-session' &&
+                      !viewedPages.has(to) &&
+                      hasCompletedSessionsForFeedback && (
+                        <div className="h-2.5 w-2.5 rounded-full bg-purple-500 animate-pulse"></div>
+                      )}
+
+                    {/* Become a Tutor - Show dot if there are application updates AND page not viewed */}
+                    {to === '/tutee-dashboard/become-tutor' &&
+                      !viewedPages.has(to) &&
+                      hasBecomeTutorUpdate && (
+                        <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
+                      )}
+
+                    {/* Upcoming Sessions - Show numeric badge */}
+                    {showUpcoming && upcomingCount > 0 && (
+                      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white">
+                        {upcomingCount > 99 ? '99+' : upcomingCount}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </NavLink>
+
+              {/* Hover tooltip */}
+              {showTooltip === to && (
+                <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-4 z-50 animate-in fade-in-0 zoom-in-95 duration-200">
+                  <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-2xl w-80">
+                    <div className="relative">
+                      {/* Arrow */}
+                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2">
+                        <div className="w-4 h-4 bg-white border-l-2 border-t-2 border-slate-200 rotate-45"></div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
                         </div>
-
-                        {/* Content */}
-                        <div className="flex items-start space-x-3">
-                          <div className="flex-shrink-0 mt-1">
-                            <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2">
+                            <h4 className="text-base font-semibold text-slate-800 mb-2 leading-tight">{label}</h4>
+                            {showNotification && hasPendingPayments && (
+                              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                            )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <h4 className="text-base font-semibold text-slate-800 mb-2 leading-tight">{label}</h4>
-                              {showNotification && hasPendingPayments && (
-                                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                              )}
-                            </div>
-                            <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-                          </div>
+                          <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
                         </div>
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Profile Section - clickable to open profile page for viewing/editing */}
-        <div className="px-4 py-4 border-t border-slate-200">
-          <NavLink to="/tutee-dashboard/profile" className="flex items-center space-x-3 group hover:bg-slate-50 p-2 rounded-md">
-            <div className="relative">
-              {user?.profile_image_url ? (
-                <img
-                  src={getFileUrl(user.profile_image_url)}
-                  alt={user.name}
-                  className="h-12 w-12 rounded-full object-cover border-2 border-slate-200"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-lg border-2 border-slate-200">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-800 truncate">{user?.name}</p>
-              <p className="text-xs text-slate-600 truncate">{user?.email}</p>
-            </div>
-          </NavLink>
-        </div>
-      </aside>
-    );
-  };
+          );
+        })}
+      </nav>
 
-  export default TuteeSidebar;
+      {/* Profile Section - clickable to open profile page for viewing/editing */}
+      <div className="px-4 py-4 border-t border-slate-200">
+        <NavLink to="/tutee-dashboard/profile" className="flex items-center space-x-3 group hover:bg-slate-50 p-2 rounded-md">
+          <div className="relative">
+            {user?.profile_image_url ? (
+              <img
+                src={getFileUrl(user.profile_image_url)}
+                alt={user.name}
+                className="h-12 w-12 rounded-full object-cover border-2 border-slate-200"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-lg border-2 border-slate-200">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-800 truncate">{user?.name}</p>
+            <p className="text-xs text-slate-600 truncate">{user?.email}</p>
+          </div>
+        </NavLink>
+      </div>
+    </aside>
+  );
+};
+
+export default TuteeSidebar;
