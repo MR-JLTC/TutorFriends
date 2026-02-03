@@ -22,9 +22,142 @@ interface AuthProviderProps {
 }
 
 function AuthProvider({ children }: AuthProviderProps) {
-  // ... (keeping existing code)
+  // Sync initialization from storage based on current path
+  const getInitialUser = () => {
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    return getActiveUser(path) as User | null;
+  };
 
-  // ...
+  const getInitialToken = () => {
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    return getActiveToken(path);
+  };
+
+  const [user, setUser] = useState<User | null>(getInitialUser);
+  const [token, setToken] = useState<string | null>(getInitialToken);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Re-verify on mount to ensure consistency
+    const currentPath = window.location.pathname;
+    const resolvedRole = resolveRoleFromPath(currentPath);
+    console.log('AuthProvider init:', { currentPath, resolvedRole });
+
+    let storedUser = getActiveUser(currentPath) as User | null;
+    let storedToken = getActiveToken(currentPath);
+
+    // Fallback: If no user found for specific path/role, try generic 'user' storage
+    // This prevents redirects on refresh if the role-specific key (e.g., user:tutee) is missing but the user is logged in
+    if (!storedUser) {
+      const rawUser = localStorage.getItem('user');
+      const rawToken = localStorage.getItem('token');
+      if (rawUser && rawToken) {
+        try {
+          storedUser = JSON.parse(rawUser);
+          storedToken = rawToken;
+          console.log('AuthContext: Restored user from generic storage fallback');
+        } catch (e) {
+          console.error('AuthContext: Failed to parse generic user storage', e);
+        }
+      }
+    }
+
+    if (storedUser && storedToken) {
+      setUser(storedUser);
+      setToken(storedToken);
+    }
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const pathRole = resolveRoleFromPath(window.location.pathname);
+    const storageRole = mapRoleToStorageKey(user?.role) ?? mapRoleToStorageKey(user?.user_type);
+    if (pathRole) {
+      setActiveRole(pathRole);
+    } else if (storageRole) {
+      setActiveRole(storageRole);
+    }
+  }, [user]);
+
+  // Listen for global 401 unauthorized events from api.ts
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      console.log('AuthContext: Received auth:unauthorized event');
+      // If we are already logged out, do nothing
+      if (!user && !token) return;
+
+      // Perform logout cleanup
+      setUser(null);
+      setToken(null);
+
+      const storageRole: AuthRoleKey | null = mapRoleToStorageKey(user?.role) ?? mapRoleToStorageKey(user?.user_type);
+      if (storageRole) {
+        clearRoleAuth(storageRole);
+        setActiveRole(null);
+      }
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+
+      // Only redirect if we are not on a public page
+      const currentPath = window.location.pathname.toLowerCase();
+      const isPublic = currentPath.startsWith('/landing') ||
+        currentPath.startsWith('/tuteeregistration') ||
+        currentPath.startsWith('/tutorregistration');
+
+      if (!isPublic) {
+        navigate('/login');
+      }
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, [user, token, navigate]);
+
+  const handleAuthSuccess = React.useCallback((data: { user: User; accessToken: string }) => {
+    // Batch state updates
+    Promise.resolve().then(() => {
+      // Map student user_type to tutee role
+      const mappedRole = data.user.user_type === 'student' ? 'tutee' : data.user.user_type;
+      const userWithRole = {
+        ...data.user,
+        role: data.user.role || mappedRole,
+        user_type: data.user.user_type
+      };
+      setUser(userWithRole);
+      setToken(data.accessToken);
+      localStorage.setItem('user', JSON.stringify(userWithRole));
+      localStorage.setItem('token', data.accessToken);
+      const storageRole = mapRoleToStorageKey(userWithRole.role) ?? mapRoleToStorageKey(userWithRole.user_type);
+      if (storageRole) {
+        setRoleAuth(storageRole, userWithRole, data.accessToken);
+      }
+    });
+    // Don't navigate here - let the components handle their own navigation
+  }, []);  // Add empty dependency array since we don't use any external values
+
+  const login = async (email: string, password?: string): Promise<void> => {
+    try {
+      const response = await apiClient.post('/auth/login', { email, password });
+      const { user, accessToken } = response.data;
+
+      // Set both user_type and role to ensure consistent admin checking
+      const userWithRole = {
+        ...user,
+        user_type: 'admin',
+        role: 'admin'
+      };
+
+      handleAuthSuccess({ user: userWithRole, accessToken });
+      setActiveRole('admin');
+    } catch (err: any) {
+      // Toast is shown globally by axios interceptor; avoid duplicate here
+      throw err;
+    }
+  };
 
   const loginTutorTutee = async (email: string, password: string, user_type?: string) => {
     console.log('AuthContext: Attempting tutor/tutee login...', { email, user_type });
