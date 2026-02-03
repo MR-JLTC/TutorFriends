@@ -101,40 +101,59 @@ const UnifiedLoginPage: React.FC = () => {
     if (error) setError(''); // Clear error when user starts typing
   };
 
+
+
+  const handleAccountSelection = async (accountType: string) => {
+    setIsLoading(true);
+    setShowAccountSelection(false);
+    try {
+      const result = await loginTutorTutee(formData.email, formData.password, accountType);
+      const role = result as string;
+      switch (role) {
+        case 'tutee': navigate('/tutee-dashboard', { replace: true }); break;
+        case 'tutor': navigate('/tutor-dashboard/sessions', { replace: true }); break;
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const [showAccountSelection, setShowAccountSelection] = useState(false);
+  const [availableAccounts, setAvailableAccounts] = useState<{ user_type: string; name: string }[]>([]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    console.log('Attempting login with:', { email: formData.email });
-
     try {
-      console.log('Calling loginTutorTutee...');
-      const result = await loginTutorTutee(formData.email, formData.password);
-      console.log('Login result:', result);
+      // Pass undefined for user_type initially
+      const result: any = await loginTutorTutee(formData.email, formData.password);
 
-      // Handle navigation here based on role with replace to prevent history stack build-up
-      const role = result as string; // Type assertion since we know it returns a string
-      console.log('Determined role:', role);
+      // Check for multi-account response
+      if (result && result.multiple_accounts) {
+        setAvailableAccounts(result.accounts);
+        setShowAccountSelection(true);
+        setIsLoading(false);
+        return;
+      }
 
+      // Normal login success
+      const role = result as string;
       switch (role) {
         case 'tutee':
-          console.log('Navigating to tutee dashboard...');
           navigate('/tutee-dashboard', { replace: true });
           break;
         case 'tutor':
-          console.log('Navigating to tutor dashboard...');
           navigate('/tutor-dashboard/sessions', { replace: true });
           break;
         default:
-          console.error('Invalid role received:', role);
           throw new Error('Invalid user role');
       }
     } catch (err: any) {
-      console.error('Login error:', err);
-      console.error('Error response:', err.response);
       const errorMessage = err.response?.data?.message || 'Invalid credentials. Please try again.';
-      console.error('Setting error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -290,7 +309,7 @@ const UnifiedLoginPage: React.FC = () => {
                   {isLoading ? (
                     <>
                       <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                      <span>Signing In...</span>
+                      <span>Checking...</span>
                     </>
                   ) : (
                     <>
@@ -318,6 +337,45 @@ const UnifiedLoginPage: React.FC = () => {
             onClose={() => setShowForgotPasswordModal(false)}
             onSuccess={() => { }}
           />
+
+          {/* Account Selection Modal */}
+          {showAccountSelection && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm transform transition-all scale-100 animate-slide-up">
+                <h3 className="text-xl font-bold text-slate-800 mb-2">Multiple Accounts Found</h3>
+                <p className="text-slate-600 text-sm mb-6">This email is associated with multiple accounts. Please select which one you want to continue as:</p>
+
+                <div className="space-y-3">
+                  {availableAccounts.map((account) => (
+                    <button
+                      key={account.user_type}
+                      onClick={() => handleAccountSelection(account.user_type)}
+                      className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-sky-500 hover:bg-sky-50 hover:shadow-md transition-all duration-200 group relative overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between relative z-10">
+                        <div>
+                          <p className="font-bold text-slate-800 group-hover:text-sky-700 capitalize text-lg">{account.user_type}</p>
+                          <p className="text-xs text-slate-500 group-hover:text-sky-600">Continue as {account.user_type}</p>
+                        </div>
+                        <div className="h-8 w-8 bg-slate-100 group-hover:bg-white rounded-full flex items-center justify-center group-hover:shadow-sm transition-all">
+                          <svg className="w-4 h-4 text-slate-400 group-hover:text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 flex justify-center">
+                  <button
+                    onClick={() => setShowAccountSelection(false)}
+                    className="text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

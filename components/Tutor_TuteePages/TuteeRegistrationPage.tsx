@@ -369,10 +369,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
     if (!formData.name || !formData.email || !formData.password || !formData.yearLevel) {
-      setIsLoading(false);
       notify('Please fill all required fields.', 'error');
       return;
     }
@@ -397,6 +394,8 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       notify('Please select or enter a course.', 'error');
       return;
     }
+
+    setIsLoading(true);
 
     try {
       console.log('Starting tutee registration submission...');
