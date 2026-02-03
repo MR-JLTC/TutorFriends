@@ -83,77 +83,80 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
-        {toasts.map((t) => {
-          const style = stylesByType[t.type] || stylesByType.info;
-          const Icon = style.icon;
+      {createPortal(
+        <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+          {toasts.map((t) => {
+            const style = stylesByType[t.type] || stylesByType.info;
+            const Icon = style.icon;
 
-          return (
-            <div
-              key={t.id}
-              className={`
-                pointer-events-auto
-                relative w-full max-w-sm overflow-hidden
-                flex items-start gap-4 p-4
-                rounded-xl border ${style.border}
-                ${style.bg} backdrop-blur-md
-                shadow-xl shadow-slate-200/50
-                animate-toast-slide-in
-                transition-all duration-300
-              `}
-              role="alert"
-            >
-              {/* Icon Section */}
-              <div className={`flex-shrink-0 pt-0.5 ${style.iconColor}`}>
-                <Icon className="w-5 h-5" strokeWidth={2.5} />
-              </div>
-
-              {/* Content Section */}
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${style.text} leading-snug`}>
-                  {t.message}
-                </p>
-
-                {/* Optional Action Button */}
-                {t.action && (
-                  <div className="mt-2.5">
-                    <button
-                      onClick={() => {
-                        try {
-                          t.action?.onClick && t.action.onClick();
-                        } catch (e) {
-                          console.error('Toast action failed', e);
-                        }
-                        remove(t.id);
-                      }}
-                      className={`
-                        inline-flex items-center px-3 py-1.5
-                        text-xs font-semibold rounded-lg
-                        transition-colors duration-200
-                        bg-slate-100 hover:bg-slate-200 text-slate-700
-                      `}
-                    >
-                      {t.action.label}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Close Button */}
-              <button
-                onClick={() => remove(t.id)}
-                className="flex-shrink-0 -mt-1 -mr-1 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                aria-label="Dismiss"
+            return (
+              <div
+                key={t.id}
+                className={`
+                  pointer-events-auto
+                  relative w-full max-w-sm overflow-hidden
+                  flex items-start gap-4 p-4
+                  rounded-xl border ${style.border}
+                  ${style.bg} backdrop-blur-md
+                  shadow-xl shadow-slate-200/50
+                  animate-toast-slide-in
+                  transition-all duration-300
+                `}
+                role="alert"
               >
-                <X className="w-4 h-4" />
-              </button>
+                {/* Icon Section */}
+                <div className={`flex-shrink-0 pt-0.5 ${style.iconColor}`}>
+                  <Icon className="w-5 h-5" strokeWidth={2.5} />
+                </div>
 
-              {/* Progress/Time indicator (optional visual hint) */}
-              <div className={`absolute bottom-0 left-0 h-0.5 ${style.bg === 'bg-white/90' ? style.iconColor.replace('text-', 'bg-') : 'bg-current'} opacity-20 w-full animate-toast-progress origin-left`} />
-            </div>
-          );
-        })}
-      </div>
+                {/* Content Section */}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium ${style.text} leading-snug`}>
+                    {t.message}
+                  </p>
+
+                  {/* Optional Action Button */}
+                  {t.action && (
+                    <div className="mt-2.5">
+                      <button
+                        onClick={() => {
+                          try {
+                            t.action?.onClick && t.action.onClick();
+                          } catch (e) {
+                            console.error('Toast action failed', e);
+                          }
+                          remove(t.id);
+                        }}
+                        className={`
+                          inline-flex items-center px-3 py-1.5
+                          text-xs font-semibold rounded-lg
+                          transition-colors duration-200
+                          bg-slate-100 hover:bg-slate-200 text-slate-700
+                        `}
+                      >
+                        {t.action.label}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => remove(t.id)}
+                  className="flex-shrink-0 -mt-1 -mr-1 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                  aria-label="Dismiss"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                {/* Progress/Time indicator (optional visual hint) */}
+                <div className={`absolute bottom-0 left-0 h-0.5 ${style.bg === 'bg-white/90' ? style.iconColor.replace('text-', 'bg-') : 'bg-current'} opacity-20 w-full animate-toast-progress origin-left`} />
+              </div>
+            );
+          })}
+        </div>,
+        document.body
+      )}
       <style>
         {`
           @keyframes toast-slide-in {
