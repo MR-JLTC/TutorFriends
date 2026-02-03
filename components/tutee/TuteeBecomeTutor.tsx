@@ -163,7 +163,10 @@ const TuteeBecomeTutor: React.FC = () => {
       if (profileImage || !user?.profile_image_url) return;
 
       try {
-        const url = apiClient.defaults.baseURL + '/uploads/profiles/' + user.profile_image_url;
+        const isAbsolute = user.profile_image_url.startsWith('http');
+        const url = isAbsolute
+          ? user.profile_image_url
+          : `${apiClient.defaults.baseURL}/uploads/profiles/${user.profile_image_url}`;
         const response = await fetch(url);
         const blob = await response.blob();
         const file = new File([blob], "profile_image.jpg", { type: blob.type });
