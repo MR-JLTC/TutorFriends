@@ -264,6 +264,12 @@ const TuteeSidebar: React.FC = () => {
       }
     };
 
+    // Strict guard: if no user, don't even start the interval
+    if (!user?.user_id) {
+      setHasPendingPayments(false);
+      return;
+    }
+
     checkPendingPayments();
     const interval = setInterval(checkPendingPayments, 8000);
     const onFocus = () => checkPendingPayments();

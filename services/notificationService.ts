@@ -20,8 +20,11 @@ export class NotificationService {
     try {
       const response = await apiClient.get<ApiResponse<Notification[]>>(this.baseUrl);
       return response.data?.data || [];
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+    } catch (error: any) {
+      // Suppress 401 errors as they are handled globally
+      if (error?.response?.status !== 401) {
+        console.error('Error fetching notifications:', error);
+      }
       return []; // Return empty array on any error
     }
   }
@@ -30,8 +33,10 @@ export class NotificationService {
     try {
       const response = await apiClient.get<ApiResponse<{ count: number }>>(`${this.baseUrl}/unread-count`);
       return response.data?.data?.count || 0;
-    } catch (error) {
-      console.error('Error getting unread count:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error('Error getting unread count:', error);
+      }
       return 0; // Return 0 on any error
     }
   }
@@ -44,8 +49,10 @@ export class NotificationService {
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Failed to mark notification as read');
       }
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error('Error marking notification as read:', error);
+      }
       // Don't throw, just log the error
     }
   }
@@ -56,8 +63,10 @@ export class NotificationService {
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Failed to mark all notifications as read');
       }
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error('Error marking all notifications as read:', error);
+      }
       // Don't throw, just log the error
     }
   }
@@ -68,8 +77,10 @@ export class NotificationService {
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Failed to delete notification');
       }
-    } catch (error) {
-      console.error('Error deleting notification:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error('Error deleting notification:', error);
+      }
       // Don't throw, just log the error
     }
   }
@@ -87,8 +98,10 @@ export class NotificationService {
         params: userType ? { userType } : undefined
       });
       return response.data?.data?.hasUpcoming || false;
-    } catch (error) {
-      console.error('Error checking upcoming sessions:', error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error('Error checking upcoming sessions:', error);
+      }
       return false; // Return false on any error
     }
   }
