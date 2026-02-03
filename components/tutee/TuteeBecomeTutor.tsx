@@ -764,7 +764,10 @@ const TuteeBecomeTutor: React.FC = () => {
               <label className="block text-sm font-semibold text-slate-700">Bio / Tutoring Style</label>
               <textarea
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => {
+                  const filtered = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                  setBio(filtered);
+                }}
                 className="w-full p-4 bg-white rounded-2xl border border-slate-200 h-32 focus:ring-2 focus:ring-indigo-500"
                 placeholder="Describe your tutoring experience and how you can help fellow students..."
               />
