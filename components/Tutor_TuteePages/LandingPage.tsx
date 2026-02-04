@@ -6,6 +6,7 @@ import Modal from '../../components/ui/Modal';
 import { TutorRegistrationModal } from './TutorRegistrationPage';
 import { TuteeRegistrationModal } from './TuteeRegistrationPage';
 import apiClient, { getFileUrl } from '../../services/api';
+import { useToast } from '../../components/ui/Toast';
 
 // New icons for "How it works" section
 const MagnifyingGlassIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -225,6 +226,38 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { notify } = useToast();
+
+  useEffect(() => {
+    const checkNetworkQuality = () => {
+      if (!navigator.onLine) {
+        notify('You are currently offline', 'error');
+        return;
+      }
+
+      const connection = (navigator as any).connection;
+      if (connection) {
+        // criteria for "Excellent": 4g and low latency
+        if (connection.effectiveType === '4g' && connection.rtt < 150) {
+          notify('Excellent internet connection', 'success');
+        } else if (connection.effectiveType === '4g') {
+          notify('Good internet connection', 'info');
+        } else if (['3g', '2g', 'slow-2g'].includes(connection.effectiveType)) {
+          notify('Internet connection is slow', 'error'); // or warning if available, using error/info for now
+        } else {
+          notify('Internet connection stable', 'info');
+        }
+      } else {
+        // Fallback if connection API is not available
+        notify('Internet connection available', 'info');
+      }
+    };
+
+    // Small delay to ensure UI is ready
+    const timer = setTimeout(checkNetworkQuality, 500);
+    return () => clearTimeout(timer);
+  }, [notify]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
