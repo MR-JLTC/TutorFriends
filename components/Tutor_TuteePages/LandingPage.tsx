@@ -245,6 +245,13 @@ const LandingPage: React.FC = () => {
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+
+    if (name === 'name') {
+      const lettersOnly = value.replace(/[^A-Za-z\s]/g, '');
+      setContactForm(prev => ({ ...prev, [name]: lettersOnly }));
+      return;
+    }
+
     setContactForm(prev => ({ ...prev, [name]: value }));
   };
 
@@ -807,6 +814,7 @@ const LandingPage: React.FC = () => {
                         onChange={handleContactChange}
                         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                         placeholder="your@email.com"
+                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                         required
                       />
                     </div>
