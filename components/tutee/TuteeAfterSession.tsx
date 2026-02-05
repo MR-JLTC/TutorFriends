@@ -321,8 +321,8 @@ const TuteeAfterSession: React.FC = () => {
               <div key={session.id} className="group relative bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
                 {/* Status Color Bar */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${session.isPendingCompletion ? 'bg-yellow-400' :
-                    session.status === 'awaiting_confirmation' ? 'bg-blue-500' :
-                      'bg-green-500'
+                  session.status === 'awaiting_confirmation' ? 'bg-blue-500' :
+                    'bg-green-500'
                   }`} />
 
                 <div className="p-4 pl-5">
@@ -346,8 +346,6 @@ const TuteeAfterSession: React.FC = () => {
                             Completed
                           </span>
                         )}
-                        <span className="text-slate-300">|</span>
-                        <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">ID: #{session.id}</span>
                       </div>
 
                       <h3 className="text-lg font-bold text-slate-900 mb-1">{session.subject}</h3>
