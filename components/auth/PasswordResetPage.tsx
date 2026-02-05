@@ -20,6 +20,7 @@ const PasswordResetPage: React.FC = () => {
   // Get email and determine flow type (default vs admin)
   const email = searchParams.get('email') || '';
   const flowType = searchParams.get('type') === 'admin' ? 'admin' : 'default';
+  const userType = searchParams.get('user_type'); // Get target user type if specified
   const resetEndpoint = flowType === 'admin' ? '/auth/password-reset/admin/verify-and-reset' : '/auth/password-reset/verify-and-reset';
   const redirectRoute = flowType === 'admin' ? '/admin-login' : '/login';
 
@@ -96,6 +97,7 @@ const PasswordResetPage: React.FC = () => {
         email,
         code: formData.code,
         newPassword: formData.newPassword,
+        user_type: userType || undefined, // Include user_type in request
       });
 
       if (response.data) {

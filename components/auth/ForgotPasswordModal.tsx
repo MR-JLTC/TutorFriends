@@ -16,11 +16,9 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   mode = 'default',
 }) => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [showProceedButton, setShowProceedButton] = useState(false);
+  const [multiAccountOptions, setMultiAccountOptions] = useState<Array<{ user_type: string, name: string }>>([]);
+  const [showMultiAccountSelection, setShowMultiAccountSelection] = useState(false);
+  const [selectedAccountType, setSelectedAccountType] = useState<string | null>(null);
 
   const isAdminMode = mode === 'admin';
   const requestEndpoint = isAdminMode ? '/auth/password-reset/admin/request' : '/auth/password-reset/request';
@@ -32,21 +30,29 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
     try {
       console.log('Frontend: Sending email:', email);
-      console.log('Frontend: Email type:', typeof email);
-      console.log('Frontend: Email length:', email.length);
 
       // First, check user type before submitting
       try {
         const userTypeResponse = await api.get(`/auth/password-reset/check-user-type?email=${encodeURIComponent(email)}`);
-        const userType = userTypeResponse.data?.userType;
+        const result = userTypeResponse.data;
 
-        console.log('Frontend: User type check result:', userType);
+        console.log('Frontend: User type check result:', result);
 
-        if (!userType) {
+        if (!result) {
           setError('This email address is not registered in our system. Cannot proceed with password reset. Please verify your email address or contact support if you believe this is an error.');
           setIsLoading(false);
           return;
         }
+
+        // Handle multiple accounts
+        if (result.multiple_accounts) {
+          setMultiAccountOptions(result.accounts);
+          setShowMultiAccountSelection(true);
+          setIsLoading(false);
+          return;
+        }
+
+        const userType = result.userType;
 
         // Validate user type matches the mode
         if (isAdminMode && userType !== 'admin') {
@@ -75,7 +81,17 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         console.log('Frontend: User type check failed, continuing with request:', checkError);
       }
 
-      const requestBody = { email };
+      await sendResetRequest(email);
+
+    } catch (err: any) {
+      handleError(err);
+    }
+  };
+
+  const sendResetRequest = async (email: string, user_type?: string) => {
+    try {
+      setIsLoading(true);
+      const requestBody = { email, user_type };
       console.log('Frontend: Request body:', requestBody);
 
       const response = await api.post(requestEndpoint, requestBody);
@@ -84,32 +100,42 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       if (response.data) {
         setSuccess(true);
         setShowProceedButton(true);
-        // Remove automatic redirect - let user choose when to proceed
+        if (user_type) setSelectedAccountType(user_type);
       }
     } catch (err: any) {
-      console.log('Frontend: Error occurred:', err);
-      console.log('Frontend: Error response:', err.response?.data);
-
-      // Check for specific error cases
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to send verification code. Please try again.';
-      const errorStatus = err.response?.status;
-
-      // Handle email not registered/found case
-      if (
-        errorStatus === 404 ||
-        errorMessage.toLowerCase().includes('not found') ||
-        errorMessage.toLowerCase().includes('user not found') ||
-        errorMessage.toLowerCase().includes('email not registered') ||
-        errorMessage.toLowerCase().includes('could not find') ||
-        errorMessage.toLowerCase().includes('does not exist')
-      ) {
-        setError('This email address is not registered in our system. Cannot proceed with password reset. Please verify your email address or contact support if you believe this is an error.');
-      } else {
-        setError(errorMessage);
-      }
+      handleError(err);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleError = (err: any) => {
+    console.log('Frontend: Error occurred:', err);
+    console.log('Frontend: Error response:', err.response?.data);
+
+    // Check for specific error cases
+    const errorMessage = err.response?.data?.message || err.message || 'Failed to send verification code. Please try again.';
+    const errorStatus = err.response?.status;
+
+    // Handle email not registered/found case
+    if (
+      errorStatus === 404 ||
+      errorMessage.toLowerCase().includes('not found') ||
+      errorMessage.toLowerCase().includes('user not found') ||
+      errorMessage.toLowerCase().includes('email not registered') ||
+      errorMessage.toLowerCase().includes('could not find') ||
+      errorMessage.toLowerCase().includes('does not exist')
+    ) {
+      setError('This email address is not registered in our system. Cannot proceed with password reset. Please verify your email address or contact support if you believe this is an error.');
+    } else {
+      setError(errorMessage);
+    }
+    setIsLoading(false);
+  };
+
+  const handleAccountSelection = (account: { user_type: string, name: string }) => {
+    setShowMultiAccountSelection(false);
+    sendResetRequest(email, account.user_type);
   };
 
   const handleClose = () => {
@@ -117,6 +143,9 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     setError('');
     setSuccess(false);
     setShowProceedButton(false);
+    setShowMultiAccountSelection(false);
+    setMultiAccountOptions([]);
+    setSelectedAccountType(null);
     onClose();
   };
 
@@ -124,6 +153,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     const params = new URLSearchParams();
     if (email) params.set('email', email);
     if (isAdminMode) params.set('type', 'admin');
+    if (selectedAccountType) params.set('user_type', selectedAccountType); // Pass selected user type
     navigate(`/password-reset?${params.toString()}`);
     if (onSuccess) {
       onSuccess(email);
@@ -153,7 +183,10 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               Forgot Password?
             </h2>
             <p className="text-slate-600 text-sm">
-              Enter your {isAdminMode ? 'admin' : 'account'} email address and we'll send you a verification code to reset your password.
+              {showMultiAccountSelection
+                ? 'Select the account you want to reset password for.'
+                : `Enter your ${isAdminMode ? 'admin' : 'account'} email address and we'll send you a verification code to reset your password.`
+              }
             </p>
           </div>
 
@@ -196,6 +229,33 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   Close
                 </button>
               </div>
+            </div>
+          ) : showMultiAccountSelection ? (
+            <div className="space-y-3">
+              {multiAccountOptions.map((account, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAccountSelection(account)}
+                  className="w-full flex items-center p-3 border-2 border-slate-200 rounded-xl hover:border-sky-500 hover:bg-sky-50 transition-all duration-200 group relative overflow-hidden"
+                >
+                  <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center mr-3 group-hover:bg-sky-200 transition-colors">
+                    {/* Simple icon based on type */}
+                    {account.user_type === 'tutor' ? (
+                      <svg className="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    ) : (
+                      <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                    )}
+                  </div>
+                  <div className="text-left">
+                    <div className="font-bold text-slate-800 group-hover:text-sky-700 capitalize">
+                      {account.user_type} Account
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      click to reset password
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3">
