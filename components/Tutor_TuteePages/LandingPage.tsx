@@ -238,12 +238,12 @@ const LandingPage: React.FC = () => {
       const connection = (navigator as any).connection;
       if (connection) {
         // criteria for "Excellent": 4g and low latency
-        if (connection.effectiveType === '4g' && connection.rtt < 150) {
-          notify('Excellent internet connection', 'success');
+        if (connection.effectiveType === '4g' && connection.rtt < 100 && connection.downlink > 10) {
+          notify('Excellent internet connection 🚀', 'success');
         } else if (connection.effectiveType === '4g') {
           notify('Good internet connection', 'info');
         } else if (['3g', '2g', 'slow-2g'].includes(connection.effectiveType)) {
-          notify('Internet connection is slow', 'error'); // or warning if available, using error/info for now
+          notify('Internet connection is slow', 'error');
         } else {
           notify('Internet connection stable', 'info');
         }
@@ -253,9 +253,36 @@ const LandingPage: React.FC = () => {
       }
     };
 
-    // Small delay to ensure UI is ready
-    const timer = setTimeout(checkNetworkQuality, 500);
-    return () => clearTimeout(timer);
+    // Check on mount
+    const timer = setTimeout(checkNetworkQuality, 1000);
+
+    // Check when browser history navigation occurs (back/forward cache)
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // event.persisted is true if the page was restored from the bfcache
+      if (event.persisted) {
+        setTimeout(checkNetworkQuality, 500);
+      }
+    };
+
+    // Standard visibility change (tab switching)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkNetworkQuality();
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', checkNetworkQuality);
+    window.addEventListener('offline', checkNetworkQuality);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', checkNetworkQuality);
+      window.removeEventListener('offline', checkNetworkQuality);
+    };
   }, [notify]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
