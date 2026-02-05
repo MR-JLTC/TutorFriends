@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Logo from '../Logo';
 import { useAuth } from '../../hooks/useAuth';
 import ForgotPasswordModal from './ForgotPasswordModal';
+import { useToast } from '../../components/ui/Toast';
 
 const UnifiedLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { loginTutorTutee } = useAuth();
+  const { notify } = useToast();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -94,6 +96,62 @@ const UnifiedLoginPage: React.FC = () => {
       clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    const checkNetworkQuality = () => {
+      if (!navigator.onLine) {
+        notify('You are currently offline', 'error');
+        return;
+      }
+
+      const connection = (navigator as any).connection;
+      if (connection) {
+        // criteria for "Excellent": 4g and low latency
+        if (connection.effectiveType === '4g' && connection.rtt < 100 && connection.downlink > 10) {
+          notify('Excellent internet connection 🚀', 'success');
+        } else if (connection.effectiveType === '4g') {
+          notify('Good internet connection', 'info');
+        } else if (['3g', '2g', 'slow-2g'].includes(connection.effectiveType)) {
+          notify('Internet connection is slow', 'error');
+        } else {
+          notify('Internet connection stable', 'info');
+        }
+      } else {
+        // Fallback if connection API is not available
+        notify('Internet connection available', 'info');
+      }
+    };
+
+    // Check on mount
+    const timer = setTimeout(checkNetworkQuality, 1000);
+
+    // Check when browser history navigation occurs (back/forward cache)
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setTimeout(checkNetworkQuality, 500);
+      }
+    };
+
+    // Standard visibility change
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkNetworkQuality();
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', checkNetworkQuality);
+    window.addEventListener('offline', checkNetworkQuality);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', checkNetworkQuality);
+      window.removeEventListener('offline', checkNetworkQuality);
+    };
+  }, [notify]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
