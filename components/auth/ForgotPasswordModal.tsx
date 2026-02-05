@@ -20,6 +20,13 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   const [showMultiAccountSelection, setShowMultiAccountSelection] = useState(false);
   const [selectedAccountType, setSelectedAccountType] = useState<string | null>(null);
 
+  // Restore missing state variables
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [showProceedButton, setShowProceedButton] = useState(false);
+
   const isAdminMode = mode === 'admin';
   const requestEndpoint = isAdminMode ? '/auth/password-reset/admin/request' : '/auth/password-reset/request';
 
