@@ -96,7 +96,7 @@ const TuteeMyBookings: React.FC = () => {
       }
 
       const response = await apiClient.get('/users/me/bookings');
-      
+
       // Validate response data
       if (!Array.isArray(response.data)) {
         console.error('Invalid response:', response.data);
@@ -122,15 +122,17 @@ const TuteeMyBookings: React.FC = () => {
           }
         };
       });
-      
-      // Filter bookings: include completed and admin_payment_pending (only if they have tutee_rating), upcoming that have started, and other statuses
+
+      // Filter bookings: exclude completed sessions
       const validBookings = bookingsWithStatus.filter((booking: any) => {
         const status = booking.status.toLowerCase();
-        // Include completed bookings ONLY if they have a tutee_rating (feedback has been submitted)
+
+        // Strictly exclude completed sessions as requested
         if (status === 'completed') {
-          return booking.tutee_rating !== null && booking.tutee_rating !== undefined;
+          return false;
         }
-        // Include admin_payment_pending bookings ONLY if they have a tutee_rating (same as completed)
+
+        // Include admin_payment_pending bookings ONLY if they have a tutee_rating
         if (status === 'admin_payment_pending') {
           return booking.tutee_rating !== null && booking.tutee_rating !== undefined;
         }
@@ -141,13 +143,13 @@ const TuteeMyBookings: React.FC = () => {
         // Include all other statuses
         return true;
       });
-      
+
       setBookings(validBookings);
       setError(null); // Clear any previous errors
     } catch (err: any) {
       console.error('Failed to fetch bookings:', err);
-      const errorMessage = err.response?.data?.message || 
-        err.message || 
+      const errorMessage = err.response?.data?.message ||
+        err.message ||
         'Failed to load your bookings. Please check your connection and try again.';
       setError(errorMessage);
       toast.error(errorMessage);
@@ -169,9 +171,8 @@ const TuteeMyBookings: React.FC = () => {
         {Array.from({ length: 5 }, (_, i) => (
           <Star
             key={i}
-            className={`h-4 w-4 sm:h-5 sm:w-5 ${
-              i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'
-            }`}
+            className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'
+              }`}
           />
         ))}
       </div>
@@ -299,27 +300,26 @@ const TuteeMyBookings: React.FC = () => {
               const statusDisplay = getStatusDisplay(booking.status);
               const bookingDate = new Date(booking.date);
               const isUpcoming = bookingDate >= new Date(new Date().toISOString().split('T')[0]);
-              
+
               return (
                 <div
                   key={booking.id}
                   className="group relative bg-gradient-to-br from-white to-blue-50/30 rounded-xl sm:rounded-2xl border-2 border-slate-200 hover:border-blue-300 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
                 >
                   {/* Decorative gradient bar */}
-                  <div className={`absolute top-0 left-0 right-0 h-1 ${
-                    booking.status.toLowerCase() === 'completed'
+                  <div className={`absolute top-0 left-0 right-0 h-1 ${booking.status.toLowerCase() === 'completed'
                       ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
-                    booking.status.toLowerCase() === 'confirmed'
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
-                    booking.status.toLowerCase() === 'cancelled'
-                      ? 'bg-gradient-to-r from-red-500 to-rose-500' :
-                    booking.status.toLowerCase() === 'pending'
-                      ? 'bg-gradient-to-r from-yellow-500 to-amber-500' :
-                    booking.status.toLowerCase() === 'upcoming'
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
-                    'bg-gradient-to-r from-blue-500 to-indigo-500'
-                  }`} />
-                  
+                      booking.status.toLowerCase() === 'confirmed'
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                        booking.status.toLowerCase() === 'cancelled'
+                          ? 'bg-gradient-to-r from-red-500 to-rose-500' :
+                          booking.status.toLowerCase() === 'pending'
+                            ? 'bg-gradient-to-r from-yellow-500 to-amber-500' :
+                            booking.status.toLowerCase() === 'upcoming'
+                              ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
+                              'bg-gradient-to-r from-blue-500 to-indigo-500'
+                    }`} />
+
                   <div className="p-4 sm:p-5 md:p-6">
                     {/* Header Section */}
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-5">
@@ -338,7 +338,7 @@ const TuteeMyBookings: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Status Badge */}
                         <div className="flex items-center gap-2 sm:gap-3 mb-4">
                           {/* Show "Completed" badge for completed and admin_payment_pending bookings */}
@@ -363,18 +363,18 @@ const TuteeMyBookings: React.FC = () => {
                             </div>
                           )}
                           {/* Show regular status badge for other statuses */}
-                          {booking.status.toLowerCase() !== 'completed' && 
-                           booking.status.toLowerCase() !== 'admin_payment_pending' && 
-                           booking.status.toLowerCase() !== 'upcoming' && (
-                            <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 border-2 shadow-md ${statusDisplay.color}`}>
-                              {statusDisplay.icon}
-                              <span className="whitespace-nowrap">{statusDisplay.text}</span>
-                            </div>
-                          )}
+                          {booking.status.toLowerCase() !== 'completed' &&
+                            booking.status.toLowerCase() !== 'admin_payment_pending' &&
+                            booking.status.toLowerCase() !== 'upcoming' && (
+                              <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 border-2 shadow-md ${statusDisplay.color}`}>
+                                {statusDisplay.icon}
+                                <span className="whitespace-nowrap">{statusDisplay.text}</span>
+                              </div>
+                            )}
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Details Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
                       <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
@@ -388,7 +388,7 @@ const TuteeMyBookings: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
                         <div className="p-1.5 sm:p-2 bg-indigo-100 rounded-lg flex-shrink-0">
                           <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
@@ -398,7 +398,7 @@ const TuteeMyBookings: React.FC = () => {
                           <p className="text-sm sm:text-base font-semibold text-slate-900">{booking.time}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
                         <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg flex-shrink-0">
                           <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
@@ -411,7 +411,7 @@ const TuteeMyBookings: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Rating Section - Display tutee's rating if available */}
                     {booking.tutee_rating && (
                       <div className="mt-4 p-3 sm:p-4 bg-gradient-to-br from-yellow-50 via-amber-50/50 to-yellow-50 border-2 border-yellow-200 rounded-xl">
@@ -434,7 +434,7 @@ const TuteeMyBookings: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     {/* After-session feedback action: if booking is completed/admin_payment_pending and no tutee_rating, allow tutee to submit feedback */}
                     {(booking.status.toLowerCase() === 'completed' || booking.status.toLowerCase() === 'admin_payment_pending') && !booking.tutee_rating && (
                       <div className="p-4 border-t border-slate-100 mt-4 flex items-center justify-end">
@@ -455,7 +455,7 @@ const TuteeMyBookings: React.FC = () => {
           onClose={() => { setFeedbackOpen(false); setFeedbackTarget(null); setRating(5); setComment(''); }}
           title="Leave feedback"
           footer={<>
-            <Button 
+            <Button
               onClick={async () => {
                 try {
                   setLoading(true);
@@ -470,16 +470,16 @@ const TuteeMyBookings: React.FC = () => {
                   console.error('Failed to submit feedback', e);
                   toast.error(e?.response?.data?.message || e?.message || 'Failed to submit feedback');
                 } finally { setLoading(false); }
-              }} 
+              }}
               className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all touch-manipulation"
               style={{ WebkitTapHighlightColor: 'transparent' }}
               disabled={loading}
             >
               {loading ? 'Submitting...' : 'Submit'}
             </Button>
-            <Button 
-              variant="secondary" 
-              onClick={() => { setFeedbackOpen(false); setFeedbackTarget(null); setRating(5); setComment(''); }} 
+            <Button
+              variant="secondary"
+              onClick={() => { setFeedbackOpen(false); setFeedbackTarget(null); setRating(5); setComment(''); }}
               className="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 px-6 py-2.5 sm:py-2 border-2 border-slate-300 hover:bg-slate-50 rounded-lg font-semibold text-sm sm:text-base transition-all touch-manipulation"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
@@ -490,22 +490,22 @@ const TuteeMyBookings: React.FC = () => {
           <div className="space-y-4 sm:space-y-5">
             <div>
               <label className="block text-sm sm:text-base font-semibold text-slate-800 mb-2">Rating</label>
-              <select 
-                value={rating} 
-                onChange={(e) => setRating(Number(e.target.value))} 
+              <select
+                value={rating}
+                onChange={(e) => setRating(Number(e.target.value))}
                 className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white"
               >
-                {[5,4,3,2,1].map(n => <option key={n} value={n}>{n} / 5</option>)}
+                {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} / 5</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm sm:text-base font-semibold text-slate-800 mb-2">
                 Comment <span className="text-slate-500 font-normal text-xs sm:text-sm">(optional)</span>
               </label>
-              <textarea 
-                value={comment} 
-                onChange={(e) => setComment(e.target.value)} 
-                className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none min-h-[120px] sm:min-h-[140px]" 
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none min-h-[120px] sm:min-h-[140px]"
                 rows={4}
                 placeholder="Share your experience with this session..."
               />

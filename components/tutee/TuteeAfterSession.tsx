@@ -82,7 +82,7 @@ const TuteeAfterSession: React.FC = () => {
     try {
       setLoading(true);
       const response = await apiClient.get('/users/me/bookings');
-      
+
       if (!Array.isArray(response.data)) {
         throw new Error('Invalid response format from server');
       }
@@ -115,7 +115,7 @@ const TuteeAfterSession: React.FC = () => {
               isPendingCompletion = now.getTime() > end.getTime();
             }
           }
-          
+
           return {
             id: booking.id || 0,
             subject: booking.subject || 'Untitled Session',
@@ -160,19 +160,19 @@ const TuteeAfterSession: React.FC = () => {
       if (res.data?.success) {
         console.log('API call successful, showing success toast.');
         toast.success('Session confirmed! You can now leave feedback.');
-        
+
         // Update the session status immediately in the state
-        setSessions(prevSessions => 
-          prevSessions.map(s => 
-            s.id === confirmTargetSession.id 
+        setSessions(prevSessions =>
+          prevSessions.map(s =>
+            s.id === confirmTargetSession.id
               ? { ...s, status: 'completed' }
               : s
           )
         );
-        
+
         setConfirmModalOpen(false);
         setConfirmTargetSession(null);
-        
+
         // Also refresh from server to ensure we have the latest data
         setTimeout(async () => {
           await fetchSessions();
@@ -195,27 +195,27 @@ const TuteeAfterSession: React.FC = () => {
     try {
       // Submit feedback first
       await apiClient.post(`/users/bookings/${feedbackTarget.id}/feedback`, { rating, comment });
-      
+
       // Fetch booking details to get tutor_id, student_id, and calculate amount
       try {
         const bookingResponse = await apiClient.get(`/users/me/bookings`);
-        const booking = Array.isArray(bookingResponse.data) 
+        const booking = Array.isArray(bookingResponse.data)
           ? bookingResponse.data.find((b: any) => b.id === feedbackTarget.id)
           : null;
-        
+
         if (booking) {
           // Get tutor_id from booking - try multiple possible paths
-          const tutorId = booking.tutor?.tutor_id || 
-                         (booking.tutor?.id) || 
-                         (booking.tutor_id) ||
-                         null;
-          
-          const sessionRate = booking.tutor?.session_rate_per_hour || 
-                            booking.session_rate_per_hour || 
-                            0;
+          const tutorId = booking.tutor?.tutor_id ||
+            (booking.tutor?.id) ||
+            (booking.tutor_id) ||
+            null;
+
+          const sessionRate = booking.tutor?.session_rate_per_hour ||
+            booking.session_rate_per_hour ||
+            0;
           const duration = booking.duration || feedbackTarget.duration || 0;
           const amount = sessionRate * duration;
-          
+
           // Create payment record with sender='admin' only if we have tutorId and amount
           if (tutorId && amount > 0) {
             try {
@@ -240,7 +240,7 @@ const TuteeAfterSession: React.FC = () => {
         console.error('Failed to create payment record:', paymentError);
         // Don't show error to user if payment creation fails, as feedback was already submitted
       }
-      
+
       toast.success('Feedback submitted successfully!');
       setFeedbackOpen(false);
       setFeedbackTarget(null);
@@ -298,7 +298,7 @@ const TuteeAfterSession: React.FC = () => {
           Leave feedback for your completed sessions.
         </p>
       </div>
-      
+
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
         {error && (
           <div className="p-4 m-4 bg-red-50 text-red-700 border border-red-200 rounded-lg">
@@ -318,68 +318,103 @@ const TuteeAfterSession: React.FC = () => {
         ) : (
           <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
             {sessions.map((session) => (
-              <div key={session.id} className="group bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-4">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-slate-800">{session.subject}</h3>
-                    <div className="flex items-center text-sm text-slate-500 mt-1">
-                      <User className="h-4 w-4 mr-2" />
-                      <span>with {session.tutor?.user?.name}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-slate-500 mt-1">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span>{new Date(session.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 flex flex-col items-end justify-between gap-2">
-                    {session.isPendingCompletion ? (
-                      <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700 text-xs sm:text-sm font-semibold border border-yellow-300">
-                        Pending Completion
-                      </span>
-                    ) : session.status === 'awaiting_confirmation' ? (
-                      <Button 
-                        onClick={() => { 
-                          console.log('Setting confirm target session:', session);
-                          setConfirmTargetSession(session); 
-                          setConfirmModalOpen(true); 
-                        }} 
-                        className="bg-green-500 text-white hover:bg-green-600"
-                        disabled={loading}
-                      >
-                        Confirm Session
-                      </Button>
-                    ) : (session.status === 'completed' || session.status === 'admin_payment_pending') ? (
-                      session.tutee_rating ? (
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-slate-600 mb-1">Your Rating</p>
-                          {renderStars(session.tutee_rating)}
+              <div key={session.id} className="group relative bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+                {/* Status Color Bar */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${session.isPendingCompletion ? 'bg-yellow-400' :
+                    session.status === 'awaiting_confirmation' ? 'bg-blue-500' :
+                      'bg-green-500'
+                  }`} />
+
+                <div className="p-4 pl-5">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        {/* Status Badge */}
+                        {session.isPendingCompletion ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 text-xs font-semibold border border-yellow-200">
+                            <Clock className="h-3.5 w-3.5" />
+                            Pending Completion
+                          </span>
+                        ) : session.status === 'awaiting_confirmation' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200">
+                            <RefreshCw className="h-3.5 w-3.5" />
+                            Awaiting Confirmation
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold border border-green-200">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Completed
+                          </span>
+                        )}
+                        <span className="text-slate-300">|</span>
+                        <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">ID: #{session.id}</span>
+                      </div>
+
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">{session.subject}</h3>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4 mt-2">
+                        <div className="flex items-center text-sm text-slate-600">
+                          <User className="h-4 w-4 mr-2 text-indigo-500" />
+                          <span className="truncate">with {session.tutor?.user?.name || 'Unknown Tutor'}</span>
                         </div>
-                      ) : (
-                        <Button 
-                          onClick={() => { 
-                            console.log('Opening feedback modal for session:', session.id, 'Status:', session.status, 'Has rating:', !!session.tutee_rating);
-                            setFeedbackTarget(session); 
-                            setFeedbackOpen(true); 
-                          }} 
-                          className="bg-blue-500 text-white hover:bg-blue-600"
+                        <div className="flex items-center text-sm text-slate-600">
+                          <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                          <span>{new Date(session.date).toLocaleDateString(undefined, {
+                            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+                          })}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex-shrink-0 flex flex-col items-end sm:items-end gap-3 mt-2 sm:mt-0">
+                      {session.status === 'awaiting_confirmation' ? (
+                        <Button
+                          onClick={() => {
+                            setConfirmTargetSession(session);
+                            setConfirmModalOpen(true);
+                          }}
+                          className="bg-blue-600 text-white hover:bg-blue-700 shadow-sm text-sm"
                           disabled={loading}
                         >
-                          Leave Feedback
+                          Confirm Session
                         </Button>
-                      )
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
-                        Completed
-                      </span>
-                    )}
+                      ) : (session.status === 'completed' || session.status === 'admin_payment_pending') ? (
+                        session.tutee_rating ? (
+                          <div className="text-right bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                            <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your Rating</p>
+                            {renderStars(session.tutee_rating)}
+                          </div>
+                        ) : (
+                          <Button
+                            onClick={() => {
+                              setFeedbackTarget(session);
+                              setFeedbackOpen(true);
+                            }}
+                            className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm text-sm"
+                            disabled={loading}
+                          >
+                            <Star className="h-4 w-4 mr-1.5" />
+                            Rate Session
+                          </Button>
+                        )
+                      ) : null}
+                    </div>
                   </div>
+
+                  {session.tutee_comment && (
+                    <div className="mt-4 pt-3 border-t border-slate-100">
+                      <div className="flex gap-2">
+                        <div className="mt-0.5">
+                          <div className="h-6 w-1 bg-slate-200 rounded-full"></div>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 mb-0.5 uppercase tracking-wide">Your Feedback</p>
+                          <p className="text-sm text-slate-700 italic">"{session.tutee_comment}"</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {session.tutee_comment && (
-                  <div className="mt-4 pt-4 border-t border-slate-200">
-                    <p className="text-sm font-semibold text-slate-700 mb-1">Your Comment:</p>
-                    <p className="text-sm text-slate-600 italic">"{session.tutee_comment}"</p>
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -389,31 +424,31 @@ const TuteeAfterSession: React.FC = () => {
       {feedbackOpen && feedbackTarget && (
         <Modal
           isOpen={true}
-          onClose={() => { 
+          onClose={() => {
             console.log('Closing feedback modal');
-            setFeedbackOpen(false); 
-            setFeedbackTarget(null); 
-            setRating(5); 
-            setComment(''); 
+            setFeedbackOpen(false);
+            setFeedbackTarget(null);
+            setRating(5);
+            setComment('');
           }}
           title={`Leave Feedback for ${feedbackTarget.subject}`}
           footer={<>
-            <Button 
+            <Button
               onClick={() => {
                 console.log('Submitting feedback for session:', feedbackTarget);
                 handleFeedbackSubmit();
-              }} 
+              }}
               disabled={loading}
             >
               {loading ? 'Submitting...' : 'Submit Feedback'}
             </Button>
-            <Button 
-              variant="secondary" 
-              onClick={() => { 
-                setFeedbackOpen(false); 
-                setFeedbackTarget(null); 
-                setRating(5); 
-                setComment(''); 
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setFeedbackOpen(false);
+                setFeedbackTarget(null);
+                setRating(5);
+                setComment('');
               }}
             >
               Cancel

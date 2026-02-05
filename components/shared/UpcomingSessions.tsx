@@ -8,7 +8,7 @@ interface UpcomingSessionsProps {
 }
 
 const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ className = '' }) => {
-  const { notifications, isLoading, error } = useNotifications();
+  const { notifications, isLoading } = useNotifications();
   const { user: authUser } = useAuth();
   const role = authUser?.role;
 
@@ -23,60 +23,93 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ className = '' }) =
 
   if (isLoading) {
     return (
-      <div className={`bg-white rounded-lg shadow p-4 ${className}`}>
-        <h2 className="text-xl font-semibold mb-4">Upcoming Sessions</h2>
-        <div className="animate-pulse space-y-4">
-          <div className="h-16 bg-gray-200 rounded"></div>
-          <div className="h-16 bg-gray-200 rounded"></div>
+      <div className={`bg-white rounded-xl shadow-lg border border-slate-200 p-4 sm:p-6 ${className}`}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-8 w-8 bg-blue-100 rounded-lg animate-pulse" />
+          <div className="h-6 w-32 bg-slate-200 rounded animate-pulse" />
+        </div>
+        <div className="space-y-4">
+          <div className="h-24 bg-slate-50 rounded-xl animate-pulse" />
+          <div className="h-24 bg-slate-50 rounded-xl animate-pulse" />
         </div>
       </div>
     );
   }
 
-  // Remove error handling since we want to show "No upcoming sessions" instead of error message
-
   return (
-    <div className={`bg-white rounded-lg shadow p-4 ${className}`}>
-      <h2 className="text-xl font-semibold mb-4">Upcoming Sessions</h2>
+    <div className={`bg-white rounded-xl shadow-lg border border-slate-200 p-4 sm:p-6 ${className}`}>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+          <Bell className="h-5 w-5" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">Upcoming Sessions</h2>
+      </div>
+
       {upcomingSessions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-6 text-center">
-          <Bell className="h-12 w-12 text-slate-300 mb-2" />
-          <p className="text-gray-500">No upcoming sessions scheduled</p>
+        <div className="text-center py-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full mb-3">
+            <Bell className="h-6 w-6 text-slate-400" />
+          </div>
+          <p className="text-slate-500 font-medium">No upcoming sessions scheduled</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {upcomingSessions.map((session) => (
             <div
               key={session.notification_id}
-              className="border-l-4 border-blue-500 pl-4 py-3 bg-gray-50 rounded-r relative"
+              className="relative group bg-white border border-slate-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-md transition-all duration-300"
             >
+              {/* Status Indicator Bar */}
+              <div className="absolute left-0 top-4 bottom-4 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-r-full" />
+
+              {/* Unread Dot */}
               {!session.is_read && (
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
+                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse ring-2 ring-white" />
               )}
-              <p className="font-medium text-gray-900">{session.metadata?.subject}</p>
-              {/* Show the other participant's name: if the current user is a tutor, show the student name; otherwise show the tutor name */}
-              {role === 'tutor' ? (
-                session.metadata?.student_name ? (
-                  <p className="text-sm text-gray-600">with {session.metadata.student_name}</p>
-                ) : null
-              ) : (
-                session.metadata?.tutor_name ? (
-                  <p className="text-sm text-gray-600">with {session.metadata.tutor_name}</p>
-                ) : null
-              )}
-              <p className="text-sm text-gray-600">
-                {new Date(session.metadata!.session_date!).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </p>
-              {session.metadata?.session_time && (
-                <p className="text-sm text-gray-600">at {session.metadata.session_time}</p>
-              )}
+
+              <div className="pl-3">
+                <h3 className="text-base font-bold text-slate-900 mb-2 truncate pr-4">
+                  {session.metadata?.subject || 'Untitled Session'}
+                </h3>
+
+                <div className="space-y-2">
+                  {/* User Info */}
+                  <div className="flex items-center text-sm text-slate-600">
+                    <div className="w-5 flex-shrink-0 flex justify-center mr-2">
+                      <User className="h-4 w-4 text-indigo-500" />
+                    </div>
+                    <span>
+                      {role === 'tutor'
+                        ? (session.metadata?.student_name ? `Student: ${session.metadata.student_name}` : 'Student')
+                        : (session.metadata?.tutor_name ? `Tutor: ${session.metadata.tutor_name}` : 'Tutor')}
+                    </span>
+                  </div>
+
+                  {/* Date Info */}
+                  <div className="flex items-center text-sm text-slate-600">
+                    <div className="w-5 flex-shrink-0 flex justify-center mr-2">
+                      <Calendar className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <span>
+                      {new Date(session.metadata!.session_date!).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Time Info */}
+                  {session.metadata?.session_time && (
+                    <div className="flex items-center text-sm text-slate-600">
+                      <div className="w-5 flex-shrink-0 flex justify-center mr-2">
+                        <Clock className="h-4 w-4 text-emerald-500" />
+                      </div>
+                      <span>{session.metadata.session_time}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
         </div>
