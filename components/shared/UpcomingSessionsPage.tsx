@@ -105,66 +105,84 @@ const UpcomingSessionsPage: React.FC = () => {
           Manage and mark your upcoming sessions
         </p>
       </div>
-      <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-4 md:space-y-6">
         {bookingRequests.length === 0 ? (
-          <Card className="p-6 sm:p-8 text-center">
-            <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No upcoming sessions</h3>
-            <p className="text-sm sm:text-base text-gray-500">You have no upcoming sessions scheduled.</p>
+          <Card className="p-8 sm:p-12 text-center bg-white border-slate-100 shadow-sm rounded-2xl">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-50 rounded-full mb-4 border border-slate-100">
+              <MessageSquare className="h-8 w-8 text-slate-300" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">No upcoming sessions</h3>
+            <p className="text-slate-500 max-w-sm mx-auto">You have no upcoming sessions scheduled at the moment.</p>
           </Card>
         ) : (
-          <>
+          <div className="grid gap-4 sm:gap-6">
             {bookingRequests.map(request => (
-              <Card key={request.id} className="p-3 sm:p-4 md:p-6 -mx-2 sm:-mx-3 md:mx-0">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3 md:gap-0 mb-2.5 sm:mb-3 md:mb-4">
-                  <div className="flex-1 min-w-0 w-full sm:w-auto">
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 mb-2">
-                      <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-800 break-words">{request.student?.name || 'Student'}</h3>
-                      <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium border flex-shrink-0 ${getStatusColor(request.status)}`}>
-                        <div className="flex items-center space-x-0.5 sm:space-x-1">
-                          {getStatusIcon(request.status)}
-                          <span className="whitespace-nowrap">{request.status.replace('_', ' ').charAt(0).toUpperCase() + request.status.replace('_', ' ').slice(1)}</span>
-                        </div>
+              <div
+                key={request.id}
+                className="group relative bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden"
+              >
+                {/* Status Indicator Bar */}
+                <div className="absolute left-0 top-6 bottom-6 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-r-full" />
+
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6 pl-3">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-900">{request.student?.name || 'Student'}</h3>
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(request.status)}`}>
+                        {getStatusIcon(request.status)}
+                        <span>{request.status.replace('_', ' ').charAt(0).toUpperCase() + request.status.replace('_', ' ').slice(1)}</span>
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 text-[10px] sm:text-xs md:text-sm text-slate-600 mt-2">
-                      <div>
-                        <p className="break-words"><strong>Subject:</strong> {request.subject}</p>
-                        <p><strong>Date:</strong> {new Date(request.date).toLocaleDateString()}</p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm text-slate-600">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 flex justify-center"><MessageSquare className="h-4 w-4 text-slate-400" /></div>
+                        <span className="font-medium text-slate-900">{request.subject}</span>
                       </div>
-                      <div>
-                        <p><strong>Time:</strong> {request.time}</p>
-                        <p><strong>Duration:</strong> {request.duration} hours</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 flex justify-center"><Clock className="h-4 w-4 text-emerald-500" /></div>
+                        <span>{request.duration} hours</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 flex justify-center"><Clock className="h-4 w-4 text-blue-500" /></div>
+                        <span className="capitalize">{new Date(request.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 flex justify-center"><Clock className="h-4 w-4 text-indigo-500" /></div>
+                        <span>{request.time}</span>
                       </div>
                     </div>
+
                     {request.student_notes && (
-                      <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-slate-50 rounded-lg">
-                        <p className="text-[10px] sm:text-xs md:text-sm text-slate-700 break-words">
-                          <strong>Student Notes:</strong> {request.student_notes}
+                      <div className="relative bg-slate-50 rounded-xl p-3 sm:p-4 mt-2">
+                        <p className="text-sm text-slate-600 italic">
+                          <span className="font-semibold text-slate-500 not-italic uppercase text-xs tracking-wide block mb-1">Notes</span>
+                          "{request.student_notes}"
                         </p>
                       </div>
                     )}
                   </div>
-                </div>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 pt-2.5 sm:pt-3 md:pt-4 border-t border-slate-200">
-                  <div className="text-[10px] sm:text-xs text-slate-500">
-                    Requested on {isNaN(new Date(request.created_at).getTime()) ? 'Unknown date' : new Date(request.created_at).toLocaleDateString()}
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+
+                  {/* Actions Column */}
+                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-4 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
+                    <div className="text-xs font-medium text-slate-400">
+                      Requested {new Date(request.created_at).toLocaleDateString()}
+                    </div>
+
                     <Button
                       variant="secondary"
                       onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
                       disabled={loading}
-                      className="flex items-center justify-center space-x-1 w-full sm:w-auto text-xs sm:text-sm md:text-base py-1.5 sm:py-2"
+                      className="w-full md:w-auto bg-white border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-sm"
                     >
-                      <Clock className="h-4 w-4" />
-                      <span>Reschedule</span>
+                      <Clock className="h-4 w-4 mr-2" />
+                      Reschedule
                     </Button>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
-          </>
+          </div>
         )}
       </div>
       {isRescheduleModalOpen && rescheduleTarget && (
