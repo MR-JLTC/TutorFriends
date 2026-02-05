@@ -626,12 +626,12 @@ const TuteePayment: React.FC = () => {
               <div key={booking.id} className="group relative bg-gradient-to-br from-white via-primary-50/20 to-primary-100/10 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-lg md:shadow-xl border-2 border-slate-200/80 hover:border-primary-400 hover:shadow-2xl p-4 sm:p-5 md:p-7 lg:p-8 -mx-2 sm:-mx-3 md:mx-0 transition-all duration-300 overflow-hidden">
                 {/* Decorative gradient bar based on status */}
                 <div className={`absolute top-0 left-0 right-0 h-1 md:h-1.5 ${effectiveStatus.toLowerCase() === 'confirmed' || effectiveStatus.toLowerCase() === 'admin_confirmed'
-                    ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600' :
-                    isRejectedStatus(booking)
-                      ? 'bg-gradient-to-r from-red-500 via-rose-500 to-red-600' :
-                      effectiveStatus.toLowerCase() === 'pending'
-                        ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600' :
-                        'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700'
+                  ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600' :
+                  isRejectedStatus(booking)
+                    ? 'bg-gradient-to-r from-red-500 via-rose-500 to-red-600' :
+                    effectiveStatus.toLowerCase() === 'pending'
+                      ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600' :
+                      'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700'
                   }`} />
 
                 <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 mb-4 sm:mb-5 md:mb-6">
@@ -668,10 +668,10 @@ const TuteePayment: React.FC = () => {
                     {/* Status Badge - Enhanced for Desktop */}
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-shrink-0 w-full md:w-auto">
                       <div className={`px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 rounded-xl md:rounded-2xl text-xs sm:text-sm md:text-base font-bold flex items-center gap-1.5 sm:gap-2 shadow-md md:shadow-lg ${status.color} border-2 ${status.color.includes('yellow') ? 'border-yellow-400' :
-                          status.color.includes('red') ? 'border-red-400' :
-                            status.color.includes('green') ? 'border-green-400' :
-                              status.color.includes('indigo') ? 'border-indigo-400' :
-                                'border-primary-400'
+                        status.color.includes('red') ? 'border-red-400' :
+                          status.color.includes('green') ? 'border-green-400' :
+                            status.color.includes('indigo') ? 'border-indigo-400' :
+                              'border-primary-400'
                         }`}>
                         {status.icon}
                         {status.dotColor && <span className={`h-2.5 w-2.5 md:h-3 md:w-3 rounded-full ${status.dotColor}`} />}
@@ -1051,7 +1051,17 @@ const TuteePayment: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-5 lg:gap-6">
               {paymentHistory.map((payment, index) => {
                 // Check if payment is linked to a booking with payment_pending status
-                const bookingRequest = (payment as any).bookingRequest || (payment as any).booking_request;
+                // Try to find booking in the full bookings list if not directly attached
+                let bookingRequest = (payment as any).bookingRequest || (payment as any).booking_request;
+
+                if (!bookingRequest) {
+                  // Fallback: try to find the booking in the loaded bookings list that matches this payment
+                  bookingRequest = bookings.find(b =>
+                    b.payment?.payment_id === payment.payment_id ||
+                    (b.payments && b.payments.some(p => p.payment_id === payment.payment_id))
+                  );
+                }
+
                 const bookingStatus = bookingRequest?.status || '';
                 // For payment history, use the payment status directly (already filtered to confirmed/disputed/refunded)
                 // If status is 'confirmed', display it as 'paid' in the UI
@@ -1087,10 +1097,10 @@ const TuteePayment: React.FC = () => {
                   >
                     {/* Enhanced Decorative gradient bar */}
                     <div className={`absolute top-0 left-0 right-0 h-1.5 md:h-2 ${isConfirmed ? 'bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 shadow-md shadow-green-500/50' :
-                        isDisputed ? 'bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 shadow-md shadow-purple-500/50' :
-                          isRefunded ? 'bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 shadow-md shadow-orange-500/50' :
-                            isRejected ? 'bg-gradient-to-r from-red-400 via-rose-500 to-red-600 shadow-md shadow-red-500/50' :
-                              'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 shadow-md shadow-primary-500/50'
+                      isDisputed ? 'bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 shadow-md shadow-purple-500/50' :
+                        isRefunded ? 'bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 shadow-md shadow-orange-500/50' :
+                          isRejected ? 'bg-gradient-to-r from-red-400 via-rose-500 to-red-600 shadow-md shadow-red-500/50' :
+                            'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 shadow-md shadow-primary-500/50'
                       }`} />
 
                     {/* Decorative background elements - smaller on desktop */}
@@ -1103,10 +1113,10 @@ const TuteePayment: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-3">
                             <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg md:rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-md ${status.color} border-2 ${status.color.includes('yellow') ? 'border-yellow-400 bg-yellow-50' :
-                                status.color.includes('red') ? 'border-red-400 bg-red-50' :
-                                  status.color.includes('green') ? 'border-green-400 bg-green-50' :
-                                    status.color.includes('indigo') ? 'border-indigo-400 bg-indigo-50' :
-                                      'border-primary-400 bg-primary-50'
+                              status.color.includes('red') ? 'border-red-400 bg-red-50' :
+                                status.color.includes('green') ? 'border-green-400 bg-green-50' :
+                                  status.color.includes('indigo') ? 'border-indigo-400 bg-indigo-50' :
+                                    'border-primary-400 bg-primary-50'
                               }`}>
                               {status.icon}
                               {status.dotColor && <span className={`h-2.5 w-2.5 rounded-full ${status.dotColor}`} />}

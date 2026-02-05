@@ -283,9 +283,9 @@ const TuteeMyBookings: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
+      <div className="space-y-4 md:space-y-6">
         {bookings.length === 0 ? (
-          <div className="text-center py-12 sm:py-16 px-4 bg-white">
+          <div className="text-center py-12 sm:py-16 px-4 bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 -mx-2 sm:-mx-3 md:mx-0">
             <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 rounded-full mb-4 sm:mb-6 border border-slate-100">
               <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
             </div>
@@ -295,7 +295,7 @@ const TuteeMyBookings: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 bg-slate-50/50">
+          <div className="grid gap-4 sm:gap-6">
             {bookings.map((booking) => {
               const statusDisplay = getStatusDisplay(booking.status);
               const bookingDate = new Date(booking.date);
@@ -307,9 +307,9 @@ const TuteeMyBookings: React.FC = () => {
                 >
                   {/* Status Indicator Bar */}
                   <div className={`absolute left-0 top-6 bottom-6 w-1 rounded-r-full ${booking.status.toLowerCase() === 'completed' ? 'bg-gradient-to-b from-green-500 to-emerald-500' :
-                      booking.status.toLowerCase() === 'cancelled' ? 'bg-gradient-to-b from-red-500 to-rose-500' :
-                        booking.status.toLowerCase() === 'pending' ? 'bg-gradient-to-b from-yellow-500 to-amber-500' :
-                          'bg-gradient-to-b from-blue-500 to-indigo-500'
+                    booking.status.toLowerCase() === 'cancelled' ? 'bg-gradient-to-b from-red-500 to-rose-500' :
+                      booking.status.toLowerCase() === 'pending' ? 'bg-gradient-to-b from-yellow-500 to-amber-500' :
+                        'bg-gradient-to-b from-blue-500 to-indigo-500'
                     }`} />
 
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6 pl-3">
