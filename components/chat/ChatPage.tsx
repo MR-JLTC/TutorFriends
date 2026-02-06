@@ -51,22 +51,28 @@ const ChatPage: React.FC = () => {
             // Loose check for conversation ID equality (string vs number)
             if (currentActive && String(message.conversation_id) === String(currentActive.conversation_id)) {
                 setMessages((prev) => {
-                    // Robust De-duplication:
+                    // Robust De-duplication & Optimistic Replacement:
+
                     // 1. Check if we already have this exact message ID (if server provided it)
                     const existingIdIndex = prev.findIndex(m => m.id === message.message_id || m.id === message.id);
                     if (existingIdIndex !== -1) return prev;
 
-                    // 2. Check if we have an optimistic message (same text, 'Me', recent) that matches this confirmation
-                    // If so, we might want to REPLACE it with the official one to get the real ID, 
-                    // or just ignore the incoming one if we are content with the optimistic one.
-                    // For now, let's just ignore if we have a duplicate content from same sender recently.
-                    const isDuplicateContent = prev.some(m =>
+                    // 2. Check for optimistic message match (content + me). 
+                    // If found, REPLACE it with the real message to confirm delivery/update ID.
+                    const optimisticIndex = prev.findIndex(m =>
                         m.text === message.content &&
-                        (m.title === 'Me' && message.sender_id === user?.user_id) // It's my own message
+                        m.position === 'right' && // My message
+                        (String(m.id).startsWith('temp-') || m.status === 'waiting')
                     );
 
-                    if (isDuplicateContent) return prev;
+                    if (optimisticIndex !== -1) {
+                        // Replace the optimistic message with the real one
+                        const newMessages = [...prev];
+                        newMessages[optimisticIndex] = formatMessageForUI(message);
+                        return newMessages;
+                    }
 
+                    // 3. New message
                     return [...prev, formatMessageForUI(message)];
                 });
                 scrollToBottom();
