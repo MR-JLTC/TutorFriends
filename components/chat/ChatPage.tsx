@@ -30,7 +30,19 @@ const ChatPage: React.FC = () => {
 
         const handleNewMessage = (message: any) => {
             if (activeConversation && message.conversation_id === activeConversation.conversation_id) {
-                setMessages((prev) => [...prev, formatMessageForUI(message)]);
+                setMessages((prev) => {
+                    // Prevent duplicates if we already added this message optimistically
+                    // We check if a message with same content and very close date exists? 
+                    // Or better, check if the last message in prev is exactly the same as this one and it was "Me"
+                    const lastMsg = prev[prev.length - 1];
+                    const isDuplicate = lastMsg &&
+                        lastMsg.text === message.content &&
+                        lastMsg.title === 'Me' &&
+                        message.sender_id === user?.user_id;
+
+                    if (isDuplicate) return prev;
+                    return [...prev, formatMessageForUI(message)];
+                });
                 scrollToBottom();
             }
             // Refresh list to update last message preview
@@ -253,9 +265,11 @@ const ChatPage: React.FC = () => {
                         </div>
                     ) : (
                         <ChatList
+                            id="chat-list"
                             className="chat-list"
                             dataSource={dataSource}
                             onClick={handleSelectConversation}
+                            lazyLoadingImage=""
                         />
                     )}
                 </div>
@@ -284,6 +298,7 @@ const ChatPage: React.FC = () => {
                         {/* Messages */}
                         <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
                             <MessageList
+                                referance={scrollRef}
                                 className="message-list"
                                 lockable={true}
                                 toBottomHeight={'100%'}
@@ -314,6 +329,7 @@ const ChatPage: React.FC = () => {
                                         <svg className="w-5 h-5 translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                                     </button>
                                 ]}
+                                maxHeight={100}
                             />
                         </div>
                     </>
