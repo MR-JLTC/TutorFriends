@@ -340,9 +340,9 @@ const ChatPage: React.FC = () => {
     }, [conversations, availableContacts, activeConversation, user]);
 
     return (
-        <div className="flex h-[calc(100vh-6rem)] bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="flex flex-col md:flex-row h-[85vh] md:h-[calc(100vh-6rem)] bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative">
             {/* Sidebar */}
-            <div className={`w-full md:w-80 border-r border-slate-200 flex flex-col ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
+            <div className={`w-full md:w-80 border-r border-slate-200 flex flex-col absolute md:relative z-10 h-full bg-white transition-transform duration-300 ${activeConversation ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
                 <div className="p-4 border-b border-slate-200 bg-slate-50">
                     <h2 className="font-bold text-lg text-slate-800">Messages</h2>
                 </div>
@@ -367,14 +367,18 @@ const ChatPage: React.FC = () => {
             </div>
 
             {/* Chat Window */}
-            <div className={`flex-1 flex flex-col bg-slate-50 ${!activeConversation ? 'hidden md:flex' : 'flex'}`}>
+            <div className={`w-full md:flex-1 flex flex-col bg-slate-50 absolute md:relative z-20 h-full transition-transform duration-300 ${activeConversation ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
                 {activeConversation ? (
                     <>
                         {/* Header */}
-                        <div className="p-3 bg-white border-b border-slate-200 flex items-center justify-between shadow-sm z-10">
+                        <div className="p-3 md:p-4 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between shadow-sm z-30 sticky top-0">
                             <div className="flex items-center gap-3">
-                                <button onClick={() => setActiveConversation(null)} className="md:hidden p-2 text-slate-600">
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                <button
+                                    onClick={() => setActiveConversation(null)}
+                                    className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors flex items-center gap-1"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                    <span className="text-sm font-medium">Back</span>
                                 </button>
                                 <div className="h-10 w-10 rounded-full overflow-hidden">
                                     <img src={getPartner(activeConversation)?.profile_image_url || `https://ui-avatars.com/api/?name=${getPartner(activeConversation)?.name}`} className="w-full h-full object-cover" />
