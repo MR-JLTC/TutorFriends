@@ -8,11 +8,12 @@ interface ModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  contentClassName?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '5xl' | '6xl' | '7xl';
   hideScrollbar?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, className = '', maxWidth = '2xl', hideScrollbar = false }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, className = '', contentClassName = '', maxWidth = '2xl', hideScrollbar = false }) => {
   if (!isOpen) return null;
 
   const maxWidthClasses = {
@@ -55,7 +56,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer,
             </button>
           </div>
         )}
-        <div className={`flex-1 overflow-y-auto min-h-0 ${!title ? 'p-4 sm:p-6' : 'p-4 sm:p-6'} ${hideScrollbar ? 'no-scrollbar' : ''}`}>
+        <div className={`flex-1 overflow-y-auto min-h-0 ${!title ? 'p-4 sm:p-6' : 'p-4 sm:p-6'} ${hideScrollbar ? 'no-scrollbar' : ''} ${contentClassName}`}>
           {children}
         </div>
         {footer && (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Search, FileText } from 'lucide-react';
+import { Search, FileText, X, Download, ExternalLink } from 'lucide-react';
 import apiClient, { getFileUrl } from '../../services/api';
 import Modal from '../ui/Modal';
 import { ToastContainer, toast } from 'react-toastify';
@@ -1432,7 +1432,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
             isOpen={true}
             onClose={() => { setIsProfileOpen(false); setShowBookingForm(false); setBookingForm({ subject: '', date: '', time: '', duration: 1, student_notes: '' }); }}
             title={""}
-            maxWidth={showBookingForm ? "full" : "5xl"}
+            maxWidth={showBookingForm ? "7xl" : "5xl"}
             className={`${showBookingForm ? 'w-full h-full sm:h-[90vh] flex flex-col' : 'md:max-w-[90vw] lg:max-w-5xl'}`}
             contentClassName={`${showBookingForm ? 'flex-1 overflow-y-auto' : ''}`}
             footer={
@@ -1793,7 +1793,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                             </div>
                           </div>
                           {tutorDocuments.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                               {tutorDocuments.map((doc: any, index: number) => {
                                 const isImage = (doc.file_type || '').startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(doc.file_name || '');
                                 return (
@@ -1809,52 +1809,61 @@ const TuteeFindAndBookTutors: React.FC = () => {
                                         setDocumentViewerOpen(true);
                                       }
                                     }}
-                                    className="group relative cursor-pointer bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-emerald-200 hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-32 sm:h-40"
+                                    className="group relative cursor-pointer bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-emerald-200 transition-all duration-300 overflow-hidden flex flex-col h-56 sm:h-64"
                                   >
                                     {/* Preview/Thumbnail Area */}
-                                    <div className="flex-1 min-h-0 relative bg-slate-50 flex items-center justify-center overflow-hidden">
+                                    <div className="flex-1 min-h-0 relative bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-slate-100 transition-colors">
                                       {isImage && doc.file_url ? (
                                         <div className="absolute inset-0">
                                           <img
                                             src={getFileUrl(doc.file_url)}
                                             alt={doc.file_name}
-                                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-transform duration-500"
+                                            className="w-full h-full object-cover opacity-95 group-hover:opacity-100 group-hover:scale-105 transition-transform duration-700"
                                             loading="lazy"
                                           />
-                                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                         </div>
                                       ) : (
-                                        <div className="relative z-10 p-3 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform duration-300">
-                                          <FileText className={`w-8 h-8 sm:w-10 sm:h-10 ${doc.file_type === 'application/pdf' ? 'text-red-500' : 'text-emerald-500'}`} />
+                                        <div className="relative z-10 p-4 bg-white rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 ring-1 ring-slate-100">
+                                          <FileText className={`w-10 h-10 sm:w-12 sm:h-12 ${doc.file_type === 'application/pdf' ? 'text-red-500' : 'text-emerald-500'}`} />
                                         </div>
                                       )}
-                                      {/* Hover Overlay Icon */}
-                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none">
-                                        <div className="bg-black/30 backdrop-blur-sm p-2 rounded-full">
-                                          <Search className="w-5 h-5 text-white" />
+
+                                      {/* Hover Overlay */}
+                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 bg-slate-900/20 backdrop-blur-[2px]">
+                                        <div className="bg-white text-slate-800 p-3 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-all duration-300">
+                                          <Search className="w-5 h-5" />
                                         </div>
                                       </div>
                                     </div>
 
                                     {/* Footer Details */}
-                                    <div className="flex-shrink-0 p-3 bg-white border-t border-slate-100 relative z-30">
-                                      <p className="text-xs sm:text-sm font-semibold text-slate-700 truncate" title={doc.file_name || `Document ${index + 1}`}>
-                                        {doc.file_name || `Document ${index + 1}`}
-                                      </p>
-                                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mt-0.5 truncate">
-                                        {doc.file_type?.split('/')[1] || 'FILE'}
-                                      </p>
+                                    <div className="flex-shrink-0 p-4 bg-white border-t border-slate-100 relative z-30">
+                                      <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0 flex-1">
+                                          <h4 className="text-sm font-bold text-slate-800 truncate leading-tight mb-1" title={doc.file_name}>
+                                            {doc.file_name || `Document ${index + 1}`}
+                                          </h4>
+                                          <div className="flex items-center gap-2">
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500">
+                                              {doc.file_type?.split('/')[1] || 'FILE'}
+                                            </span>
+                                            {/* <span className="text-[10px] text-slate-400">• 2.4 MB</span> */}
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
                                 );
                               })}
                             </div>
                           ) : (
-                            <div className="text-center py-6 sm:py-8 lg:py-10">
-                              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-18 sm:h-18 lg:w-20 lg:h-20 bg-slate-100 rounded-full mb-3">
-                                <FileText className="w-7 h-7 sm:w-9 sm:h-9 lg:w-10 lg:h-10 text-slate-400" />
+                            <div className="text-center py-8 sm:py-12">
+                              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 rounded-full mb-4 ring-8 ring-slate-50/50">
+                                <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-slate-300" />
                               </div>
-                              <p className="text-sm sm:text-base text-slate-500 font-medium">No supporting documents uploaded yet.</p>
+                              <h4 className="text-base sm:text-lg font-semibold text-slate-700 mb-1">No documents available</h4>
+                              <p className="text-sm text-slate-500">This tutor hasn't uploaded any verified documents yet.</p>
                             </div>
                           )}
                         </div>
@@ -2434,31 +2443,50 @@ const TuteeFindAndBookTutors: React.FC = () => {
             isOpen={true}
             onClose={() => setDocumentViewerOpen(false)}
             title={selectedDocument.name}
-            maxWidth="4xl"
-            className="md:max-w-4xl h-[80vh] flex flex-col"
-            contentClassName="flex-1 overflow-hidden p-0 bg-slate-900 flex items-center justify-center relative"
-            footer={
-              <button
-                onClick={() => setDocumentViewerOpen(false)}
-                className="px-6 py-2.5 border-2 border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-              >
-                Close
-              </button>
-            }
+            maxWidth="7xl"
+            className="w-full h-full sm:h-[90vh] sm:max-w-7xl flex flex-col p-0 sm:rounded-2xl overflow-hidden bg-black"
+            contentClassName="flex-1 overflow-hidden p-0 bg-slate-950 flex flex-col relative"
+            footer={null} // We rely on the custom close button and potential overlay controls
           >
-            {selectedDocument.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(selectedDocument.url) ? (
-              <img
-                src={selectedDocument.url}
-                alt={selectedDocument.name}
-                className="max-w-full max-h-full object-contain"
-              />
-            ) : (
-              <iframe
-                src={selectedDocument.url}
-                title={selectedDocument.name}
-                className="w-full h-full bg-white"
-              />
-            )}
+            {/* Header / Controls Overlay */}
+            <div className="absolute top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none">
+              <div className="bg-black/40 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/10 shadow-lg pointer-events-auto max-w-[70%] truncate">
+                <span className="font-medium text-sm sm:text-base truncate">{selectedDocument.name}</span>
+              </div>
+              <div className="flex items-center gap-2 pointer-events-auto">
+                <button
+                  onClick={() => window.open(selectedDocument.url, '_blank')}
+                  className="p-2.5 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white rounded-full border border-white/10 shadow-lg transition-colors"
+                  title="Open in new tab"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setDocumentViewerOpen(false)}
+                  className="p-2.5 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white rounded-full border border-white/10 shadow-lg transition-colors group"
+                  title="Close viewer"
+                >
+                  <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content Area */}
+            <div className="flex-1 w-full h-full flex items-center justify-center p-0 sm:p-4 overflow-auto">
+              {selectedDocument.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(selectedDocument.url) ? (
+                <img
+                  src={selectedDocument.url}
+                  alt={selectedDocument.name}
+                  className="max-w-full max-h-full object-contain shadow-2xl"
+                />
+              ) : (
+                <iframe
+                  src={selectedDocument.url}
+                  title={selectedDocument.name}
+                  className="w-full h-full bg-white rounded-none sm:rounded-lg shadow-2xl"
+                />
+              )}
+            </div>
           </Modal>
         )}
 
