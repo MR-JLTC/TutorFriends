@@ -47,6 +47,7 @@ interface PaymentHistory extends Payment {
       name: string;
       email: string;
     };
+    session_rate_per_hour?: number;
   };
   student?: {
     user: {
@@ -1071,6 +1072,8 @@ const TuteePayment: React.FC = () => {
                 let displayStatus = paymentStatus;
                 if (bookingStatus.toLowerCase() === 'pending') {
                   displayStatus = 'pending';
+                } else if (bookingStatus.toLowerCase() === 'awaiting_payment') {
+                  displayStatus = 'awaiting_payment';
                 } else if (paymentStatus === 'confirmed') {
                   displayStatus = 'paid';
                 }
