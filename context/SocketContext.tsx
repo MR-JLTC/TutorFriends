@@ -27,8 +27,15 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             return;
         }
 
+        // Determine socket URL
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_SERVER_URL || 'localhost';
+        const isFullUrl = BACKEND_URL.startsWith('http://') || BACKEND_URL.startsWith('https://');
+        const SOCKET_URL = isFullUrl ? BACKEND_URL : `http://${BACKEND_URL}:3000`;
+
+        console.log('SocketContext - Connecting to:', SOCKET_URL);
+
         // Initialize socket
-        const newSocket = io('http://localhost:3000', { // Ensure API URL matches config
+        const newSocket = io(SOCKET_URL, {
             auth: { token },
             autoConnect: true,
             transports: ['websocket'], // Force WebSocket to avoid polling issues

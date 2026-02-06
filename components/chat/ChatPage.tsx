@@ -10,6 +10,12 @@ const ChatPage: React.FC = () => {
     const { socket, isConnected, joinConversation } = useSocket();
     const { user } = useAuth();
     const [availableContacts, setAvailableContacts] = useState<any[]>([]);
+    const [conversations, setConversations] = useState<any[]>([]);
+    const [activeConversation, setActiveConversation] = useState<any>(null);
+    const [messages, setMessages] = useState<any[]>([]);
+    const [inputValue, setInputValue] = useState('');
+    const [loading, setLoading] = useState(true);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (user) {
