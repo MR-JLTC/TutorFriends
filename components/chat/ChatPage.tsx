@@ -14,7 +14,8 @@ const ChatPage: React.FC = () => {
     const [activeConversation, setActiveConversation] = useState<any>(null);
     const [messages, setMessages] = useState<any[]>([]);
     const [inputValue, setInputValue] = useState('');
-    const [lastSeenMap, setLastSeenMap] = useState<Record<number, Date>>({});
+    const [loading, setLoading] = useState(true);
+    const [onlineUsers, setOnlineUsers] = useState<Set<number>>(new Set());
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<any>(null); // Ref for Input component
     const activeConversationRef = useRef<any>(null); // Stable ref for listener
