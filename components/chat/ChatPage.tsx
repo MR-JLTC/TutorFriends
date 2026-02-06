@@ -25,6 +25,14 @@ const ChatPage: React.FC = () => {
         activeConversationRef.current = activeConversation;
     }, [activeConversation]);
 
+    // JOIN Room when active conversation changes
+    useEffect(() => {
+        if (activeConversation) {
+            joinConversation(String(activeConversation.conversation_id));
+            loadMessages(activeConversation.conversation_id);
+        }
+    }, [activeConversation]);
+
     useEffect(() => {
         if (user) {
             fetchConversations();
