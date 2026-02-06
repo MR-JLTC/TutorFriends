@@ -30,7 +30,8 @@ const ChatPage: React.FC = () => {
         if (!socket) return;
 
         const handleNewMessage = (message: any) => {
-            if (activeConversation && message.conversation_id === activeConversation.conversation_id) {
+            // Loose check for conversation ID equality (string vs number)
+            if (activeConversation && String(message.conversation_id) === String(activeConversation.conversation_id)) {
                 setMessages((prev) => {
                     // Robust De-duplication:
                     // 1. Check if we already have this exact message ID (if server provided it)
@@ -186,13 +187,17 @@ const ChatPage: React.FC = () => {
             content: inputValue
         };
 
+        // Clear input immediately to prevent double sends and improve UX
+        setInputValue('');
+
         // Optimistic update
         const optimisticMsg = {
             position: 'right',
             type: 'text',
             text: inputValue,
             date: new Date(),
-            title: 'Me'
+            title: 'Me',
+            id: `temp-${Date.now()}` // Add temp ID
         };
         setMessages((prev) => [...prev, optimisticMsg]);
         scrollToBottom();
@@ -201,14 +206,14 @@ const ChatPage: React.FC = () => {
         socket.emit('sendMessage', messageData, (response: any) => {
             if (response && response.error) {
                 console.error('SendMessage - Server Error Response:', response.error);
-                // Optionally show a toast or revert optimistic update? 
-                // For now, just log it clearly.
-                setMessages(prev => prev.filter(m => m !== optimisticMsg));
+                // Revert optimistic update on failure
+                setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
+                // Restore input
+                setInputValue(optimisticMsg.text);
             } else {
                 console.log('SendMessage - Server acknowledged:', response);
             }
         });
-        setInputValue('');
     };
 
     const formatMessageForUI = (msg: any) => {
