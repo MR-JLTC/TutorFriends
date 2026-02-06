@@ -830,206 +830,179 @@ const SessionHandlingContent: React.FC = () => {
             return (
               <Card
                 key={request.id}
-                className={`group relative bg-gradient-to-br from-white to-primary-50/30 rounded-xl sm:rounded-2xl shadow-lg border-2 ${isOverdue(request)
-                  ? 'border-red-300 hover:border-red-400 bg-red-50/50'
-                  : 'border-slate-200 hover:border-primary-300'
-                  } p-4 sm:p-5 md:p-6 transition-all duration-300 overflow-hidden`}
+                className={`group relative bg-white rounded-2xl shadow-sm hover:shadow-md border-2 ${isOverdue(request)
+                  ? 'border-red-200 hover:border-red-300'
+                  : 'border-slate-100 hover:border-primary-200'
+                  } transition-all duration-300 overflow-hidden`}
               >
-                {/* Decorative gradient bar */}
-                <div className={`absolute top-0 left-0 right-0 h-1 ${statusColors[request.status] || 'bg-gradient-to-r from-primary-500 to-primary-700'}`} />
+                {/* Status Bar Indicator */}
+                <div className={`absolute top-0 bottom-0 left-0 w-1.5 ${statusColors[request.status] || 'bg-slate-300'}`} />
 
-                <div className="flex flex-col gap-4 sm:gap-5">
-                  {/* Header Row */}
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 break-words">
-                          {request.subject}
-                        </h3>
-                        <button
-                          onClick={async () => {
-                            // Open tutee profile modal
-                            const sid = request.student.user_id;
-                            if (!sid) {
-                              toast.error('Student ID not available');
-                              return;
-                            }
-                            setTuteeProfileLoading(true);
-                            // Seed the modal with minimal student info so name and avatar
-                            // appear immediately while we fetch the full profile.
-                            setTuteeProfile({ user_id: sid, name: request.student.name, email: request.student.email, profile_image_url: (request.student as any)?.profile_image_url || (request.student as any)?.profile_image || '' });
-                            setIsTuteeModalOpen(true);
+                <div className="p-4 sm:p-5 md:p-6 pl-5 sm:pl-7 md:pl-8">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                    {/* Left Column: Avatar */}
+                    <div className="flex-shrink-0">
+                      <button
+                        onClick={async () => {
+                          const sid = request.student.user_id;
+                          if (!sid) {
+                            toast.error('Student ID not available');
+                            return;
+                          }
+                          setTuteeProfileLoading(true);
+                          setTuteeProfile({ user_id: sid, name: request.student.name, email: request.student.email, profile_image_url: (request.student as any)?.profile_image_url || (request.student as any)?.profile_image || '' });
+                          setIsTuteeModalOpen(true);
+                          try {
+                            let profileData: any = null;
                             try {
-                              // Try a few endpoints for full profile: /users/:id/profile, then /users/:id
-                              let profileData: any = null;
+                              const pRes = await apiClient.get(`/users/${sid}/profile`);
+                              profileData = pRes.data;
+                            } catch (e) {
                               try {
-                                const pRes = await apiClient.get(`/users/${sid}/profile`);
-                                profileData = pRes.data;
-                              } catch (e) {
-                                try {
-                                  const r = await apiClient.get(`/users/${sid}`);
-                                  profileData = r.data;
-                                } catch (e2) {
-                                  console.warn('No detailed profile endpoints available, will use booking student info', e2);
-                                  profileData = { user_id: sid, ...request.student };
-                                }
+                                const r = await apiClient.get(`/users/${sid}`);
+                                profileData = r.data;
+                              } catch (e2) {
+                                profileData = { user_id: sid, ...request.student };
                               }
-
-                              // Try to fetch booking history count for the student (best-effort)
-                              try {
-                                const bRes = await apiClient.get(`/users/${sid}/bookings`);
-                                const bookingsArr = Array.isArray(bRes.data) ? bRes.data : (Array.isArray(bRes.data?.data) ? bRes.data.data : (Array.isArray(bRes.data?.bookings) ? bRes.data.bookings : []));
-                                profileData._bookingsCount = bookingsArr.length;
-                              } catch (e) {
-                                // ignore booking fetch errors
-                              }
-
-                              setTuteeProfile(profileData || { user_id: sid, ...request.student });
-                            } catch (err) {
-                              console.warn('Failed to fetch full tutee profile, falling back to minimal data', err);
-                              setTuteeProfile({ user_id: sid, ...request.student });
-                            } finally {
-                              setTuteeProfileLoading(false);
                             }
+                            try {
+                              const bRes = await apiClient.get(`/users/${sid}/bookings`);
+                              const bookingsArr = Array.isArray(bRes.data) ? bRes.data : (Array.isArray(bRes.data?.data) ? bRes.data.data : []);
+                              profileData._bookingsCount = bookingsArr.length;
+                            } catch (e) { }
+
+                            setTuteeProfile(profileData || { user_id: sid, ...request.student });
+                          } catch (err) {
+                            setTuteeProfile({ user_id: sid, ...request.student });
+                          } finally {
+                            setTuteeProfileLoading(false);
+                          }
+                        }}
+                        className="group/avatar relative h-16 w-16 sm:h-20 sm:w-20 rounded-full ring-4 ring-white shadow-lg transition-transform transform group-hover/avatar:scale-105 focus:outline-none focus:ring-primary-500 overflow-hidden"
+                        title="View tutee profile"
+                      >
+                        <img
+                          src={getFileUrl(request.student.profile_image_url || '')}
+                          alt={request.student.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(request.student.name)}&background=f1f5f9&color=475569&size=128`;
                           }}
-                          className="inline-flex items-center justify-center p-1.5 sm:p-2 rounded-lg bg-primary-50 hover:bg-primary-100 active:bg-primary-200 text-primary-600 touch-manipulation transition-colors shadow-sm hover:shadow-md"
-                          title="View tutee profile"
-                          style={{ WebkitTapHighlightColor: 'transparent' }}
-                        >
-                          <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
-                        </button>
-                      </div>
-                      {/* Status badge moved below subject name */}
-                      <div className="mb-3">
-                        <div className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm md:text-base font-bold gap-1.5 sm:gap-2 shadow-md border-2 ${getStatusColor(request.status)}`}>
-                          {getStatusIcon(request.status)}
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: request.status === 'pending' ? '#eab308' : request.status === 'confirmed' ? '#16a34a' : request.status === 'awaiting_payment' ? '#f97316' : request.status === 'declined' ? '#dc2626' : hasSessionStarted(request) ? '#22c55e' : '#3b82f6' }} />
-                          <span className="whitespace-nowrap">
-                            {hasSessionStarted(request)
-                              ? "Session Started"
-                              : (request.status.replace('_', ' ').charAt(0).toUpperCase() + request.status.replace('_', ' ').slice(1))
-                            }
-                          </span>
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover/avatar:bg-black/10 transition-colors flex items-center justify-center">
+                          {/* Hint overlay on hover could go here, keeping it clean for now */}
                         </div>
-                      </div>
+                      </button>
+                    </div>
 
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-600 mb-3">
-                        <span className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm">
-                          <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-600 flex-shrink-0" />
-                          <span className="truncate max-w-[120px] sm:max-w-none">{request.student.name}</span>
-                        </span>
-                        <span className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm">
-                          <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </Calendar>
-                          <span className="whitespace-nowrap">{new Date(request.date).toLocaleDateString()}</span>
-                        </span>
-                        <span className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm">
-                          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </Clock>
-                          <span className="whitespace-nowrap">{request.time}</span>
-                        </span>
-                        <span className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm">
-                          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </Clock>
-                          <span className="whitespace-nowrap">{request.duration} {request.duration === 1 ? 'hour' : 'hours'}</span>
-                        </span>
-                      </div>
-
-                      {request.student_notes && (
-                        <div className="p-3 sm:p-4 bg-gradient-to-br from-slate-50 to-primary-50/50 rounded-xl border-2 border-slate-200 shadow-sm">
-                          <div className="flex items-start gap-2 sm:gap-3">
-                            <div className="p-1.5 sm:p-2 bg-primary-100 rounded-lg flex-shrink-0 mt-0.5">
-                              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-xs sm:text-sm md:text-base font-semibold text-slate-800 mb-1.5 sm:mb-2">Student Notes</h4>
-                              <p className="text-xs sm:text-sm md:text-base text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
-                                {request.student_notes}
-                              </p>
-                            </div>
+                    {/* Right Column: Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Header: Subject & Status */}
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                        <div>
+                          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight mb-1">
+                            {request.subject}
+                          </h3>
+                          <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
+                            <span className="text-slate-900 font-semibold">{request.student.name}</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                            <span>Requested on {new Date(request.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
+
+                        {/* Status Badge */}
+                        <div className={`self-start inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border shadow-sm ${request.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                            request.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
+                              request.status === 'completed' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                request.status === 'awaiting_payment' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                  request.status === 'upcoming' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    request.status === 'declined' ? 'bg-red-50 text-red-700 border-red-200' :
+                                      'bg-slate-50 text-slate-700 border-slate-200'
+                          }`}>
+                          <span className={`w-2 h-2 rounded-full mr-2 ${request.status === 'pending' ? 'bg-yellow-500' :
+                              request.status === 'confirmed' ? 'bg-green-500' :
+                                request.status === 'completed' ? 'bg-purple-500' :
+                                  request.status === 'awaiting_payment' ? 'bg-orange-500' :
+                                    request.status === 'upcoming' ? 'bg-blue-500' :
+                                      request.status === 'declined' ? 'bg-red-500' :
+                                        'bg-slate-500'
+                            }`}></span>
+                          {hasSessionStarted(request) && request.status === 'upcoming' ? 'Session Started' : request.status.replace('_', ' ')}
+                        </div>
+                      </div>
+
+                      {/* Details Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-6 mb-4">
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Calendar className="h-4 w-4 text-primary-500" />
+                          <span className="text-sm font-medium">{new Date(request.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Clock className="h-4 w-4 text-primary-500" />
+                          <span className="text-sm font-medium">{request.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Clock className="h-4 w-4 text-primary-500" />
+                          <span className="text-sm font-medium">{request.duration} hr{request.duration !== 1 ? 's' : ''}</span>
+                        </div>
+                      </div>
+
+                      {/* Notes Section */}
+                      {request.student_notes && (
+                        <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100 text-sm text-slate-600">
+                          <span className="font-semibold text-slate-700 mr-2">Note:</span>
+                          {request.student_notes}
+                        </div>
                       )}
+
+                      {/* Action Buttons Row */}
+                      <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-3">
+                        {request.status === 'pending' && (
+                          <>
+                            <Button
+                              onClick={() => { setAcceptTarget(request); setAcceptConfirmOpen(true); }}
+                              disabled={loading}
+                              className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm flex items-center gap-2 transition-colors"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              Accept
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() => handleBookingAction(request.id, 'decline')}
+                              disabled={loading}
+                              className="text-slate-700 hover:text-red-700 hover:bg-red-50 border-slate-200 hover:border-red-200 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors"
+                            >
+                              <X className="h-4 w-4" />
+                              Decline
+                            </Button>
+                          </>
+                        )}
+
+                        {(request.status === 'upcoming' || request.status === 'confirmed') && (
+                          <Button
+                            variant="secondary"
+                            onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
+                            disabled={loading}
+                            className="text-primary-700 bg-primary-50 hover:bg-primary-100 border-primary-200 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors"
+                          >
+                            <Clock className="h-4 w-4" />
+                            Reschedule
+                          </Button>
+                        )}
+
+                        {isSessionEligibleForMarkAsDone(request) && (
+                          <Button
+                            onClick={() => handleMarkDone(request.id)}
+                            disabled={loading}
+                            className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm flex items-center gap-2 transition-colors"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            Mark as done
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Payment proof review moved to admin. Tutors cannot view or approve payment proofs. */}
-
-
-                  {/* Session Details */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-primary-50 via-primary-100/50 to-primary-50 rounded-xl border-2 border-primary-200/50 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-semibold text-slate-700">Requested:</span>
-                      <span className="text-xs sm:text-sm md:text-base font-medium text-slate-900">
-                        {new Date(request.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-5 border-t-2 border-slate-200 mt-4">
-                  <div className="hidden sm:block text-[10px] sm:text-xs text-slate-500">
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-2 w-full sm:w-auto">
-                    {request.status === 'pending' && (
-                      <>
-                        <Button
-                          onClick={() => { setAcceptTarget(request); setAcceptConfirmOpen(true); }}
-                          disabled={loading}
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 active:from-green-800 active:to-emerald-800 text-white rounded-xl px-5 py-3 shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-semibold flex items-center justify-center gap-2 w-full sm:w-auto touch-manipulation min-h-[44px]"
-                          style={{ WebkitTapHighlightColor: 'transparent' }}
-                        >
-                          <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                          <span>Accept</span>
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          onClick={() => handleBookingAction(request.id, 'decline')}
-                          disabled={loading}
-                          className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 active:from-red-800 active:to-rose-800 text-white rounded-xl px-5 py-3 shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-semibold flex items-center justify-center gap-2 w-full sm:w-auto touch-manipulation min-h-[44px]"
-                          style={{ WebkitTapHighlightColor: 'transparent' }}
-                        >
-                          <X className="h-5 w-5 flex-shrink-0" />
-                          <span>Decline</span>
-                        </Button>
-                      </>
-                    )}
-                    {(request.status === 'upcoming' || request.status === 'confirmed') && (
-                      <Button
-                        variant="secondary"
-                        onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 active:from-primary-800 active:to-primary-900 text-white rounded-xl px-5 py-3 shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-semibold flex items-center justify-center gap-2 w-full sm:w-auto touch-manipulation min-h-[44px]"
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                      >
-                        <Clock className="h-5 w-5 flex-shrink-0" />
-                        <span>Reschedule</span>
-                      </Button>
-                    )}
-
-                    {/* Mark as done button for overdue upcoming sessions in Session Handling */}
-                    {isSessionEligibleForMarkAsDone(request) && (
-                      <Button
-                        onClick={() => handleMarkDone(request.id)}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 active:from-primary-800 active:to-primary-900 text-white rounded-xl px-5 py-3 shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-semibold flex items-center justify-center gap-2 w-full sm:w-auto touch-manipulation min-h-[44px]"
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                      >
-                        <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                        <span>Mark as done</span>
-                      </Button>
-                    )}
-
-                    {/* No payment confirmation actions in Session Handling */}
                   </div>
                 </div>
               </Card>
