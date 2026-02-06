@@ -11,6 +11,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { User } from '../../types/index';
 import TuteeMyBookings from '../tutee/TuteeMyBookings';
 import TuteeProfile from '../tutee/TuteeProfile';
+import ChatPage from '../chat/ChatPage';
 
 const TuteeDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ const TuteeDashboard: React.FC = () => {
             <Route path="upcoming-sessions" element={<UpcomingSessionsPage />} />
             <Route path="payment" element={<TuteePayment />} />
             <Route path="after-session" element={<TuteeAfterSession />} />
+            <Route path="messages" element={<ChatPage />} />
             <Route path="*" element={<Navigate to="/tutee-dashboard/become-tutor" replace />} />
           </Routes>
         </div>

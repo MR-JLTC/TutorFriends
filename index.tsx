@@ -6,6 +6,7 @@ import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ToastProvider } from './components/ui/Toast';
+import { SocketProvider } from './context/SocketContext';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Failed to find the root element');
@@ -17,7 +18,9 @@ root.render(
       <ToastProvider> {/* ✅ wrap everything in ToastProvider */}
         <AuthProvider>
           <NotificationProvider>
-            <App />
+            <SocketProvider>
+              <App />
+            </SocketProvider>
           </NotificationProvider>
         </AuthProvider>
       </ToastProvider>

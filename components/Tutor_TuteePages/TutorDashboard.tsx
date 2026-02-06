@@ -11,6 +11,7 @@ import PaymentsHistoryPage from '../tutor/PaymentsHistoryPage';
 import UpcomingSessionsPage from '../shared/UpcomingSessionsPage';
 // UpcomingSessions removed from the tutor sessions sidebar per UX: use the dedicated Upcoming Sessions page via the sidebar link.
 import { useAuth } from '../../hooks/useAuth';
+import ChatPage from '../chat/ChatPage';
 
 const TutorDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -31,7 +32,9 @@ const TutorDashboard: React.FC = () => {
               <Route path="upcoming-sessions" element={<UpcomingSessionsPage />} />
               <Route path="earnings" element={<EarningsHistory />} />
               <Route path="earnings/payments" element={<PaymentsHistoryPage />} />
+              <Route path="earnings/payments" element={<PaymentsHistoryPage />} />
               <Route path="session-history" element={<SessionHistory />} />
+              <Route path="messages" element={<ChatPage />} />
               <Route path="*" element={<Navigate to="/tutor-dashboard/application" replace />} />
             </Routes>
           </div>

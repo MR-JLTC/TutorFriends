@@ -45,6 +45,12 @@ const tuteeNavLinks = [
     showUpcoming: true,
   },
   {
+    to: '/tutee-dashboard/messages',
+    icon: User, // TODO: Import MessageSquare if available or use generic
+    label: 'Messages',
+    description: 'Chat with your tutors in real-time.',
+  },
+  {
     to: '/tutee-dashboard/payment',
     icon: CreditCard,
     label: 'Payment',

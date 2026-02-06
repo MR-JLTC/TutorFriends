@@ -1,0 +1,31 @@
+/* Basic overrides for React Chat Elements to match Tailwind */
+.rce-mbox {
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+.rce-mbox-right {
+    background: #4f46e5 !important;
+    /* Indigo 600 */
+    color: white !important;
+}
+
+.rce-mbox-right .rce-mbox-time {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.rce-input {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 9999px !important;
+    padding: 10px 20px !important;
+    background-color: #f8fafc !important;
+}
+
+.rce-input:focus {
+    border-color: #6366f1 !important;
+    outline: none !important;
+}
+
+.rce-citem:hover {
+    background-color: #f1f5f9 !important;
+}
