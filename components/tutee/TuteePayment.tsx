@@ -1216,6 +1216,21 @@ const TuteePayment: React.FC = () => {
                             })()}
 
                             <div className="group/item flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-white/80 backdrop-blur-sm rounded-lg md:rounded-xl border-2 border-slate-200 shadow-sm hover:shadow-md hover:border-primary-300 transition-all duration-200 sm:col-span-2">
+                              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg shadow-sm flex-shrink-0">
+                                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[10px] sm:text-xs text-slate-500 font-bold mb-0.5 uppercase tracking-wide">Session Scheduled</p>
+                                <p className="text-sm sm:text-base md:text-base font-bold text-slate-900">
+                                  {bookingRequest?.date ? new Date(bookingRequest.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date not set'}
+                                  {bookingRequest?.time && <span className="text-slate-600 font-medium ml-2 text-xs sm:text-sm">at {bookingRequest.time}</span>}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="group/item flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-white/80 backdrop-blur-sm rounded-lg md:rounded-xl border-2 border-slate-200 shadow-sm hover:shadow-md hover:border-primary-300 transition-all duration-200 sm:col-span-2">
                               <div className="p-1.5 sm:p-2 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg shadow-sm flex-shrink-0">
                                 <svg className="h-4 w-4 sm:h-5 sm:w-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
