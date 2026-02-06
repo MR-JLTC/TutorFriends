@@ -61,6 +61,17 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             // If it's a transport error, it might be due to restricted transports (handled by removing the restriction above)
         });
 
+        // Listen for specific custom auth errors from backend
+        newSocket.on('auth_error', (err) => {
+            console.error('❌ SocketContext - Auth Error received from server:', err);
+            // Optionally dispatch a global auth error if token is expired
+            if (err?.message === 'jwt expired') {
+                console.warn('SocketContext - Token expired, triggering re-login flow...');
+                // You could window.location.reload() or dispatch auth:unauthorized here
+                // window.dispatchEvent(new Event('auth:unauthorized'));
+            }
+        });
+
         setSocket(newSocket);
 
         return () => {
