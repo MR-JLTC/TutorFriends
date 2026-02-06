@@ -31,16 +31,22 @@ const ChatPage: React.FC = () => {
         const handleNewMessage = (message: any) => {
             if (activeConversation && message.conversation_id === activeConversation.conversation_id) {
                 setMessages((prev) => {
-                    // Prevent duplicates if we already added this message optimistically
-                    // We check if a message with same content and very close date exists? 
-                    // Or better, check if the last message in prev is exactly the same as this one and it was "Me"
-                    const lastMsg = prev[prev.length - 1];
-                    const isDuplicate = lastMsg &&
-                        lastMsg.text === message.content &&
-                        lastMsg.title === 'Me' &&
-                        message.sender_id === user?.user_id;
+                    // Robust De-duplication:
+                    // 1. Check if we already have this exact message ID (if server provided it)
+                    const existingIdIndex = prev.findIndex(m => m.id === message.message_id || m.id === message.id);
+                    if (existingIdIndex !== -1) return prev;
 
-                    if (isDuplicate) return prev;
+                    // 2. Check if we have an optimistic message (same text, 'Me', recent) that matches this confirmation
+                    // If so, we might want to REPLACE it with the official one to get the real ID, 
+                    // or just ignore the incoming one if we are content with the optimistic one.
+                    // For now, let's just ignore if we have a duplicate content from same sender recently.
+                    const isDuplicateContent = prev.some(m =>
+                        m.text === message.content &&
+                        (m.title === 'Me' && message.sender_id === user?.user_id) // It's my own message
+                    );
+
+                    if (isDuplicateContent) return prev;
+
                     return [...prev, formatMessageForUI(message)];
                 });
                 scrollToBottom();
