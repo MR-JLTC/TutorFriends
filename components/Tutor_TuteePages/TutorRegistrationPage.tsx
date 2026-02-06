@@ -1542,8 +1542,15 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       // 4) Upload documents
       console.log('Step 4: Uploading documents...');
       const form = new FormData();
-      uploadedFiles.forEach(f => form.append('files', f));
-      await apiClient.post(`/tutors/${tutorId}/documents`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      uploadedFiles.forEach(f => {
+        console.log(`Adding file to payload: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)} MB)`);
+        form.append('files', f);
+      });
+      // Increase timeout to 5 minutes (300000 ms) for large files
+      await apiClient.post(`/tutors/${tutorId}/documents`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 300000
+      });
       console.log('Documents uploaded successfully');
 
       // 5) Save availability
@@ -1593,7 +1600,8 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
           files.forEach(f => form.append('files', f));
           // Use the correct endpoint: /tutors/:tutorId/subject-application
           await apiClient.post(`/tutors/${tutorId}/subject-application`, form, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 300000
           });
           console.log(`Uploaded ${files.length} document(s) for subject: ${subject}`);
         } catch (subjectErr: any) {
