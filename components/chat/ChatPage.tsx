@@ -174,7 +174,16 @@ const ChatPage: React.FC = () => {
         scrollToBottom();
 
         console.log('SendMessage: Emitting sendMessage event', messageData);
-        socket.emit('sendMessage', messageData);
+        socket.emit('sendMessage', messageData, (response: any) => {
+            if (response && response.error) {
+                console.error('SendMessage - Server Error Response:', response.error);
+                // Optionally show a toast or revert optimistic update? 
+                // For now, just log it clearly.
+                setMessages(prev => prev.filter(m => m !== optimisticMsg));
+            } else {
+                console.log('SendMessage - Server acknowledged:', response);
+            }
+        });
         setInputValue('');
     };
 

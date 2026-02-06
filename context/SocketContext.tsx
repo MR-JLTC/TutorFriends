@@ -38,12 +38,15 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const newSocket = io(SOCKET_URL, {
             auth: { token },
             autoConnect: true,
-            // Remove restricted transports to allow polling fallback if websocket is blocked
-            // transports: ['websocket'], 
+            transports: ['websocket'], // Force WebSocket to avoid polling sticky session issues on Render
+            reconnectionAttempts: 5,
         });
+
+        console.log('SocketContext - Attempting WSS connection to:', SOCKET_URL);
 
         newSocket.on('connect', () => {
             console.log('✅ SocketContext - Connected successfully! ID:', newSocket.id);
+            console.log('SocketContext - Transport:', newSocket.io.engine.transport.name);
             setIsConnected(true);
         });
 
