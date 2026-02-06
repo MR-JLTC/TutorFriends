@@ -43,6 +43,14 @@ const tutorNavLinks = [
     isFirstStep: false
   },
   {
+    to: '/tutor-dashboard/messages',
+    icon: MessageSquare,
+    label: 'Messages',
+    description: 'Chat with your students in real-time.',
+    requiresApproval: true,
+    isFirstStep: false
+  },
+  {
     to: '/tutor-dashboard/sessions',
     icon: MessageSquare,
     label: 'Booking',
