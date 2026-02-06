@@ -15,6 +15,7 @@ const ChatPage: React.FC = () => {
     const [messages, setMessages] = useState<any[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(true);
+    const [onlineUsers, setOnlineUsers] = useState<Set<number>>(new Set());
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -57,8 +58,25 @@ const ChatPage: React.FC = () => {
 
         socket.on('newMessage', handleNewMessage);
 
+        // Listen for user online/offline status
+        const handleUserStatus = (data: { userId: number, status: 'online' | 'offline' }) => {
+            console.log('ChatPage - User Status Update:', data);
+            setOnlineUsers(prev => {
+                const next = new Set(prev);
+                if (data.status === 'online') {
+                    next.add(Number(data.userId));
+                } else {
+                    next.delete(Number(data.userId));
+                }
+                return next;
+            });
+        };
+
+        socket.on('user_status', handleUserStatus);
+
         return () => {
             socket.off('newMessage', handleNewMessage);
+            socket.off('user_status', handleUserStatus);
         };
     }, [socket, activeConversation]);
 
@@ -227,15 +245,32 @@ const ChatPage: React.FC = () => {
         // 1. Map existing conversations
         const existing = conversations.map(c => {
             const partner = getPartner(c);
+            const lastMsg = c.last_message; // Assuming conversation object has a last_message property
+
+            // Determine preview text logic
+            let previewText = 'Start a conversation';
+            if (lastMsg) {
+                const isMe = lastMsg.sender_id === user?.user_id;
+                const prefix = isMe ? 'You: ' : '';
+                previewText = `${prefix}${lastMsg.content}`;
+            } else if (c.last_message_content) {
+                // Fallback using the conversation summary fields
+                const isMe = c.last_message_sender_id === user?.user_id;
+                const prefix = isMe ? 'You: ' : '';
+                previewText = `${prefix}${c.last_message_content}`;
+            }
+
             return {
                 avatar: partner?.profile_image_url || 'https://ui-avatars.com/api/?name=' + (partner?.name || 'User'),
                 alt: partner?.name,
                 title: partner?.name || 'Unknown User',
-                subtitle: c.last_message_content || 'Start a conversation',
+                subtitle: previewText,
                 date: new Date(c.last_message_at || c.created_at),
                 unread: 0,
                 id: c.conversation_id,
-                className: activeConversation?.conversation_id === c.conversation_id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''
+                className: activeConversation?.conversation_id === c.conversation_id ? 'bg-indigo-50 border-l-4 border-indigo-500' : '',
+                statusColor: onlineUsers.has(Number(partner?.user_id)) ? '#4CAF50' : undefined, // Green dot if online
+                statusColorType: 'encircle', // distinctive look
             };
         });
 
@@ -306,10 +341,13 @@ const ChatPage: React.FC = () => {
                                 <div>
                                     <h3 className="font-bold text-slate-800">{getPartner(activeConversation)?.name}</h3>
                                     <div className="flex items-center gap-1.5">
+                                        {/* Status of the connection to server */}
                                         <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-                                        <p className={`text-xs font-medium ${isConnected ? 'text-green-500' : 'text-red-500'}`}>
-                                            {isConnected ? 'Online & Connected' : 'Disconnected'}
-                                        </p>
+
+                                        {/* Status of the PARTNER */}
+                                        {onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) && (
+                                            <span className="text-xs text-green-600 font-bold ml-1">• Active Now</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
