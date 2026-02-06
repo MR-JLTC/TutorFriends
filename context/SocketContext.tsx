@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import io, { Socket } from 'socket.io-client'; // Explicit import
-// Force CI rebuild
 import { useAuth } from './AuthContext';
 import apiClient from '../services/api';
 
