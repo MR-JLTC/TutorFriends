@@ -14,11 +14,15 @@ const ChatPage: React.FC = () => {
     const [activeConversation, setActiveConversation] = useState<any>(null);
     const [messages, setMessages] = useState<any[]>([]);
     const [inputValue, setInputValue] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [onlineUsers, setOnlineUsers] = useState<Set<number>>(new Set());
     const [lastSeenMap, setLastSeenMap] = useState<Record<number, Date>>({});
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<any>(null); // Ref for Input component
+    const activeConversationRef = useRef<any>(null); // Stable ref for listener
+
+    // Keep ref in sync
+    useEffect(() => {
+        activeConversationRef.current = activeConversation;
+    }, [activeConversation]);
 
     useEffect(() => {
         if (user) {
@@ -32,16 +36,19 @@ const ChatPage: React.FC = () => {
         if (!socket) return;
 
         const handleNewMessage = (message: any) => {
-            // DEBUG LOG for Real-time issue
+            const currentActive = activeConversationRef.current;
+
+            // DEBUG LOG for Real-time issue (using Ref)
             console.log('RealTime - New Message Received:', {
                 msgId: message.message_id,
                 convId: message.conversation_id,
-                activeConvId: activeConversation?.conversation_id,
-                match: activeConversation && String(message.conversation_id) === String(activeConversation.conversation_id)
+                activeConvId: currentActive?.conversation_id,
+                match: currentActive && String(message.conversation_id) === String(currentActive.conversation_id),
+                isRefCheck: true
             });
 
             // Loose check for conversation ID equality (string vs number)
-            if (activeConversation && String(message.conversation_id) === String(activeConversation.conversation_id)) {
+            if (currentActive && String(message.conversation_id) === String(currentActive.conversation_id)) {
                 setMessages((prev) => {
                     // Robust De-duplication:
                     // 1. Check if we already have this exact message ID (if server provided it)
@@ -93,7 +100,7 @@ const ChatPage: React.FC = () => {
             socket.off('newMessage', handleNewMessage);
             socket.off('user_status', handleUserStatus);
         };
-    }, [socket, activeConversation]);
+    }, [socket]); // Removed activeConversation from dependency to prevent re-binding listeners
 
     const fetchConversations = async () => {
         try {
@@ -136,6 +143,15 @@ const ChatPage: React.FC = () => {
             });
 
             setAvailableContacts(contacts);
+
+            // Populate initial Last Seen map
+            const initialLastSeen: Record<number, Date> = {};
+            contacts.forEach((c: any) => {
+                if (c.last_active_at) {
+                    initialLastSeen[c.user_id] = new Date(c.last_active_at);
+                }
+            });
+            setLastSeenMap(prev => ({ ...prev, ...initialLastSeen }));
         } catch (err) {
             console.error('Failed to load contacts', err);
         }
