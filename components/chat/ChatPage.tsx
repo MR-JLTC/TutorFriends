@@ -129,12 +129,40 @@ const ChatPage: React.FC = () => {
     };
 
     const handleSendMessage = () => {
-        if (!inputValue.trim() || !activeConversation || !socket) return;
+        console.log('SendMessage: Attempting to send message...', {
+            content: inputValue.substring(0, 20),
+            conversationId: activeConversation?.conversation_id,
+            socketConnected: socket?.connected,
+            isConnectedState: isConnected
+        });
 
-        socket.emit('sendMessage', {
+        if (!inputValue.trim() || !activeConversation || !socket) {
+            console.warn('SendMessage: aborted', {
+                hasInput: !!inputValue.trim(),
+                hasConv: !!activeConversation,
+                hasSocket: !!socket
+            });
+            return;
+        }
+
+        const messageData = {
             conversationId: activeConversation.conversation_id,
             content: inputValue
-        });
+        };
+
+        // Optimistic update
+        const optimisticMsg = {
+            position: 'right',
+            type: 'text',
+            text: inputValue,
+            date: new Date(),
+            title: 'Me'
+        };
+        setMessages((prev) => [...prev, optimisticMsg]);
+        scrollToBottom();
+
+        console.log('SendMessage: Emitting sendMessage event', messageData);
+        socket.emit('sendMessage', messageData);
         setInputValue('');
     };
 
