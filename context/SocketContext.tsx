@@ -32,7 +32,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const isFullUrl = BACKEND_URL.startsWith('http://') || BACKEND_URL.startsWith('https://');
         const SOCKET_URL = isFullUrl ? BACKEND_URL : `http://${BACKEND_URL}:3000`;
 
-        console.log('SocketContext - Connecting to:', SOCKET_URL);
+        const BUILD_ID = '2026-02-06-1805';
+        console.log(`SocketContext - [Build ${BUILD_ID}] Connecting to:`, SOCKET_URL);
 
         // Initialize socket
         const newSocket = io(SOCKET_URL, {
