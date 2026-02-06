@@ -9,16 +9,13 @@ import { format } from 'date-fns';
 const ChatPage: React.FC = () => {
     const { socket, isConnected, joinConversation } = useSocket();
     const { user } = useAuth();
-    const [conversations, setConversations] = useState<any[]>([]);
-    const [activeConversation, setActiveConversation] = useState<any>(null);
-    const [messages, setMessages] = useState<any[]>([]);
-    const [inputValue, setInputValue] = useState('');
-    const [loading, setLoading] = useState(true);
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const [availableContacts, setAvailableContacts] = useState<any[]>([]);
 
-    // Fetch conversations on mount
     useEffect(() => {
-        fetchConversations();
+        if (user) {
+            fetchConversations();
+            fetchAvailableContacts();
+        }
     }, [user]);
 
     // Listen for real-time messages
@@ -52,6 +49,41 @@ const ChatPage: React.FC = () => {
         }
     };
 
+    const fetchAvailableContacts = async () => {
+        if (!user) return;
+        try {
+            const res = await apiClient.get('/users');
+            const allUsers = res.data;
+
+            // Filter based on role
+            // If I am a Tutee (student), I want to see Tutors
+            // If I am a Tutor, I want to see Students (or Tutees)
+
+            // Determine my role context
+            const myRole = user.role || user.user_type; // 'tutee' | 'tutor' | 'student'
+            const isTutor = myRole === 'tutor';
+
+            const contacts = allUsers.filter((u: any) => {
+                // exclude myself
+                if (u.user_id === user.user_id) return false;
+                // exclude admins from this list for now if needed, or keep them
+                if (u.role === 'admin') return false;
+
+                if (isTutor) {
+                    // Show students/tutees
+                    return u.role === 'student' || u.role === 'tutee';
+                } else {
+                    // Show Verified Tutors
+                    return u.role === 'tutor' && u.tutor_profile?.status === 'verified';
+                }
+            });
+
+            setAvailableContacts(contacts);
+        } catch (err) {
+            console.error('Failed to load contacts', err);
+        }
+    };
+
     const loadMessages = async (conversationId: string) => {
         try {
             const res = await apiClient.get(`/chat/conversations/${conversationId}/messages`);
@@ -62,10 +94,32 @@ const ChatPage: React.FC = () => {
         }
     };
 
-    const handleSelectConversation = (conv: any) => {
-        setActiveConversation(conv);
-        joinConversation(conv.conversation_id);
-        loadMessages(conv.conversation_id);
+    const handleSelectConversation = async (item: any) => {
+        // Check if this is an existing conversation or a new contact
+        if (item.id.toString().startsWith('new-')) {
+            // It's a new contact, create conversation first
+            const targetUserId = parseInt(item.id.split('-')[1]);
+            try {
+                const res = await apiClient.post('/chat/conversations', { targetUserId });
+                const newConv = res.data;
+                // Refresh conversations to include the new one
+                await fetchConversations();
+                // Set as active
+                setActiveConversation(newConv);
+                joinConversation(newConv.conversation_id);
+                loadMessages(newConv.conversation_id);
+            } catch (err) {
+                console.error('Failed to create conversation', err);
+            }
+        } else {
+            // Existing conversation
+            const conv = conversations.find(c => c.conversation_id === item.id);
+            if (conv) {
+                setActiveConversation(conv);
+                joinConversation(conv.conversation_id);
+                loadMessages(conv.conversation_id);
+            }
+        }
     };
 
     const handleSendMessage = () => {
@@ -105,6 +159,49 @@ const ChatPage: React.FC = () => {
         return conv.tutor_id === user.user_id ? conv.tutee : conv.tutor;
     };
 
+    // Merge conversations and available contacts
+    const dataSource = useMemo(() => {
+        if (!user) return [];
+
+        // 1. Map existing conversations
+        const existing = conversations.map(c => {
+            const partner = getPartner(c);
+            return {
+                avatar: partner?.profile_image_url || 'https://ui-avatars.com/api/?name=' + (partner?.name || 'User'),
+                alt: partner?.name,
+                title: partner?.name || 'Unknown User',
+                subtitle: c.last_message_content || 'Start a conversation',
+                date: new Date(c.last_message_at || c.created_at),
+                unread: 0,
+                id: c.conversation_id,
+                className: activeConversation?.conversation_id === c.conversation_id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''
+            };
+        });
+
+        // 2. Map available contacts who don't have a conversation yet
+        const existingPartners = new Set(conversations.map(c => {
+            const p = getPartner(c);
+            return p?.user_id;
+        }));
+
+        const potential = availableContacts
+            .filter(u => !existingPartners.has(u.user_id))
+            .map(u => ({
+                avatar: u.profile_image_url || 'https://ui-avatars.com/api/?name=' + (u.name || 'User'),
+                alt: u.name,
+                title: u.name,
+                subtitle: 'Tap to start chatting',
+                date: new Date(), // Just current time for sorting or display
+                unread: 0,
+                id: `new-${u.user_id}`,
+                className: 'opacity-80 hover:opacity-100' // Visual distinction?
+            }));
+
+        // Combine (optional: sort by date?)
+        // Put existing conversations first, then potential contacts
+        return [...existing, ...potential];
+    }, [conversations, availableContacts, activeConversation, user]);
+
     return (
         <div className="flex h-[calc(100vh-6rem)] bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             {/* Sidebar */}
@@ -115,7 +212,7 @@ const ChatPage: React.FC = () => {
                 <div className="flex-1 overflow-y-auto">
                     {loading ? (
                         <div className="p-4 text-center text-slate-500">Loading...</div>
-                    ) : conversations.length === 0 ? (
+                    ) : dataSource.length === 0 ? (
                         <div className="p-8 text-center text-slate-500">
                             <p>No conversations yet.</p>
                             <p className="text-sm mt-2">Book a session or find a tutor/tutee to start chatting!</p>
@@ -123,20 +220,8 @@ const ChatPage: React.FC = () => {
                     ) : (
                         <ChatList
                             className="chat-list"
-                            dataSource={conversations.map(c => {
-                                const partner = getPartner(c);
-                                return {
-                                    avatar: partner?.profile_image_url || 'https://ui-avatars.com/api/?name=' + (partner?.name || 'User'),
-                                    alt: partner?.name,
-                                    title: partner?.name || 'Unknown User',
-                                    subtitle: c.last_message_content || 'Start a conversation',
-                                    date: new Date(c.last_message_at || c.created_at),
-                                    unread: 0,
-                                    id: c.conversation_id,
-                                    className: activeConversation?.conversation_id === c.conversation_id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''
-                                };
-                            })}
-                            onClick={(c) => handleSelectConversation(conversations.find(conv => conv.conversation_id === c.id))}
+                            dataSource={dataSource}
+                            onClick={handleSelectConversation}
                         />
                     )}
                 </div>
