@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import apiClient from '../../services/api';
 import { ChatList, MessageList, Input, SystemMessage } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 
 const ChatPage: React.FC = () => {
     const { socket, isConnected, joinConversation } = useSocket();
@@ -16,7 +16,9 @@ const ChatPage: React.FC = () => {
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(true);
     const [onlineUsers, setOnlineUsers] = useState<Set<number>>(new Set());
+    const [lastSeenMap, setLastSeenMap] = useState<Record<number, Date>>({});
     const scrollRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<any>(null); // Ref for Input component
 
     useEffect(() => {
         if (user) {
@@ -30,6 +32,14 @@ const ChatPage: React.FC = () => {
         if (!socket) return;
 
         const handleNewMessage = (message: any) => {
+            // DEBUG LOG for Real-time issue
+            console.log('RealTime - New Message Received:', {
+                msgId: message.message_id,
+                convId: message.conversation_id,
+                activeConvId: activeConversation?.conversation_id,
+                match: activeConversation && String(message.conversation_id) === String(activeConversation.conversation_id)
+            });
+
             // Loose check for conversation ID equality (string vs number)
             if (activeConversation && String(message.conversation_id) === String(activeConversation.conversation_id)) {
                 setMessages((prev) => {
@@ -60,7 +70,7 @@ const ChatPage: React.FC = () => {
         socket.on('newMessage', handleNewMessage);
 
         // Listen for user online/offline status
-        const handleUserStatus = (data: { userId: number, status: 'online' | 'offline' }) => {
+        const handleUserStatus = (data: { userId: number, status: 'online' | 'offline', lastActive?: string }) => {
             console.log('ChatPage - User Status Update:', data);
             setOnlineUsers(prev => {
                 const next = new Set(prev);
@@ -71,6 +81,10 @@ const ChatPage: React.FC = () => {
                 }
                 return next;
             });
+
+            if (data.status === 'offline' && data.lastActive) {
+                setLastSeenMap(prev => ({ ...prev, [Number(data.userId)]: new Date(data.lastActive!) }));
+            }
         };
 
         socket.on('user_status', handleUserStatus);
@@ -189,6 +203,11 @@ const ChatPage: React.FC = () => {
 
         // Clear input immediately to prevent double sends and improve UX
         setInputValue('');
+        if (inputRef.current && inputRef.current.clear) {
+            inputRef.current.clear();
+        } else if (inputRef.current && inputRef.current.value) {
+            inputRef.current.value = '';
+        }
 
         // Optimistic update
         const optimisticMsg = {
@@ -372,6 +391,7 @@ const ChatPage: React.FC = () => {
                         {/* Input */}
                         <div className="p-3 bg-white border-t border-slate-200">
                             <Input
+                                referance={inputRef}
                                 placeholder="Type a message..."
                                 multiline={true}
                                 value={inputValue}
