@@ -38,21 +38,23 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const newSocket = io(SOCKET_URL, {
             auth: { token },
             autoConnect: true,
-            transports: ['websocket'], // Force WebSocket to avoid polling issues
+            // Remove restricted transports to allow polling fallback if websocket is blocked
+            // transports: ['websocket'], 
         });
 
         newSocket.on('connect', () => {
-            console.log('SocketContext - Connected:', newSocket.id);
+            console.log('✅ SocketContext - Connected successfully! ID:', newSocket.id);
             setIsConnected(true);
         });
 
-        newSocket.on('disconnect', () => {
-            console.log('SocketContext - Disconnected');
+        newSocket.on('disconnect', (reason) => {
+            console.log('❌ SocketContext - Disconnected. Reason:', reason);
             setIsConnected(false);
         });
 
         newSocket.on('connect_error', (err) => {
-            console.error('SocketContext - Connection Error:', err.message);
+            console.error('⚠️ SocketContext - Connection Error:', err.message);
+            // If it's a transport error, it might be due to restricted transports (handled by removing the restriction above)
         });
 
         setSocket(newSocket);

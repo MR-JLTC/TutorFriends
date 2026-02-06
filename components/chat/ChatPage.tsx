@@ -290,7 +290,12 @@ const ChatPage: React.FC = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-slate-800">{getPartner(activeConversation)?.name}</h3>
-                                    <p className="text-xs text-green-500 font-medium">Online</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                                        <p className={`text-xs font-medium ${isConnected ? 'text-green-500' : 'text-red-500'}`}>
+                                            {isConnected ? 'Online & Connected' : 'Disconnected'}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
