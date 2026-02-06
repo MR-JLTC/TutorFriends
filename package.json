@@ -18,6 +18,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/typeorm": "^11.0.0",
+    "@tensorflow/tfjs": "^4.22.0",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "class-validator": "^0.14.2",
