@@ -2444,26 +2444,26 @@ const TuteeFindAndBookTutors: React.FC = () => {
             onClose={() => setDocumentViewerOpen(false)}
             title={selectedDocument.name}
             maxWidth="7xl"
-            className="w-full h-full sm:h-[90vh] sm:max-w-7xl flex flex-col p-0 sm:rounded-2xl overflow-hidden bg-black"
-            contentClassName="flex-1 overflow-hidden p-0 bg-slate-950 flex flex-col relative"
+            className="w-full h-full sm:h-[90vh] sm:max-w-7xl flex flex-col p-0 sm:rounded-2xl overflow-hidden bg-white"
+            contentClassName="flex-1 overflow-hidden p-0 bg-slate-50 flex flex-col relative"
             footer={null} // We rely on the custom close button and potential overlay controls
           >
             {/* Header / Controls Overlay */}
             <div className="absolute top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none">
-              <div className="bg-black/40 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/10 shadow-lg pointer-events-auto max-w-[70%] truncate">
-                <span className="font-medium text-sm sm:text-base truncate">{selectedDocument.name}</span>
+              <div className="bg-white/80 backdrop-blur-md text-slate-800 px-4 py-2 rounded-full border border-slate-200 shadow-sm pointer-events-auto max-w-[70%] truncate">
+                <span className="font-bold text-sm sm:text-base truncate">{selectedDocument.name}</span>
               </div>
               <div className="flex items-center gap-2 pointer-events-auto">
                 <button
                   onClick={() => window.open(selectedDocument.url, '_blank')}
-                  className="p-2.5 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white rounded-full border border-white/10 shadow-lg transition-colors"
+                  className="p-2.5 bg-white/80 hover:bg-white backdrop-blur-md text-slate-600 hover:text-indigo-600 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200"
                   title="Open in new tab"
                 >
                   <ExternalLink className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setDocumentViewerOpen(false)}
-                  className="p-2.5 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white rounded-full border border-white/10 shadow-lg transition-colors group"
+                  className="p-2.5 bg-white/80 hover:bg-white backdrop-blur-md text-slate-600 hover:text-red-600 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 group"
                   title="Close viewer"
                 >
                   <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
@@ -2477,13 +2477,13 @@ const TuteeFindAndBookTutors: React.FC = () => {
                 <img
                   src={selectedDocument.url}
                   alt={selectedDocument.name}
-                  className="max-w-full max-h-full object-contain shadow-2xl"
+                  className="max-w-full max-h-full object-contain shadow-lg rounded-lg"
                 />
               ) : (
                 <iframe
                   src={selectedDocument.url}
                   title={selectedDocument.name}
-                  className="w-full h-full bg-white rounded-none sm:rounded-lg shadow-2xl"
+                  className="w-full h-full bg-white rounded-none sm:rounded-lg shadow-lg border border-slate-200"
                 />
               )}
             </div>
