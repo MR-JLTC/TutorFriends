@@ -226,7 +226,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
               Find the perfect tutor to help you excel in your studies and achieve your academic goals.
             </p>
 
-            <span className="mt-8 inline-flex items-center text-sky-600 font-semibold group-hover:translate-x-1 transition-transform">
+            <span className="mt-8 mt-auto inline-flex items-center text-sky-600 font-semibold group-hover:translate-x-1 transition-transform">
               Join as Student <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </span>
           </div>
@@ -259,7 +259,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
               Share your knowledge, inspire students, and earn on your own schedule.
             </p>
 
-            <span className="mt-8 inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
+            <span className="mt-8 mt-auto inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
               Join as Tutor <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </span>
           </div>
