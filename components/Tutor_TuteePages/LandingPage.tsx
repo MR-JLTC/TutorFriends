@@ -222,11 +222,11 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
             </div>
 
             <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2 md:mb-3 group-hover:text-sky-600 transition-colors">I'm a Student</h3>
-            <p className="text-sm md:text-base text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors">
+            <p className="text-sm md:text-base text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors mb-6 md:mb-10">
               Find the perfect tutor to help you excel in your studies and achieve your academic goals.
             </p>
 
-            <span className="mt-4 md:mt-8 mt-auto inline-flex items-center text-sky-600 font-semibold group-hover:translate-x-1 transition-transform">
+            <span className="mt-auto inline-flex items-center text-sky-600 font-semibold group-hover:translate-x-1 transition-transform">
               Join as Student <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </span>
           </div>
@@ -255,11 +255,11 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
             </div>
 
             <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2 md:mb-3 group-hover:text-indigo-600 transition-colors">I'm a Tutor</h3>
-            <p className="text-sm md:text-base text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors">
+            <p className="text-sm md:text-base text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors mb-6 md:mb-10">
               Share your knowledge, inspire students, and earn on your own schedule.
             </p>
 
-            <span className="mt-4 md:mt-8 mt-auto inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
+            <span className="mt-auto inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
               Join as Tutor <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </span>
           </div>
