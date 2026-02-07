@@ -124,6 +124,50 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
   const addedDays = useMemo(() => Object.keys(availability), [availability]);
   const remainingDays = useMemo(() => daysOfWeek.filter(d => !addedDays.includes(d)), [addedDays]);
 
+  // Use a ref to track granular progress across parallel tasks
+  const progressRef = useRef({
+    base: 0,        // Registration step (10)
+    profile: 0,     // Profile Image (15)
+    gcash: 0,       // GCash QR (15)
+    docs: 0,        // Documents (20)
+    avail: 0,       // Availability (10)
+    subjects: 0,    // Subjects (10)
+    subDocs: 0      // Subject Documents (20)
+  });
+
+  const lastUpdateRef = useRef<number>(0);
+
+  const updateAggregateProgress = (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastUpdateRef.current < 100) {
+      return; // Throttle updates to max 10 per second
+    }
+    lastUpdateRef.current = now;
+
+    const total = Object.values(progressRef.current).reduce((a, b) => a + b, 0);
+    setUploadProgress(Math.min(99, total));
+  };
+
+  // Helper function for image compression
+  const compressFile = async (file: File): Promise<File> => {
+    // Only compress images
+    if (!file.type.startsWith('image/')) return file;
+
+    try {
+      const options = {
+        maxSizeMB: 1,           // Max size 1MB
+        maxWidthOrHeight: 1920, // Max dimensions
+        useWebWorker: true
+      };
+      const compressedBlob = await imageCompression(file, options);
+      // Create a new File from the blob to keep the name and type
+      return new File([compressedBlob], file.name, { type: file.type, lastModified: Date.now() });
+    } catch (error) {
+      console.error('Compression failed for', file.name, error);
+      return file; // Return original if compression fails
+    }
+  };
+
   const addDay = (day: string) => {
     if (!day) return;
     setAvailability(prev => ({ ...prev, [day]: { slots: [{ startTime: '09:00', endTime: '17:00' }] } }));
@@ -1428,30 +1472,6 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       return;
     }
 
-    // Use a ref to track granular progress across parallel tasks
-    const progressRef = useRef({
-      base: 0,        // Registration step (10)
-      profile: 0,     // Profile Image (15)
-      gcash: 0,       // GCash QR (15)
-      docs: 0,        // Documents (20)
-      avail: 0,       // Availability (10)
-      subjects: 0,    // Subjects (10)
-      subDocs: 0      // Subject Documents (20)
-    });
-
-    const lastUpdateRef = useRef<number>(0);
-
-    const updateAggregateProgress = (force = false) => {
-      const now = Date.now();
-      if (!force && now - lastUpdateRef.current < 100) {
-        return; // Throttle updates to max 10 per second
-      }
-      lastUpdateRef.current = now;
-
-      const total = Object.values(progressRef.current).reduce((a, b) => a + b, 0);
-      setUploadProgress(Math.min(99, total));
-    };
-
     setIsLoading(true);
     setUploadProgress(0);
     setUploadMessage('Initializing registration...');
@@ -1459,27 +1479,6 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
     // Reset progress tracking
     progressRef.current = {
       base: 0, profile: 0, gcash: 0, docs: 0, avail: 0, subjects: 0, subDocs: 0
-    };
-
-
-    // Helper function for image compression
-    const compressFile = async (file: File): Promise<File> => {
-      // Only compress images
-      if (!file.type.startsWith('image/')) return file;
-
-      try {
-        const options = {
-          maxSizeMB: 1,           // Max size 1MB
-          maxWidthOrHeight: 1920, // Max dimensions
-          useWebWorker: true
-        };
-        const compressedBlob = await imageCompression(file, options);
-        // Create a new File from the blob to keep the name and type
-        return new File([compressedBlob], file.name, { type: file.type, lastModified: Date.now() });
-      } catch (error) {
-        console.error('Compression failed for', file.name, error);
-        return file; // Return original if compression fails
-      }
     };
 
     try {
