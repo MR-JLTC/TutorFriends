@@ -1427,27 +1427,32 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       return;
     }
 
+    // Use a ref to track granular progress across parallel tasks
+    const progressRef = useRef({
+      base: 0,        // Registration step (10)
+      profile: 0,     // Profile Image (15)
+      gcash: 0,       // GCash QR (15)
+      docs: 0,        // Documents (20)
+      avail: 0,       // Availability (10)
+      subjects: 0,    // Subjects (10)
+      subDocs: 0      // Subject Documents (20)
+    });
+
+    const updateAggregateProgress = () => {
+      const total = Object.values(progressRef.current).reduce((a, b) => a + b, 0);
+      setUploadProgress(Math.min(99, total));
+    };
+
     setIsLoading(true);
     setUploadProgress(0);
     setUploadMessage('Initializing registration...');
 
+    // Reset progress tracking
+    progressRef.current = {
+      base: 0, profile: 0, gcash: 0, docs: 0, avail: 0, subjects: 0, subDocs: 0
+    };
+
     try {
-      // Progress Weights (Total 100%)
-      // 1. Register User: 10%
-      // 2. Profile Image: 15%
-      // 3. GCash QR: 15%
-      // 4. Documents: 20%
-      // 5. Availability: 10%
-      // 6. Subjects: 10%
-      // 7. Subject Documents: 20%
-
-      let currentBaseProgress = 0;
-
-      const updateProgress = (base: number, percent: number, weight: number) => {
-        const calculated = base + (percent * (weight / 100));
-        setUploadProgress(Math.min(99, calculated)); // Cap at 99 until fully done
-      };
-
       console.log('Starting tutor application submission...');
       setUploadMessage('Creating your account...');
 
@@ -1457,7 +1462,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
         university_id: Number(universityId),
         course_id: courseId ? Number(courseId) : undefined,
         bio,
-        year_level: Number(yearLevel), // Convert to number
+        year_level: Number(yearLevel),
         gcash_number: gcashNumber,
         SessionRatePerHour: sessionRate ? Number(sessionRate) : undefined,
         selectedSubjects: Array.from(selectedSubjects),
@@ -1481,226 +1486,189 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
         SessionRatePerHour: sessionRate ? Number(sessionRate) : undefined,
       };
 
-      console.log('Registration payload:', registerPayload);
-      console.log('Making POST request to /auth/register...');
-
       let registrationResponse;
       try {
         registrationResponse = await apiClient.post('/auth/register', registerPayload);
-        console.log('Registration response:', registrationResponse.data);
       } catch (registerErr: any) {
-        console.error('Registration API error details:', {
-          message: registerErr?.message,
-          response: registerErr?.response?.data,
-          status: registerErr?.response?.status,
-          url: registerErr?.config?.url,
-          method: registerErr?.config?.method,
-          baseURL: registerErr?.config?.baseURL,
-          fullUrl: `${registerErr?.config?.baseURL}${registerErr?.config?.url}`,
-        });
-
-        // Provide helpful error message for 404 errors
+        console.error('Registration API error:', registerErr);
         if (registerErr?.response?.status === 404) {
           const errorMsg = registerErr?.response?.data?.message || registerErr?.message || 'Endpoint not found';
-          notify(`Registration failed: ${errorMsg}. Please ensure the backend server is running on http://localhost:3000`, 'error');
+          notify(`Registration failed: ${errorMsg}.`, 'error');
+        } else {
+          const message = registerErr?.response?.data?.message || registerErr?.message || 'Registration failed';
+          if (typeof message === 'string' && message.toLowerCase().includes('email already registered')) {
+            notify('Email already registered', 'error');
+          } else {
+            notify(`Registration failed: ${message}`, 'error');
+          }
         }
-
-        throw registerErr;
+        setIsLoading(false);
+        return; // Stop execution
       }
 
-      currentBaseProgress += 10;
-      setUploadProgress(currentBaseProgress);
+      progressRef.current.base = 10;
+      updateAggregateProgress();
 
-      // Store the access token for authenticated requests
+      // Store the access token
       const { user, accessToken } = registrationResponse.data;
       if (accessToken) {
         localStorage.setItem('token', accessToken);
         localStorage.setItem('user', JSON.stringify(user));
-        console.log('Token stored for authenticated requests');
         const storageRole = mapRoleToStorageKey(user?.role) ?? mapRoleToStorageKey(user?.user_type);
         if (storageRole && user) {
           setRoleAuth(storageRole, user, accessToken);
         }
       }
 
-      // Try different possible response structures
       const newTutorId = registrationResponse.data?.user?.tutor_profile?.tutor_id
         || registrationResponse.data?.tutor_profile?.tutor_id
         || registrationResponse.data?.tutor_id
         || registrationResponse.data?.user?.tutor_id;
 
-      if (!newTutorId) {
-        console.error('Registration response structure:', JSON.stringify(registrationResponse.data, null, 2));
-        throw new Error('Could not get tutor ID after registration. Please check the response structure.');
-      }
+      if (!newTutorId) throw new Error('Could not get tutor ID after registration.');
       console.log('New Tutor User Registered with ID:', newTutorId);
-
-      // Use newTutorId for subsequent steps
       const tutorId = newTutorId;
 
-      // 2) Upload profile image (optional) or set placeholder (Weight: 15%)
-      console.log('Step 2: Handling profile image...');
-      setUploadMessage('Uploading profile image...');
-      if (profileImage) {
-        console.log('Uploading profile image...');
-        const pf = new FormData();
-        pf.append('file', profileImage);
-        await apiClient.post(`/tutors/${tutorId}/profile-image`, pf, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-            updateProgress(currentBaseProgress, percentCompleted, 15);
-          }
-        });
-        console.log('Profile image uploaded successfully');
-      } else {
-        console.log('Setting placeholder profile image...');
-        await apiClient.post(`/tutors/${tutorId}/profile-image-placeholder`);
-        console.log('Placeholder profile image set');
-      }
-      currentBaseProgress += 15;
-      setUploadProgress(currentBaseProgress);
+      setUploadMessage('Uploading files and saving data...');
 
-      // 3) Upload GCash QR image (optional) or set placeholder (Weight: 15%)
-      console.log('Step 3: Handling GCash QR image...');
-      setUploadMessage('Uploading GCash QR code...');
-      if (gcashQRImage) {
-        console.log('Uploading GCash QR image...');
-        const gcashForm = new FormData();
-        gcashForm.append('file', gcashQRImage);
-        await apiClient.post(`/tutors/${tutorId}/gcash-qr`, gcashForm, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-            updateProgress(currentBaseProgress, percentCompleted, 15);
-          }
-        });
-        console.log('GCash QR image uploaded successfully');
-      } else {
-        console.log('Setting placeholder GCash QR...');
-        await apiClient.post(`/tutors/${tutorId}/gcash-qr-placeholder`);
-        console.log('Placeholder GCash QR set');
-      }
-      currentBaseProgress += 15;
-      setUploadProgress(currentBaseProgress);
+      // PARALLEL EXECUTION BLOCK
+      const tasks: Promise<any>[] = [];
 
-      // 4) Upload documents (Weight: 20%)
-      console.log('Step 4: Uploading documents...');
-      setUploadMessage('Uploading supporting documents...');
-      const form = new FormData();
-      uploadedFiles.forEach(f => {
-        console.log(`Adding file to payload: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)} MB)`);
-        form.append('files', f);
-      });
-      // Increase timeout to 5 minutes (300000 ms) for large files
-      await apiClient.post(`/tutors/${tutorId}/documents`, form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 300000,
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-          updateProgress(currentBaseProgress, percentCompleted, 20);
-        }
-      });
-      console.log('Documents uploaded successfully');
-      currentBaseProgress += 20;
-      setUploadProgress(currentBaseProgress);
-
-      // 5) Save availability (Weight: 10%)
-      console.log('Step 5: Saving availability...');
-      setUploadMessage('Saving your schedule...');
-      const slots = Object.entries(availability).flatMap(([day, d]) => {
-        const dayObj = d as DayAvailability;
-        return dayObj.slots.map(s => ({ day_of_week: day, start_time: s.startTime, end_time: s.endTime }));
-      });
-      console.log('Availability slots:', slots);
-      await apiClient.post(`/tutors/${tutorId}/availability`, { slots });
-      console.log('Availability saved successfully');
-      currentBaseProgress += 10;
-      setUploadProgress(currentBaseProgress);
-
-      // 6) Save subjects (Weight: 10%)
-      console.log('Step 6: Saving subjects...');
-      setUploadMessage('Registering your subjects...');
-      const subjectsArray: string[] = Array.from(selectedSubjects) as string[];
-      console.log('Selected subjects:', subjectsArray);
-
-      // Get the actual course_id that was saved during registration
-      const resolvedCourseId = courseId ? Number(courseId) : null;
-
-      // Note: We don't validate against existing subjects here because:
-      // 1. Users can add new subjects that don't exist in the database yet
-      // 2. The backend will automatically create new subjects if they don't exist
-      // 3. The backend handles proper course_id linking for new subjects
-      // This allows users to add custom subjects like "Ethical Hacking" that aren't pre-defined
-
-      // Save subjects - backend will create new subjects if they don't exist
-      await apiClient.post(`/tutors/${tutorId}/subjects`, {
-        subjects: subjectsArray,
-        course_id: resolvedCourseId || undefined // Include course_id for additional validation
-      });
-      console.log('Subjects saved successfully');
-      currentBaseProgress += 10;
-      setUploadProgress(currentBaseProgress);
-
-      // 7) Upload supporting documents per subject (Weight: 20%)
-      console.log('Step 7: Uploading subject supporting documents...');
-      setUploadMessage('Uploading subject proofs...');
-      // Simple logic: divide 20% by number of subjects to get weight per subject
-      const subjectWeight = subjectsArray.length > 0 ? (20 / subjectsArray.length) : 20;
-
-      for (const subject of subjectsArray) {
-        const files = subjectFilesMap[subject] || [];
-        if (files.length === 0) {
-          console.warn(`No files found for subject: ${subject}, skipping...`);
-          currentBaseProgress += subjectWeight;
-          setUploadProgress(currentBaseProgress);
-          continue;
-        }
-        try {
-          const form = new FormData();
-          // Append subject name to FormData body (required by backend)
-          form.append('subject_name', subject);
-          // Append all files
-          files.forEach(f => form.append('files', f));
-
-          // Use the correct endpoint: /tutors/:tutorId/subject-application
-          await apiClient.post(`/tutors/${tutorId}/subject-application`, form, {
+      // Task 2: Profile Image (15%)
+      const profileTask = (async () => {
+        if (profileImage) {
+          const pf = new FormData();
+          pf.append('file', profileImage);
+          await apiClient.post(`/tutors/${tutorId}/profile-image`, pf, {
             headers: { 'Content-Type': 'multipart/form-data' },
-            timeout: 300000
+            onUploadProgress: (progressEvent) => {
+              const percent = (progressEvent.loaded / (progressEvent.total || 1));
+              progressRef.current.profile = percent * 15;
+              updateAggregateProgress();
+            }
           });
-          console.log(`Uploaded ${files.length} document(s) for subject: ${subject}`);
-        } catch (subjectErr: any) {
-          console.error(`Failed to upload documents for subject ${subject}:`, subjectErr);
-          console.error('Error details:', {
-            message: subjectErr?.message,
-            response: subjectErr?.response?.data,
-            status: subjectErr?.response?.status,
-            url: subjectErr?.config?.url
-          });
-          // Continue with other subjects even if one fails
-          notify(`Warning: Failed to upload documents for ${subject}. Continuing...`, 'error');
+        } else {
+          await apiClient.post(`/tutors/${tutorId}/profile-image-placeholder`);
         }
-      }
-      console.log('Step 7: Subject supporting documents upload completed');
+        progressRef.current.profile = 15;
+        updateAggregateProgress();
+      })();
+      tasks.push(profileTask);
+
+      // Task 3: GCash QR (15%)
+      const gcashTask = (async () => {
+        if (gcashQRImage) {
+          const gcashForm = new FormData();
+          gcashForm.append('file', gcashQRImage);
+          await apiClient.post(`/tutors/${tutorId}/gcash-qr`, gcashForm, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (progressEvent) => {
+              const percent = (progressEvent.loaded / (progressEvent.total || 1));
+              progressRef.current.gcash = percent * 15;
+              updateAggregateProgress();
+            }
+          });
+        } else {
+          await apiClient.post(`/tutors/${tutorId}/gcash-qr-placeholder`);
+        }
+        progressRef.current.gcash = 15;
+        updateAggregateProgress();
+      })();
+      tasks.push(gcashTask);
+
+      // Task 4: Documents (20%)
+      const docsTask = (async () => {
+        if (uploadedFiles.length > 0) {
+          const form = new FormData();
+          uploadedFiles.forEach(f => form.append('files', f));
+          await apiClient.post(`/tutors/${tutorId}/documents`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 300000,
+            onUploadProgress: (progressEvent) => {
+              const percent = (progressEvent.loaded / (progressEvent.total || 1));
+              progressRef.current.docs = percent * 20;
+              updateAggregateProgress();
+            }
+          });
+        }
+        progressRef.current.docs = 20;
+        updateAggregateProgress();
+      })();
+      tasks.push(docsTask);
+
+      // Task 5: Availability (10%)
+      const availTask = (async () => {
+        const slots = Object.entries(availability).flatMap(([day, d]) => {
+          const dayObj = d as DayAvailability;
+          return dayObj.slots.map(s => ({ day_of_week: day, start_time: s.startTime, end_time: s.endTime }));
+        });
+        await apiClient.post(`/tutors/${tutorId}/availability`, { slots });
+        progressRef.current.avail = 10;
+        updateAggregateProgress();
+      })();
+      tasks.push(availTask);
+
+      // Task 6 & 7: Subjects (10%) + Subject Docs (20%)
+      const subjectsTask = (async () => {
+        const subjectsArray: string[] = Array.from(selectedSubjects) as string[];
+        const resolvedCourseId = courseId ? Number(courseId) : null;
+
+        await apiClient.post(`/tutors/${tutorId}/subjects`, {
+          subjects: subjectsArray,
+          course_id: resolvedCourseId || undefined
+        });
+        progressRef.current.subjects = 10;
+        updateAggregateProgress();
+
+        const subjectWeight = subjectsArray.length > 0 ? (20 / subjectsArray.length) : 0;
+
+        const subDocPromises = subjectsArray.map(async (subject) => {
+          const files = subjectFilesMap[subject] || [];
+          if (files.length === 0) {
+            progressRef.current.subDocs += subjectWeight;
+            updateAggregateProgress();
+            return;
+          }
+          try {
+            const form = new FormData();
+            form.append('subject_name', subject);
+            files.forEach(f => form.append('files', f));
+
+            await apiClient.post(`/tutors/${tutorId}/subject-application`, form, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+              onUploadProgress: (progressEvent) => {
+                // Approximate progress tracking
+              }
+            });
+          } catch (e) {
+            console.error(`Failed sub-doc upload for ${subject}`, e);
+            notify(`Warning: Failed to upload docs for ${subject}`, 'info');
+          }
+          progressRef.current.subDocs += subjectWeight;
+          updateAggregateProgress();
+        });
+
+        await Promise.all(subDocPromises);
+        progressRef.current.subDocs = 20;
+        updateAggregateProgress();
+      })();
+      tasks.push(subjectsTask);
+
+      // Wait for all parallel tasks to complete
+      await Promise.all(tasks);
+
+      setUploadProgress(100);
+      setUploadMessage('Registration completed!');
+      await new Promise(r => setTimeout(r, 600));
 
       notify('Application submitted successfully!', 'success');
       if (onClose) {
         onClose();
       }
-      return;
     } catch (err: any) {
       console.error('Submission error:', err);
-      console.error('Error response:', err?.response?.data);
-      console.error('Error status:', err?.response?.status);
-      console.error('Error config:', err?.config);
-
-      const message = err?.response?.data?.message || err?.response?.data?.error || err?.message || 'Failed to submit application';
-      // Use the notify function from useToast hook
-      if (typeof message === 'string' && message.toLowerCase().includes('email already registered')) {
-        notify('Email already registered', 'error');
-      } else {
-        notify(`Submission failed: ${message}`, 'error');
-      }
+      const message = err?.response?.data?.message || err?.message || 'Failed to submit application';
+      notify(`Submission failed: ${message}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -1741,7 +1709,12 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between px-3 sm:px-4 md:px-5 lg:px-4 py-2.5 sm:py-3 lg:py-2 border-b border-slate-200/70 bg-gradient-to-r from-slate-50 to-white">
-            <LoadingOverlay isLoading={isLoading} message="Submitting your application..." />
+            <LoadingOverlay
+              isLoading={isLoading}
+              message="Submitting your application..."
+              progress={uploadProgress}
+              subMessage={uploadMessage}
+            />
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <Logo className="h-10 w-10 sm:h-14 sm:w-14 lg:h-10 lg:w-10 flex-shrink-0" />
               <div className="min-w-0 flex-1">
