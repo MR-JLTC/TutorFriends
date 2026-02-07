@@ -19,6 +19,7 @@ const ChatPage: React.FC = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<any>(null); // Ref for Input component
     const activeConversationRef = useRef<any>(null); // Stable ref for listener
+    const audioContextRef = useRef<AudioContext | null>(null); // Audio context ref
 
     // Keep ref in sync
     useEffect(() => {
@@ -40,6 +41,31 @@ const ChatPage: React.FC = () => {
         }
     }, [user]);
 
+    // Simple beep notification sound using AudioContext
+    const playNotificationSound = () => {
+        try {
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            if (!AudioContext) return;
+
+            const ctx = new AudioContext();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.15);
+            oscillator.stop(ctx.currentTime + 0.15);
+        } catch (e) {
+            console.error('Audio play failed', e);
+        }
+    };
+
     // Listen for real-time messages
     useEffect(() => {
         if (!socket) return;
@@ -58,6 +84,11 @@ const ChatPage: React.FC = () => {
 
             // Loose check for conversation ID equality (string vs number)
             if (currentActive && String(message.conversation_id) === String(currentActive.conversation_id)) {
+                // Play sound if message is from someone else
+                if (message.sender_id !== user?.user_id) {
+                    playNotificationSound();
+                }
+
                 setMessages((prev) => {
                     // Robust De-duplication & Optimistic Replacement:
 
@@ -68,12 +99,16 @@ const ChatPage: React.FC = () => {
                     // 2. Check for optimistic message match (content + me). 
                     // If found, REPLACE it with the real message to confirm delivery/update ID.
                     const optimisticIndex = prev.findIndex(m =>
-                        m.text === message.content &&
+                        m.text?.trim() === message.content?.trim() &&
                         m.position === 'right' && // My message
                         (String(m.id).startsWith('temp-') || m.status === 'waiting')
                     );
 
                     if (optimisticIndex !== -1) {
+                        console.log('RealTime - Replacing optimistic message:', {
+                            optimisticId: prev[optimisticIndex].id,
+                            realId: message.message_id
+                        });
                         // Replace the optimistic message with the real one
                         const newMessages = [...prev];
                         newMessages[optimisticIndex] = formatMessageForUI(message);
@@ -81,9 +116,14 @@ const ChatPage: React.FC = () => {
                     }
 
                     // 3. New message
+                    console.log('RealTime - Appending new message:', message.message_id);
                     return [...prev, formatMessageForUI(message)];
                 });
                 scrollToBottom();
+            } else if (message.sender_id !== user?.user_id) {
+                // Background notification (not in active conversation)
+                console.log('RealTime - Background message received (sound played)');
+                playNotificationSound();
             }
             // Refresh list to update last message preview
             fetchConversations();

@@ -170,53 +170,100 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity p-4" onClick={(e) => { e.preventDefault(); onClose(); }} role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 m-0 max-w-3xl w-full flex flex-col md:flex-row gap-6 md:gap-8 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div
-          role="button"
-          tabIndex={0}
-          className="flex-1 p-8 rounded-xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition-all duration-300 cursor-pointer flex flex-col items-center text-center focus:outline-none focus:ring-2 focus:ring-sky-500 group"
-          onClick={(e) => { e.preventDefault(); onNavigate('/TuteeRegistrationPage'); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('/TuteeRegistrationPage'); } }}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      {/* Backdrop with Blur */}
+      <div
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        onClick={(e) => { e.preventDefault(); onClose(); }}
+      ></div>
+
+      {/* Modal Content */}
+      <div
+        className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 fade-in duration-200 ring-1 ring-white/50"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100/50 rounded-full transition-colors z-10"
+          aria-label="Close modal"
         >
-          <div className="relative flex items-center justify-center h-32 w-32 rounded-full bg-gradient-to-br from-sky-400 to-sky-600 mb-6 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <img
-              src="/assets/images/tutee.png"
-              alt="Student"
-              className="w-full h-full object-cover rounded-full transform transition-transform duration-500 group-hover:scale-125"
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/20 to-transparent rounded-full"></div>
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-sky-500 rounded-full flex items-center justify-center shadow-md">
-              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+
+        <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-100">
+
+          {/* Student Option */}
+          <div
+            className="flex-1 p-8 sm:p-12 flex flex-col items-center text-center cursor-pointer group hover:bg-sky-50/50 transition-colors duration-300 relative overflow-hidden"
+            onClick={() => onNavigate('/TuteeRegistrationPage')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('/TuteeRegistrationPage'); }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative w-40 h-40 mb-8 rounded-full p-1 bg-gradient-to-br from-sky-100 to-sky-50 group-hover:from-sky-400 group-hover:to-sky-600 transition-all duration-500 shadow-lg group-hover:shadow-sky-500/30 group-hover:scale-105">
+              <div className="w-full h-full rounded-full overflow-hidden border-4 border-white relative">
+                <img
+                  src="/assets/images/tutee2.png"
+                  alt="Student"
+                  className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                />
+              </div>
+              <div className="absolute bottom-2 right-2 w-10 h-10 bg-sky-500 text-white rounded-full flex items-center justify-center shadow-md border-4 border-white transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+              </div>
             </div>
+
+            <h3 className="text-3xl font-bold text-slate-800 mb-3 group-hover:text-sky-600 transition-colors">I'm a Student</h3>
+            <p className="text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors">
+              Find the perfect tutor to help you excel in your studies and achieve your academic goals.
+            </p>
+
+            <span className="mt-8 inline-flex items-center text-sky-600 font-semibold group-hover:translate-x-1 transition-transform">
+              Join as Student <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </span>
           </div>
-          <h3 id="modal-title" className="text-2xl font-bold text-slate-800 group-hover:text-sky-700 transition-colors">I'm a Student</h3>
-          <p className="mt-2 text-slate-600 group-hover:text-slate-700 transition-colors">Find a tutor to help you achieve your academic goals.</p>
-        </div>
-        <div
-          role="button"
-          tabIndex={0}
-          className="flex-1 p-8 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300 cursor-pointer flex flex-col items-center text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 group"
-          onClick={() => onNavigate('/TutorRegistrationPage')}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('/TutorRegistrationPage') }}
-        >
-          <div className="relative flex items-center justify-center h-32 w-32 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 mb-6 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <img
-              src="/assets/images/tutor.png"
-              alt="Tutor"
-              className="w-full h-full object-cover rounded-full transform transition-transform duration-500 group-hover:scale-125"
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full"></div>
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center shadow-md">
-              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+
+          {/* Tutor Option */}
+          <div
+            className="flex-1 p-8 sm:p-12 flex flex-col items-center text-center cursor-pointer group hover:bg-indigo-50/50 transition-colors duration-300 relative overflow-hidden"
+            onClick={() => onNavigate('/TutorRegistrationPage')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate('/TutorRegistrationPage'); }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative w-40 h-40 mb-8 rounded-full p-1 bg-gradient-to-br from-indigo-100 to-indigo-50 group-hover:from-indigo-400 group-hover:to-indigo-600 transition-all duration-500 shadow-lg group-hover:shadow-indigo-500/30 group-hover:scale-105">
+              <div className="w-full h-full rounded-full overflow-hidden border-4 border-white relative">
+                <img
+                  src="/assets/images/tutor2.png"
+                  alt="Tutor"
+                  className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                />
+              </div>
+              <div className="absolute bottom-2 right-2 w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-md border-4 border-white transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              </div>
             </div>
+
+            <h3 className="text-3xl font-bold text-slate-800 mb-3 group-hover:text-indigo-600 transition-colors">I'm a Tutor</h3>
+            <p className="text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors">
+              Share your knowledge, inspire students, and earn on your own schedule.
+            </p>
+
+            <span className="mt-8 inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
+              Join as Tutor <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </span>
           </div>
-          <h3 className="text-2xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">I'm a Tutor</h3>
-          <p className="mt-2 text-slate-600 group-hover:text-slate-700 transition-colors">Share your knowledge, help students, and earn money.</p>
+
         </div>
       </div>
     </div>
