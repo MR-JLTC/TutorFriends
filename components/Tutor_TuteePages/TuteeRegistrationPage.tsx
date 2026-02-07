@@ -16,6 +16,8 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
   const navigate = useNavigate();
   const { notify } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
+  const [uploadMessage, setUploadMessage] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -397,8 +399,25 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
 
     setIsLoading(true);
 
+    setIsLoading(true);
+    setUploadProgress(0);
+    setUploadMessage('Initializing registration...');
+
     try {
+      // Progress Weights (Total 100%)
+      // 1. Register User: 40%
+      // 2. Profile Image: 60%
+
+      let currentBaseProgress = 0;
+
+      const updateProgress = (base: number, percent: number, weight: number) => {
+        const calculated = base + (percent * (weight / 100));
+        setUploadProgress(Math.min(99, calculated)); // Cap at 99 until fully done
+      };
+
       console.log('Starting tutee registration submission...');
+      setUploadMessage('Creating your account...');
+
       console.log('Form data:', {
         name: formData.name.trim(),
         email: formData.email,
@@ -451,11 +470,15 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       // Small delay to ensure token is properly set
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Upload profile image if provided
+      currentBaseProgress += 40;
+      setUploadProgress(currentBaseProgress);
+
+      // Upload profile image if provided (Weight: 60%)
       if (profileImage) {
         try {
           console.log('Uploading profile image for tutee:', user.user_id);
           console.log('Using token:', accessToken);
+          setUploadMessage('Uploading profile photo...');
 
           const pf = new FormData();
           pf.append('file', profileImage);
@@ -464,6 +487,10 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
             headers: {
               'Content-Type': 'multipart/form-data',
               'Authorization': `Bearer ${accessToken}`
+            },
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+              updateProgress(currentBaseProgress, percentCompleted, 60);
             }
           });
           console.log('Profile image uploaded successfully:', profileResponse.data);
@@ -479,9 +506,11 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
           console.error('Error status:', imageErr.response?.status);
           // Don't block registration if image upload fails
           notify('Registration successful, but profile image upload failed. You can update it later.', 'info');
+          notify('Registration successful, but profile image upload failed. You can update it later.', 'info');
         }
       } else {
         // Set placeholder profile image
+        setUploadMessage('Finalizing account...');
         try {
           console.log('Setting placeholder profile image for tutee');
           await apiClient.post(`/users/${user.user_id}/profile-image-placeholder`, {}, {
@@ -495,6 +524,10 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
         }
       }
 
+      setUploadProgress(100);
+      setUploadMessage('Registration completed!');
+      await new Promise(r => setTimeout(r, 600)); // Small delay to show 100%
+
       notify('Registration successful!', 'success');
       if (onClose) {
         onClose();
@@ -503,6 +536,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       }
       return;
     } catch (err: any) {
+      setUploadProgress(undefined);
       console.error('Registration error:', err);
       console.error('Error response:', err?.response?.data);
       console.error('Error status:', err?.response?.status);
@@ -576,7 +610,12 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
         }
       >
         <div className="flex items-center justify-between px-3 sm:px-4 md:px-5 lg:px-4 py-2.5 sm:py-3 lg:py-2 border-b border-slate-200/70 bg-gradient-to-r from-slate-50 to-white">
-          <LoadingOverlay isLoading={isLoading} message="Creating your account..." />
+          <LoadingOverlay
+            isLoading={isLoading}
+            message={uploadProgress !== undefined ? "Registration in progress" : "Creating your account..."}
+            progress={uploadProgress}
+            subMessage={uploadMessage}
+          />
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
             <Logo className="h-10 w-10 sm:h-12 sm:w-12 lg:h-10 lg:w-10 flex-shrink-0" />
             <div className="min-w-0 flex-1">

@@ -52,6 +52,8 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
 }) => {
   const { notify } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
+  const [uploadMessage, setUploadMessage] = useState<string>('');
   const [selectedSubjects, setSelectedSubjects] = useState<Set<string>>(new Set<string>());
   const [isFileSelecting, setIsFileSelecting] = useState(false);
   const [warningModal, setWarningModal] = useState<{
@@ -1425,8 +1427,30 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       return;
     }
 
+    setIsLoading(true);
+    setUploadProgress(0);
+    setUploadMessage('Initializing registration...');
+
     try {
+      // Progress Weights (Total 100%)
+      // 1. Register User: 10%
+      // 2. Profile Image: 15%
+      // 3. GCash QR: 15%
+      // 4. Documents: 20%
+      // 5. Availability: 10%
+      // 6. Subjects: 10%
+      // 7. Subject Documents: 20%
+
+      let currentBaseProgress = 0;
+
+      const updateProgress = (base: number, percent: number, weight: number) => {
+        const calculated = base + (percent * (weight / 100));
+        setUploadProgress(Math.min(99, calculated)); // Cap at 99 until fully done
+      };
+
       console.log('Starting tutor application submission...');
+      setUploadMessage('Creating your account...');
+
       console.log('Form data:', {
         email,
         full_name: fullName.trim(),
@@ -1442,7 +1466,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
         gcashQRImage: !!gcashQRImage
       });
 
-      // 1) Register the user as a tutor
+      // 1) Register the user as a tutor (Weight: 10%)
       console.log('Step 1: Registering new tutor user...');
       const registerPayload = {
         name: fullName.trim(),
@@ -1484,6 +1508,9 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
         throw registerErr;
       }
 
+      currentBaseProgress += 10;
+      setUploadProgress(currentBaseProgress);
+
       // Store the access token for authenticated requests
       const { user, accessToken } = registrationResponse.data;
       if (accessToken) {
@@ -1511,36 +1538,55 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       // Use newTutorId for subsequent steps
       const tutorId = newTutorId;
 
-      // 2) Upload profile image (optional) or set placeholder
+      // 2) Upload profile image (optional) or set placeholder (Weight: 15%)
       console.log('Step 2: Handling profile image...');
+      setUploadMessage('Uploading profile image...');
       if (profileImage) {
         console.log('Uploading profile image...');
         const pf = new FormData();
         pf.append('file', profileImage);
-        await apiClient.post(`/tutors/${tutorId}/profile-image`, pf, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await apiClient.post(`/tutors/${tutorId}/profile-image`, pf, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+            updateProgress(currentBaseProgress, percentCompleted, 15);
+          }
+        });
         console.log('Profile image uploaded successfully');
       } else {
         console.log('Setting placeholder profile image...');
         await apiClient.post(`/tutors/${tutorId}/profile-image-placeholder`);
         console.log('Placeholder profile image set');
       }
+      currentBaseProgress += 15;
+      setUploadProgress(currentBaseProgress);
 
-      // 3) Upload GCash QR image (optional) or set placeholder
+      // 3) Upload GCash QR image (optional) or set placeholder (Weight: 15%)
       console.log('Step 3: Handling GCash QR image...');
+      setUploadMessage('Uploading GCash QR code...');
       if (gcashQRImage) {
         console.log('Uploading GCash QR image...');
         const gcashForm = new FormData();
         gcashForm.append('file', gcashQRImage);
-        await apiClient.post(`/tutors/${tutorId}/gcash-qr`, gcashForm, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await apiClient.post(`/tutors/${tutorId}/gcash-qr`, gcashForm, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+            updateProgress(currentBaseProgress, percentCompleted, 15);
+          }
+        });
         console.log('GCash QR image uploaded successfully');
       } else {
         console.log('Setting placeholder GCash QR...');
         await apiClient.post(`/tutors/${tutorId}/gcash-qr-placeholder`);
         console.log('Placeholder GCash QR set');
       }
+      currentBaseProgress += 15;
+      setUploadProgress(currentBaseProgress);
 
-      // 4) Upload documents
+      // 4) Upload documents (Weight: 20%)
       console.log('Step 4: Uploading documents...');
+      setUploadMessage('Uploading supporting documents...');
       const form = new FormData();
       uploadedFiles.forEach(f => {
         console.log(`Adding file to payload: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)} MB)`);
@@ -1549,12 +1595,19 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       // Increase timeout to 5 minutes (300000 ms) for large files
       await apiClient.post(`/tutors/${tutorId}/documents`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 300000
+        timeout: 300000,
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+          updateProgress(currentBaseProgress, percentCompleted, 20);
+        }
       });
       console.log('Documents uploaded successfully');
+      currentBaseProgress += 20;
+      setUploadProgress(currentBaseProgress);
 
-      // 5) Save availability
+      // 5) Save availability (Weight: 10%)
       console.log('Step 5: Saving availability...');
+      setUploadMessage('Saving your schedule...');
       const slots = Object.entries(availability).flatMap(([day, d]) => {
         const dayObj = d as DayAvailability;
         return dayObj.slots.map(s => ({ day_of_week: day, start_time: s.startTime, end_time: s.endTime }));
@@ -1562,9 +1615,12 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       console.log('Availability slots:', slots);
       await apiClient.post(`/tutors/${tutorId}/availability`, { slots });
       console.log('Availability saved successfully');
+      currentBaseProgress += 10;
+      setUploadProgress(currentBaseProgress);
 
-      // 6) Save subjects
+      // 6) Save subjects (Weight: 10%)
       console.log('Step 6: Saving subjects...');
+      setUploadMessage('Registering your subjects...');
       const subjectsArray: string[] = Array.from(selectedSubjects) as string[];
       console.log('Selected subjects:', subjectsArray);
 
@@ -1583,13 +1639,21 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
         course_id: resolvedCourseId || undefined // Include course_id for additional validation
       });
       console.log('Subjects saved successfully');
+      currentBaseProgress += 10;
+      setUploadProgress(currentBaseProgress);
 
-      // 7) Upload supporting documents per subject
+      // 7) Upload supporting documents per subject (Weight: 20%)
       console.log('Step 7: Uploading subject supporting documents...');
+      setUploadMessage('Uploading subject proofs...');
+      // Simple logic: divide 20% by number of subjects to get weight per subject
+      const subjectWeight = subjectsArray.length > 0 ? (20 / subjectsArray.length) : 20;
+
       for (const subject of subjectsArray) {
         const files = subjectFilesMap[subject] || [];
         if (files.length === 0) {
           console.warn(`No files found for subject: ${subject}, skipping...`);
+          currentBaseProgress += subjectWeight;
+          setUploadProgress(currentBaseProgress);
           continue;
         }
         try {
@@ -1598,6 +1662,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
           form.append('subject_name', subject);
           // Append all files
           files.forEach(f => form.append('files', f));
+
           // Use the correct endpoint: /tutors/:tutorId/subject-application
           await apiClient.post(`/tutors/${tutorId}/subject-application`, form, {
             headers: { 'Content-Type': 'multipart/form-data' },
