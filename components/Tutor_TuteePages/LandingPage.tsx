@@ -200,7 +200,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
 
           {/* Student Option */}
           <div
-            className="flex-1 p-8 sm:p-12 flex flex-col items-center text-center cursor-pointer group hover:bg-sky-50/50 transition-colors duration-300 relative overflow-hidden"
+            className="flex-1 p-6 md:p-12 flex flex-col items-center text-center cursor-pointer group hover:bg-sky-50/50 transition-colors duration-300 relative overflow-hidden"
             onClick={() => onNavigate('/TuteeRegistrationPage')}
             role="button"
             tabIndex={0}
@@ -208,7 +208,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
           >
             <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-            <div className="relative w-40 h-40 mb-8 rounded-full p-1 bg-gradient-to-br from-sky-100 to-sky-50 group-hover:from-sky-400 group-hover:to-sky-600 transition-all duration-500 shadow-lg group-hover:shadow-sky-500/30 group-hover:scale-105">
+            <div className="relative w-28 h-28 md:w-40 md:h-40 mb-5 md:mb-8 rounded-full p-1 bg-gradient-to-br from-sky-100 to-sky-50 group-hover:from-sky-400 group-hover:to-sky-600 transition-all duration-500 shadow-lg group-hover:shadow-sky-500/30 group-hover:scale-105">
               <div className="w-full h-full rounded-full overflow-hidden border-4 border-white relative">
                 <img
                   src="/assets/images/tutee2.png"
@@ -216,24 +216,24 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
                   className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
                 />
               </div>
-              <div className="absolute bottom-2 right-2 w-10 h-10 bg-sky-500 text-white rounded-full flex items-center justify-center shadow-md border-4 border-white transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+              <div className="absolute bottom-2 right-2 w-8 h-8 md:w-10 md:h-10 bg-sky-500 text-white rounded-full flex items-center justify-center shadow-md border-4 border-white transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
               </div>
             </div>
 
-            <h3 className="text-3xl font-bold text-slate-800 mb-3 group-hover:text-sky-600 transition-colors">I'm a Student</h3>
-            <p className="text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors">
+            <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2 md:mb-3 group-hover:text-sky-600 transition-colors">I'm a Student</h3>
+            <p className="text-sm md:text-base text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors">
               Find the perfect tutor to help you excel in your studies and achieve your academic goals.
             </p>
 
-            <span className="mt-8 mt-auto inline-flex items-center text-sky-600 font-semibold group-hover:translate-x-1 transition-transform">
+            <span className="mt-4 md:mt-8 mt-auto inline-flex items-center text-sky-600 font-semibold group-hover:translate-x-1 transition-transform">
               Join as Student <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </span>
           </div>
 
           {/* Tutor Option */}
           <div
-            className="flex-1 p-8 sm:p-12 flex flex-col items-center text-center cursor-pointer group hover:bg-indigo-50/50 transition-colors duration-300 relative overflow-hidden"
+            className="flex-1 p-6 md:p-12 flex flex-col items-center text-center cursor-pointer group hover:bg-indigo-50/50 transition-colors duration-300 relative overflow-hidden"
             onClick={() => onNavigate('/TutorRegistrationPage')}
             role="button"
             tabIndex={0}
@@ -241,7 +241,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
           >
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-            <div className="relative w-40 h-40 mb-8 rounded-full p-1 bg-gradient-to-br from-indigo-100 to-indigo-50 group-hover:from-indigo-400 group-hover:to-indigo-600 transition-all duration-500 shadow-lg group-hover:shadow-indigo-500/30 group-hover:scale-105">
+            <div className="relative w-28 h-28 md:w-40 md:h-40 mb-5 md:mb-8 rounded-full p-1 bg-gradient-to-br from-indigo-100 to-indigo-50 group-hover:from-indigo-400 group-hover:to-indigo-600 transition-all duration-500 shadow-lg group-hover:shadow-indigo-500/30 group-hover:scale-105">
               <div className="w-full h-full rounded-full overflow-hidden border-4 border-white relative">
                 <img
                   src="/assets/images/tutor2.png"
@@ -249,17 +249,17 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
                   className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
                 />
               </div>
-              <div className="absolute bottom-2 right-2 w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-md border-4 border-white transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              <div className="absolute bottom-2 right-2 w-8 h-8 md:w-10 md:h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-md border-4 border-white transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
               </div>
             </div>
 
-            <h3 className="text-3xl font-bold text-slate-800 mb-3 group-hover:text-indigo-600 transition-colors">I'm a Tutor</h3>
-            <p className="text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors">
+            <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2 md:mb-3 group-hover:text-indigo-600 transition-colors">I'm a Tutor</h3>
+            <p className="text-sm md:text-base text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors">
               Share your knowledge, inspire students, and earn on your own schedule.
             </p>
 
-            <span className="mt-8 mt-auto inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
+            <span className="mt-4 md:mt-8 mt-auto inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
               Join as Tutor <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </span>
           </div>
