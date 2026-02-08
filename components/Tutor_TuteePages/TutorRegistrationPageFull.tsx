@@ -14,7 +14,11 @@ const TutorRegistrationPageFull: React.FC = () => {
   };
 
   // Render as full page by not passing isOpen prop
-  return <TutorRegistrationPage isOpen={undefined} onClose={handleClose} />;
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50/40 to-sky-50/40">
+      <TutorRegistrationPage isOpen={undefined} onClose={handleClose} />
+    </div>
+  );
 };
 
 export default TutorRegistrationPageFull;
