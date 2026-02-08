@@ -1756,7 +1756,11 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
   return (
     <>
       <div
-        className={isModal ? "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 sm:p-6 animate-[fadeIn_200ms_ease-out]" : "min-h-screen flex items-center justify-center lg:py-8 bg-gradient-to-br from-indigo-50/40 to-sky-50/40"}
+        className={
+          isModal
+            ? "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 sm:p-6 animate-[fadeIn_200ms_ease-out]"
+            : "min-h-screen w-full bg-gradient-to-br from-indigo-50/40 to-sky-50/40 flex flex-col lg:py-8 lg:px-4 items-center"
+        }
         role={isModal ? "dialog" : undefined}
         aria-modal={isModal ? "true" : undefined as any}
         onClick={(e) => {
@@ -1770,7 +1774,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
           className={
             isModal
               ? "w-full max-w-5xl lg:max-w-4xl bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden transform transition-all duration-300 ease-out animate-[slideUp_240ms_ease-out]"
-              : "w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden max-h-[95vh] lg:max-h-[80vh] flex flex-col"
+              : "w-full max-w-5xl bg-white shadow-none sm:shadow-xl sm:rounded-2xl sm:border sm:border-slate-200/60 overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[90vh] lg:max-h-[85vh] transition-all duration-300"
           }
           onClick={(e) => e.stopPropagation()}
         >
