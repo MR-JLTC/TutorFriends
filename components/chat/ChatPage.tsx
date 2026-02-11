@@ -95,111 +95,144 @@ const ChatPage: React.FC = () => {
         const handleNewMessage = (message: any) => {
             const currentActive = activeConversationRef.current;
 
-            // DEBUG LOG for Real-time issue (using Ref)
-            console.log('RealTime - New Message Received:', {
-                msgId: message.message_id,
-                convId: message.conversation_id,
-                activeConvId: currentActive?.conversation_id,
-                match: currentActive && String(message.conversation_id) === String(currentActive.conversation_id),
-                isRefCheck: true
-            });
+            console.log('RealTime - New Message Received:', message.message_id);
 
-            // Loose check for conversation ID equality (string vs number)
+            // 1. Update Active Message List (if applicable)
             if (currentActive && String(message.conversation_id) === String(currentActive.conversation_id)) {
                 // Play sound if message is from someone else
                 if (message.sender_id !== user?.user_id) {
                     playNotificationSound();
-                    // Mark as seen immediately since we are here
                     socket.emit('markSeen', { conversationId: message.conversation_id });
                 }
 
                 setMessages((prev) => {
-                    // Robust De-duplication & Optimistic Replacement:
+                    // Check deduplication
+                    if (prev.some(m => m.id === message.message_id || m.id === message.id)) return prev;
 
-                    // 1. Check if we already have this exact message ID (if server provided it)
-                    const existingIdIndex = prev.findIndex(m => m.id === message.message_id || m.id === message.id);
-                    if (existingIdIndex !== -1) return prev;
-
-                    // 2. Check for optimistic message match (content + me). 
-                    // If found, REPLACE it with the real message to confirm delivery/update ID.
+                    // Check optimistic replacement
                     const optimisticIndex = prev.findIndex(m =>
                         m.text?.trim() === message.content?.trim() &&
-                        m.position === 'right' && // My message
+                        m.position === 'right' &&
                         (String(m.id).startsWith('temp-') || m.status === 'waiting')
                     );
 
                     if (optimisticIndex !== -1) {
-                        console.log('RealTime - Replacing optimistic message:', {
-                            optimisticId: prev[optimisticIndex].id,
-                            realId: message.message_id
-                        });
-                        // Replace the optimistic message with the real one
                         const newMessages = [...prev];
                         newMessages[optimisticIndex] = formatMessageForUI(message);
                         return newMessages;
                     }
 
-                    // 3. New message
-                    console.log('RealTime - Appending new message:', message.message_id);
-                    // For incoming messages from others, we can treat them as 'seen' locally if we just emitted markSeen? 
-                    // Or just let them be whatever strict status they are (likely 'delivered' until we mark them).
-                    // But for UI consistency, if I'm reading it, it's irrelevant.
                     return [...prev, formatMessageForUI(message)];
                 });
                 scrollToBottom();
             } else if (message.sender_id !== user?.user_id) {
-                // Background notification (not in active conversation)
-                console.log('RealTime - Background message received (sound played)');
+                // Background notification
                 playNotificationSound();
             }
-            // Refresh list to update last message preview
-            fetchConversations();
-        };
 
-        socket.on('newMessage', handleNewMessage);
+            // 2. Update Conversations List (Sidebar) Real-time
+            setConversations((prev) => {
+                const convIndex = prev.findIndex(c => c.conversation_id === message.conversation_id);
+                let updatedConv;
 
-        // Listen for user online/offline status
-        const handleUserStatus = (data: { userId: number, status: 'online' | 'offline', lastActive?: string }) => {
-            console.log('ChatPage - User Status Update:', data);
-            setOnlineUsers(prev => {
-                const next = new Set(prev);
-                if (data.status === 'online') {
-                    next.add(Number(data.userId));
+                if (convIndex !== -1) {
+                    // Update existing conversation
+                    updatedConv = {
+                        ...prev[convIndex],
+                        last_message_content: message.content,
+                        last_message_sender_id: message.sender_id,
+                        last_message_at: message.created_at,
+                        // If we have a nested last_message object, update it too
+                        last_message: {
+                            ...prev[convIndex].last_message,
+                            content: message.content,
+                            sender_id: message.sender_id,
+                            created_at: message.created_at,
+                            status: message.status
+                        }
+                    };
+                    // Remove old and add new to top
+                    const newList = [...prev];
+                    newList.splice(convIndex, 1);
+                    return [updatedConv, ...newList];
                 } else {
-                    next.delete(Number(data.userId));
+                    // If it's a new conversation we don't know about, we should probably fetch
+                    // But for now, we can try to leave it or fetch.
+                    fetchConversations();
+                    return prev;
                 }
-                return next;
             });
-
-            if (data.status === 'offline' && data.lastActive) {
-                setLastSeenMap(prev => ({ ...prev, [Number(data.userId)]: new Date(data.lastActive!) }));
-            }
         };
 
-        socket.on('user_status', handleUserStatus);
-
-        // Listen for message status updates (e.g. sent -> delivered)
-        const handleStatusUpdate = (data: { messageId: string, status: string }) => {
+        const handleStatusUpdate = (data: { messageId: string, status: string, conversationId?: string }) => {
             console.log('ChatPage - Status Update:', data);
+
+            // 1. Update Active Messages
             setMessages(prev => prev.map(m =>
                 (m.id === data.messageId || m.id === `temp-${data.messageId}`)
                     ? { ...m, status: data.status }
                     : m
             ));
+
+            // 2. Update Conversations List (if this message is the last one)
+            // We assume if we get a status update, it might be relevant for the sidebar preview
+            if (data.conversationId) {
+                setConversations(prev => {
+                    return prev.map(c => {
+                        if (c.conversation_id === data.conversationId) {
+                            // Only update if this is indeed the last message (heuristic or check ID if available)
+                            // Since we don't perfectly track last_message_id in the flat conversation object always,
+                            // we can check if the last_message object matches, or just update blindly if it's likely.
+                            // Safer: Update if last_message exists and matches ID
+                            if (c.last_message?.message_id === data.messageId || !c.last_message) {
+                                return {
+                                    ...c,
+                                    last_message: {
+                                        ...c.last_message,
+                                        status: data.status
+                                    }
+                                };
+                            }
+                        }
+                        return c;
+                    });
+                });
+            }
         };
 
-        // Listen for "messagesSeen" event
         const handleMessagesSeen = (data: { conversationId: string, messageIds: string[], seenBy: number }) => {
             console.log('ChatPage - Messages Seen:', data);
-            // If we are looking at this conversation, or if we sent these messages, update them.
-            // Actually, we just update all messages that match the IDs.
+
+            // 1. Update Active Messages
             setMessages(prev => prev.map(m =>
                 data.messageIds.includes(String(m.id))
                     ? { ...m, status: 'seen' }
                     : m
             ));
+
+            // 2. Update Conversations List
+            setConversations(prev => {
+                return prev.map(c => {
+                    if (c.conversation_id === data.conversationId) {
+                        // Check if the last message is among the seen messages
+                        if (c.last_message && data.messageIds.includes(c.last_message.message_id)) {
+                            return {
+                                ...c,
+                                last_message: {
+                                    ...c.last_message,
+                                    status: 'seen',
+                                    is_read: true
+                                }
+                            };
+                        }
+                    }
+                    return c;
+                });
+            });
         };
 
+        socket.on('newMessage', handleNewMessage);
+        socket.on('user_status', handleUserStatus);
         socket.on('messageStatusUpdate', handleStatusUpdate);
         socket.on('messagesSeen', handleMessagesSeen);
 
