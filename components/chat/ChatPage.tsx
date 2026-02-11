@@ -87,6 +87,8 @@ const ChatPage: React.FC = () => {
                 // Play sound if message is from someone else
                 if (message.sender_id !== user?.user_id) {
                     playNotificationSound();
+                    // Mark as seen immediately since we are here
+                    socket.emit('markSeen', { conversationId: message.conversation_id });
                 }
 
                 setMessages((prev) => {
@@ -117,6 +119,9 @@ const ChatPage: React.FC = () => {
 
                     // 3. New message
                     console.log('RealTime - Appending new message:', message.message_id);
+                    // For incoming messages from others, we can treat them as 'seen' locally if we just emitted markSeen? 
+                    // Or just let them be whatever strict status they are (likely 'delivered' until we mark them).
+                    // But for UI consistency, if I'm reading it, it's irrelevant.
                     return [...prev, formatMessageForUI(message)];
                 });
                 scrollToBottom();
@@ -151,9 +156,36 @@ const ChatPage: React.FC = () => {
 
         socket.on('user_status', handleUserStatus);
 
+        // Listen for message status updates (e.g. sent -> delivered)
+        const handleStatusUpdate = (data: { messageId: string, status: string }) => {
+            console.log('ChatPage - Status Update:', data);
+            setMessages(prev => prev.map(m =>
+                (m.id === data.messageId || m.id === `temp-${data.messageId}`)
+                    ? { ...m, status: data.status }
+                    : m
+            ));
+        };
+
+        // Listen for "messagesSeen" event
+        const handleMessagesSeen = (data: { conversationId: string, messageIds: string[], seenBy: number }) => {
+            console.log('ChatPage - Messages Seen:', data);
+            // If we are looking at this conversation, or if we sent these messages, update them.
+            // Actually, we just update all messages that match the IDs.
+            setMessages(prev => prev.map(m =>
+                data.messageIds.includes(String(m.id))
+                    ? { ...m, status: 'seen' }
+                    : m
+            ));
+        };
+
+        socket.on('messageStatusUpdate', handleStatusUpdate);
+        socket.on('messagesSeen', handleMessagesSeen);
+
         return () => {
             socket.off('newMessage', handleNewMessage);
             socket.off('user_status', handleUserStatus);
+            socket.off('messageStatusUpdate', handleStatusUpdate);
+            socket.off('messagesSeen', handleMessagesSeen);
         };
     }, [socket]); // Removed activeConversation from dependency to prevent re-binding listeners
 
@@ -215,8 +247,15 @@ const ChatPage: React.FC = () => {
     const loadMessages = async (conversationId: string) => {
         try {
             const res = await apiClient.get(`/chat/conversations/${conversationId}/messages`);
-            setMessages(res.data.map(formatMessageForUI));
+            const loadedMessages = res.data.map(formatMessageForUI);
+            setMessages(loadedMessages);
             scrollToBottom();
+
+            // Emit 'markSeen' for this conversation if there are unseen messages from partner
+            // We can just emit 'markSeen' generically for the conversation
+            if (socket && isConnected) {
+                socket.emit('markSeen', { conversationId });
+            }
         } catch (err) {
             console.error('Failed to load messages', err);
         }
@@ -287,7 +326,8 @@ const ChatPage: React.FC = () => {
             text: inputValue,
             date: new Date(),
             title: 'Me',
-            id: `temp-${Date.now()}` // Add temp ID
+            id: `temp-${Date.now()}`, // Add temp ID
+            status: 'sent' // Default optimistic status
         };
         setMessages((prev) => [...prev, optimisticMsg]);
         scrollToBottom();
@@ -302,18 +342,30 @@ const ChatPage: React.FC = () => {
                 setInputValue(optimisticMsg.text);
             } else {
                 console.log('SendMessage - Server acknowledged:', response);
+                // We might receive the real message status here if we returned it,
+                // but usually the specific status update comes via event or we just wait for 'newMessage' broadcast.
             }
         });
     };
 
     const formatMessageForUI = (msg: any) => {
         const isMine = msg.sender_id === user?.user_id;
+
+        // Map status to UI string
+        let statusDisplay = msg.status;
+        if (statusDisplay === 'sent') statusDisplay = 'Sent';
+        else if (statusDisplay === 'delivered') statusDisplay = 'Delivered';
+        else if (statusDisplay === 'seen') statusDisplay = 'Seen';
+        else if (msg.is_read) statusDisplay = 'Seen'; // Fallback
+
         return {
             position: isMine ? 'right' : 'left',
             type: 'text',
             text: msg.content,
             date: new Date(msg.created_at),
             title: isMine ? 'Me' : (msg.sender?.name || 'User'),
+            status: isMine ? statusDisplay : undefined, // Only show status for my messages
+            id: msg.message_id
         };
     };
 
