@@ -16,6 +16,7 @@ const ChatPage: React.FC = () => {
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(true);
     const [onlineUsers, setOnlineUsers] = useState<Set<number>>(new Set());
+    const [lastSeenMap, setLastSeenMap] = useState<Record<number, Date>>({});
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<any>(null); // Ref for Input component
     const activeConversationRef = useRef<any>(null); // Stable ref for listener
@@ -162,6 +163,24 @@ const ChatPage: React.FC = () => {
                     return prev;
                 }
             });
+        };
+
+        // Listen for user online/offline status
+        const handleUserStatus = (data: { userId: number, status: 'online' | 'offline', lastActive?: string }) => {
+            console.log('ChatPage - User Status Update:', data);
+            setOnlineUsers(prev => {
+                const next = new Set(prev);
+                if (data.status === 'online') {
+                    next.add(Number(data.userId));
+                } else {
+                    next.delete(Number(data.userId));
+                }
+                return next;
+            });
+
+            if (data.status === 'offline' && data.lastActive) {
+                setLastSeenMap(prev => ({ ...prev, [Number(data.userId)]: new Date(data.lastActive!) }));
+            }
         };
 
         const handleStatusUpdate = (data: { messageId: string, status: string, conversationId?: string }) => {
