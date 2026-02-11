@@ -387,10 +387,31 @@ const ChatPage: React.FC = () => {
 
         // Clear input immediately to prevent double sends and improve UX
         setInputValue('');
-        if (inputRef.current && inputRef.current.clear) {
-            inputRef.current.clear();
-        } else if (inputRef.current && inputRef.current.value) {
-            inputRef.current.value = '';
+
+        // Reset height if textarea
+        if (inputRef.current) {
+            if (inputRef.current.input) {
+                // If react-chat-elements exposes the input element via .input property
+                // Accessing the underlying textarea to reset height
+                const textarea = inputRef.current.input;
+                if (textarea.style) {
+                    textarea.style.height = 'auto';
+                    // Force a reflow or set to min height if needed, but 'auto' usually works with scrollHeight hacks
+                    // Or set to specific min height e.g. '40px'
+                    requestAnimationFrame(() => {
+                        textarea.style.height = 'auto';
+                    });
+                }
+            } else if (inputRef.current instanceof HTMLElement) {
+                // Fallback if ref is direct element
+                inputRef.current.style.height = 'auto';
+            }
+
+            if (inputRef.current.clear) {
+                inputRef.current.clear();
+            } else if (inputRef.current.value !== undefined) {
+                inputRef.current.value = '';
+            }
         }
 
         // Optimistic update
