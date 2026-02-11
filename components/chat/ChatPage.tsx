@@ -41,26 +41,48 @@ const ChatPage: React.FC = () => {
         }
     }, [user]);
 
-    // Simple beep notification sound using AudioContext
+    // Bell notification sound using AudioContext
     const playNotificationSound = () => {
         try {
             const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
             if (!AudioContext) return;
 
             const ctx = new AudioContext();
-            const oscillator = ctx.createOscillator();
-            const gainNode = ctx.createGain();
+            const now = ctx.currentTime;
 
-            oscillator.connect(gainNode);
-            gainNode.connect(ctx.destination);
+            // Master Gain
+            const masterGain = ctx.createGain();
+            masterGain.connect(ctx.destination);
+            masterGain.gain.setValueAtTime(0.4, now); // Moderate volume
 
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(800, ctx.currentTime);
-            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+            // Define partials for a bell-like tone
+            // Frequency ratios for a bell: 1, 2, 3, 4.2, 5.4 (approximate)
+            const fundamentals = [880, 1760]; // A5, A6
 
-            oscillator.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.15);
-            oscillator.stop(ctx.currentTime + 0.15);
+            fundamentals.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+
+                // Envelope: Sharp attack, exponential decay
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(i === 0 ? 0.5 : 0.3, now + 0.01); // Attack
+                gain.gain.exponentialRampToValueAtTime(0.001, now + (i === 0 ? 1.5 : 0.5)); // Decay (Fundamental rings longer)
+
+                osc.connect(gain);
+                gain.connect(masterGain);
+
+                osc.start(now);
+                osc.stop(now + 2);
+            });
+
+            // Cleanup
+            setTimeout(() => {
+                if (ctx.state !== 'closed') ctx.close();
+            }, 2000);
+
         } catch (e) {
             console.error('Audio play failed', e);
         }
