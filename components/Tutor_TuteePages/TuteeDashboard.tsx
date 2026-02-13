@@ -20,8 +20,8 @@ const TuteeDashboard: React.FC = () => {
 
   return (
     <TuteeLayout>
-      <div className="w-full">
-        <div className={isMyBookingsRoute ? "lg:col-span-3" : "lg:col-span-4"}>
+      <div className="w-full max-w-5xl mx-auto space-y-6">
+        <div className="animate-fade-in slide-up">
           <Routes>
             <Route path="/" element={<Navigate to="/tutee-dashboard/become-tutor" replace />} />
             <Route path="become-tutor" element={<TuteeBecomeTutor />} />
