@@ -536,6 +536,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       }
       return;
     } catch (err: any) {
+      setIsLoading(false);
       setUploadProgress(undefined);
       console.error('Registration error:', err);
       console.error('Error response:', err?.response?.data);
