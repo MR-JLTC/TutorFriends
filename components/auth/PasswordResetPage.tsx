@@ -70,6 +70,14 @@ const PasswordResetPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    // For OTP code, only allow numbers
+    if (name === 'code') {
+      if (!/^\d*$/.test(value)) {
+        return;
+      }
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
     if (error) setError(''); // Clear error when user starts typing
   };
