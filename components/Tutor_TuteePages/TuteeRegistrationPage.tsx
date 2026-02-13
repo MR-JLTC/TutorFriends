@@ -420,7 +420,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
 
       console.log('Form data:', {
         name: formData.name.trim(),
-        email: formData.email,
+        email: formData.email.toLowerCase(), // Ensure email is lowercase
         password: formData.password,
         university_id: Number(universityId),
         course_id: courseId ? Number(courseId) : undefined,
@@ -431,7 +431,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
       // Register the user as a tutee
       const registerPayload = {
         name: formData.name.trim(),
-        email: formData.email,
+        email: formData.email.toLowerCase(),
         password: formData.password,
         user_type: 'tutee',
         university_id: Number(universityId),
