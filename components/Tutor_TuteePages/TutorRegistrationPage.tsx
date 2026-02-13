@@ -1404,17 +1404,15 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsLoading(true);
+    e.stopPropagation();
 
     // Prevent submission if file selection is in progress
     if (isFileSelecting) {
-      setIsLoading(false);
       return;
     }
 
     // Validation: Skip email/fullName checks if they're hidden (pre-filled from tutee)
     if (!hideEmailVerification && !email) {
-      setIsLoading(false);
       notify('Please enter email.', 'error');
       return;
     }
@@ -1423,7 +1421,6 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       return;
     }
     if (!password || !universityId) {
-      setIsLoading(false);
       notify('Please enter password and select your university.', 'error');
       return;
     }
@@ -1467,7 +1464,6 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       return;
     }
     if (!acceptedTerms) {
-      setIsLoading(false);
       notify('You must agree to the Terms and Conditions to proceed.', 'error');
       return;
     }
