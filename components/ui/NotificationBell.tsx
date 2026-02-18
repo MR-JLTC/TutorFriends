@@ -34,7 +34,7 @@ export const NotificationBell: React.FC = () => {
 
   return (
     <div className="relative">
-      <button 
+      <button
         className="p-1.5 sm:p-2 hover:bg-gray-100 active:bg-gray-200 rounded-full relative transition-colors touch-manipulation"
         onClick={async () => {
           const next = !showNotifications;
@@ -60,7 +60,7 @@ export const NotificationBell: React.FC = () => {
       {showNotifications && (
         <>
           {/* Mobile overlay */}
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-30 z-40 sm:hidden"
             onClick={() => setShowNotifications(false)}
           />
@@ -101,15 +101,14 @@ export const NotificationBell: React.FC = () => {
               ) : (
                 <div className="space-y-3 sm:space-y-3 px-4 sm:px-4 pb-4 sm:pb-4">
                   {visibleNotifications.map((notification: Notification) => (
-                    <div 
+                    <div
                       key={notification.notification_id}
-                      className={`p-3 sm:p-3 rounded-xl border ${
-                        notification.is_read 
-                          ? 'bg-white border-gray-200' 
-                          : notification.type === 'payment'
+                      className={`p-3 sm:p-3 rounded-xl border ${notification.is_read
+                        ? 'bg-white border-gray-200'
+                        : notification.type === 'payment'
                           ? 'bg-yellow-50 border-yellow-300'
                           : 'bg-blue-50 border-blue-200'
-                      } shadow-sm`}
+                        } shadow-sm`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">

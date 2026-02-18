@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Search, FileText, X, Download, ExternalLink } from 'lucide-react';
 import apiClient, { getFileUrl } from '../../services/api';
 import Modal from '../ui/Modal';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css'; // Moves to App.tsx
 
 interface BookingFormData {
   subject: string;
@@ -2531,7 +2531,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
         )}
 
         {/* Toast Container */}
-        <ToastContainer position="top-center" {...{ 'aria-label': 'Notification center' }} />
+
 
       </div>
     </div>

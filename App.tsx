@@ -24,12 +24,16 @@ import BookingsPage from './components/shared/BookingsPage';
 import { useRestrictInspect } from './hooks/useRestrictInspect';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const App: React.FC = () => {
   useRestrictInspect(); // Disable inspect mode globally
   useNetworkStatus(); // Initialize network monitoring
 
   return (
     <>
+      <ToastContainer position="top-center" style={{ zIndex: 99999 }} />
       <Routes>
         {/* Public routes */}
         {/* Default redirect for empty path */}
