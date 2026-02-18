@@ -13,6 +13,8 @@ interface ModalProps {
   hideScrollbar?: boolean;
 }
 
+import ReactDOM from 'react-dom';
+
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, className = '', contentClassName = '', maxWidth = '2xl', hideScrollbar = false }) => {
   if (!isOpen) return null;
 
@@ -28,7 +30,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer,
     '7xl': 'max-w-7xl',
   };
 
-  return (
+  return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-2 sm:p-4 overflow-y-auto" onClick={onClose}>
       <div className={`bg-white rounded-lg sm:rounded-xl shadow-xl w-full ${maxWidthClasses[maxWidth]} max-h-[95vh] sm:max-h-[90vh] my-auto flex flex-col ${className}`} onClick={(e) => e.stopPropagation()}>
         {title && (
@@ -65,7 +67,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer,
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
