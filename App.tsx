@@ -22,6 +22,7 @@ import UnifiedLoginPage from './components/auth/UnifiedLoginPage';
 import PasswordResetPage from './components/auth/PasswordResetPage';
 import BookingsPage from './components/shared/BookingsPage';
 import { useRestrictInspect } from './hooks/useRestrictInspect';
+import { useNetworkStatus } from './hooks/useNetworkStatus';
 
 const App: React.FC = () => {
   useRestrictInspect(); // Disable inspect mode globally
