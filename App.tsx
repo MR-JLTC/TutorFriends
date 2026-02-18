@@ -25,7 +25,7 @@ import { useRestrictInspect } from './hooks/useRestrictInspect';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 
 const App: React.FC = () => {
-  useRestrictInspect(); // Disable inspect mode globally
+  // useRestrictInspect(); // Disable inspect mode globally
   useNetworkStatus(); // Initialize network monitoring
 
   return (
