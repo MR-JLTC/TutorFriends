@@ -21,9 +21,10 @@ import TuteeDashboard from './components/Tutor_TuteePages/TuteeDashboard';
 import UnifiedLoginPage from './components/auth/UnifiedLoginPage';
 import PasswordResetPage from './components/auth/PasswordResetPage';
 import BookingsPage from './components/shared/BookingsPage';
-import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { useRestrictInspect } from './hooks/useRestrictInspect';
 
 const App: React.FC = () => {
+  useRestrictInspect(); // Disable inspect mode globally
   useNetworkStatus(); // Initialize network monitoring
 
   return (
