@@ -417,7 +417,7 @@ const UnifiedLoginPage: React.FC = () => {
                         </div>
                         <div className="h-12 w-12 bg-slate-100 group-hover:bg-white rounded-full flex items-center justify-center group-hover:shadow-sm transition-all overflow-hidden border border-slate-200">
                           <img
-                            src={account.user_type === 'tutor' ? '/assets/images/tutor.png' : '/assets/images/tutee.png'}
+                            src={account.user_type === 'tutor' ? '/assets/images/tutor2.png' : '/assets/images/tutee2.png'}
                             alt={account.user_type}
                             className="w-full h-full object-cover"
                           />
