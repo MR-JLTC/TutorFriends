@@ -2190,7 +2190,12 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                         <p className="text-sm text-slate-500">No subjects selected yet.</p>
                       )}
                     </div>
-
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 my-4">
+                      <p className="text-sm text-blue-800">
+                        <span className="font-semibold block mb-1">Documentation Guidelines:</span>
+                        Upload proofs (PDF, PNG, JPG, JPEG). At least one file is required. Submit documents that support your expertise in the selected subject(s), such as subject grades, Transcript of Records, certifications, awards, or other academic achievements related to the subject.
+                      </p>
+                    </div>
                     {/* Per-subject supporting documents */}
                     {selectedSubjects.size > 0 && (
                       <div className="space-y-4 mb-6">
