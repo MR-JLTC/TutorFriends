@@ -223,7 +223,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
 
             <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2 md:mb-3 group-hover:text-sky-600 transition-colors">I'm a Student</h3>
             <p className="text-sm md:text-base text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors mb-6 md:mb-10">
-              Find the perfect tutor to help you excel in your studies and achieve your academic goals.
+              Connect with qualified student tutors who can help you understand your lessons and achieve your academic goals.
             </p>
 
             <span className="mt-auto inline-flex items-center text-sky-600 font-semibold group-hover:translate-x-1 transition-transform">
@@ -256,7 +256,7 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
 
             <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2 md:mb-3 group-hover:text-indigo-600 transition-colors">I'm a Tutor</h3>
             <p className="text-sm md:text-base text-slate-500 group-hover:text-slate-600 leading-relaxed max-w-xs transition-colors mb-6 md:mb-10">
-              Share your knowledge, inspire students, and earn on your own schedule.
+              Share your academic strengths, help fellow students succeed, and earn on your own schedule.
             </p>
 
             <span className="mt-auto inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">

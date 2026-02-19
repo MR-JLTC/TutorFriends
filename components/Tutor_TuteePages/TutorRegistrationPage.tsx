@@ -2574,7 +2574,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                         Supporting Documents <span className="text-red-500">*</span>
                       </label>
                       <p className="text-xs text-slate-500">
-                        Upload valid supporting documents (e.g., National ID, COR, academic achievements, transcript, student ID, certification) to verify your credibility as a tutor.
+                        Upload valid supporting documents (e.g., government-issued ID and academic records such as COR, Transcript, Student ID, or certifications) to help us verify your identity and qualifications as a student tutor and keep our learning community safe, in accordance with the Data Privacy Act of 2012.
                       </p>
 
                       {/* Drag and Drop Area */}
