@@ -2218,7 +2218,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                                 </span>
                               )}
                             </label>
-                            <p className="text-xs text-slate-500 mb-2">Upload proofs (PDF, PNG, JPG, JPEG). At least one file required.</p>
+                            {/* <p className="text-xs text-slate-500 mb-2">Upload proofs (PDF, PNG, JPG, JPEG). At least one file required.</p> */}
                             <div
                               className="relative"
                               onClick={(e) => {
