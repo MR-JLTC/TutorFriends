@@ -611,21 +611,17 @@ const TuteeBecomeTutor: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
       {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-700 via-blue-600 to-indigo-900 rounded-3xl pt-4 md:pt-6 px-6 md:px-8 text-white shadow-xl relative overflow-hidden group">
-        {/* Subtle Background Pattern/Glow */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:bg-white/20 transition-all duration-700"></div>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
-
-        <div className="flex items-center gap-5 relative z-10">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0 border border-white/20 shadow-inner">
-            <GraduationCap className="h-6 w-6 md:h-8 md:w-8 text-white drop-shadow-sm" />
+      <div className="mb-2 md:mb-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+            <GraduationCap className="h-6 w-6 text-indigo-600" />
           </div>
-          <div className="flex-1">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-1 text-white drop-shadow-sm">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-800">
               Become a Tutor
             </h1>
-            <p className="text-sm md:text-base text-blue-100 font-medium opacity-90 leading-relaxed">
-              Elevate your academic journey by sharing your expertise with fellow students.
+            <p className="text-sm md:text-base text-slate-500 mt-0.5">
+              Elevate your academic journey by sharing your expertise.
             </p>
           </div>
         </div>
