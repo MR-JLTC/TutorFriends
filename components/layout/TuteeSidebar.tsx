@@ -505,18 +505,18 @@ const TuteeSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-20 md:w-64 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-full transition-all duration-300 z-40">
-      <div className="px-4 py-4 md:py-6 border-b border-slate-200 flex items-center justify-center md:justify-start">
+    <aside className="w-full h-full bg-white flex flex-col border-r border-slate-200">
+      <div className="px-4 py-4 md:py-6 border-b border-slate-200 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <img src={logoBase64} alt="TutorFriends Logo" className="h-10 md:h-12 w-auto object-contain transition-transform hover:scale-105" />
-          <div className="hidden md:block">
+          <img src={logoBase64} alt="TutorFriends Logo" className="h-12 w-auto object-contain transition-transform hover:scale-105" />
+          <div>
             <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500">TutorFriends</h1>
             <p className="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-1 shadow-sm">Student</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
+      <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
         {tuteeNavLinks.map(({ to, icon: Icon, label, description, showNotification, showUpcoming }) => {
           return (
             <div key={to} className="relative">
@@ -535,13 +535,13 @@ const TuteeSidebar: React.FC = () => {
                   setShowTooltip(null);
                 }}
               >
-                <div className="flex items-center justify-center md:justify-between w-full">
-                  <div className="flex items-center md:space-x-3.5">
-                    <Icon className={`h-6 w-6 md:h-5 md:w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 ${hoveredItem === to ? 'text-blue-600 drop-shadow-sm' : 'text-slate-500'}`} />
-                    <span className="font-semibold text-sm hidden md:block whitespace-nowrap tracking-tight">{label}</span>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center space-x-3.5">
+                    <Icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${hoveredItem === to ? 'text-blue-600 drop-shadow-sm' : 'text-slate-500'}`} />
+                    <span className="font-semibold text-sm tracking-tight">{label}</span>
                   </div>
 
-                  <div className="absolute top-2 right-2 md:static md:flex md:ml-auto items-center gap-1.5 flex transition-opacity">
+                  <div className="flex items-center gap-2">
                     {/* My Bookings  */}
                     {to === '/tutee-dashboard/my-bookings' && !viewedPages.has(to) && (
                       <div className="flex gap-1">
@@ -584,7 +584,7 @@ const TuteeSidebar: React.FC = () => {
 
                     {/* Upcoming Sessions  */}
                     {showUpcoming && upcomingCount > 0 && (
-                      <span className="absolute -top-2 -right-2 md:static inline-flex items-center justify-center min-w-[18px] h-[18px] md:min-w-[20px] md:h-[20px] px-1.5 rounded-full text-[10px] md:text-xs font-bold bg-blue-600 text-white border-2 border-white shadow-sm">
+                      <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-xs font-bold bg-blue-600 text-white border-2 border-white shadow-sm">
                         {upcomingCount > 99 ? '99+' : upcomingCount}
                       </span>
                     )}
@@ -596,15 +596,15 @@ const TuteeSidebar: React.FC = () => {
               {showTooltip === to && (
                 <div className="
                   absolute z-[100] animate-in fade-in-0 zoom-in-95 duration-200
-                  /* Desktop: display on the right */
-                  md:left-full md:top-1/2 md:-translate-y-1/2 md:ml-3
-                  /* Mobile: centered floating card at the bottom */
-                  max-md:fixed max-md:left-4 max-md:right-4 max-md:bottom-24
+                  /* Desktop: Right side absolute */
+                  md:left-full md:top-1/2 md:-translate-y-1/2 md:-ml-2
+                  /* Mobile: Fixed card at bottom center */
+                  max-md:fixed max-md:left-4 max-md:right-4 max-md:bottom-20 max-md:w-auto
                 ">
-                  <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] md:w-[320px] w-auto">
+                  <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] md:w-[320px]">
                     <div className="relative">
                       {/* Arrow (Desktop only) */}
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-[24px] hidden md:block">
+                      <div className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-[24px]">
                         <div className="w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-r-[8px] border-r-slate-200/80"></div>
                         <div className="w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-r-[7px] border-r-white absolute top-1/2 -translate-y-1/2 left-[2px]"></div>
                       </div>
@@ -639,29 +639,29 @@ const TuteeSidebar: React.FC = () => {
       </nav>
 
       {/* Profile Section */}
-      <div className="px-2 md:px-4 py-4 md:py-5 border-t border-slate-200 bg-slate-50/50">
-        <NavLink to="/tutee-dashboard/profile" className="flex items-center justify-center md:justify-start space-x-0 md:space-x-3 group hover:bg-white p-2 md:p-2.5 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-200 hover:shadow-sm">
+      <div className="px-4 py-5 border-t border-slate-200 bg-slate-50/50">
+        <NavLink to="/tutee-dashboard/profile" className="flex items-center space-x-3 group hover:bg-white p-2.5 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-200 hover:shadow-sm">
           <div className="relative flex-shrink-0">
             {user?.profile_image_url ? (
               <img
                 src={getFileUrl(user.profile_image_url)}
                 alt={user.name}
-                className="h-10 w-10 md:h-11 md:w-11 rounded-full object-cover border-2 border-white shadow-sm transition-transform duration-300 group-hover:scale-105"
+                className="h-11 w-11 rounded-full object-cover border-2 border-white shadow-sm transition-transform duration-300 group-hover:scale-105"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                 }}
               />
             ) : (
-              <div className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-base md:text-lg border-2 border-white shadow-sm transition-transform duration-300 group-hover:scale-105">
+              <div className="h-11 w-11 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-sm transition-transform duration-300 group-hover:scale-105">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
             )}
-            <div className="md:hidden absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
           </div>
-          <div className="hidden md:block flex-1 min-w-0">
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-800 truncate tracking-tight">{user?.name}</p>
-            <p className="text-xs text-slate-500 truncate font-medium mt-0.5">{user?.email}</p>
+            <p className="text-[11px] text-slate-500 truncate font-medium mt-0.5">{user?.email}</p>
           </div>
         </NavLink>
       </div>
