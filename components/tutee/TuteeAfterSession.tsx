@@ -287,7 +287,7 @@ const TuteeAfterSession: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-4 md:space-y-6">
+    <div className="space-y-6 sm:space-y-6 md:space-y-6">
       <ToastContainer />
       {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
         <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
