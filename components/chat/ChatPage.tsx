@@ -5,10 +5,12 @@ import apiClient from '../../services/api';
 import { ChatList, MessageList, Input, SystemMessage } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useToast } from '../ui/Toast';
 
 const ChatPage: React.FC = () => {
     const { socket, isConnected, joinConversation } = useSocket();
     const { user } = useAuth();
+    const { notify } = useToast();
     const [availableContacts, setAvailableContacts] = useState<any[]>([]);
     const [conversations, setConversations] = useState<any[]>([]);
     const [activeConversation, setActiveConversation] = useState<any>(null);
@@ -379,6 +381,27 @@ const ChatPage: React.FC = () => {
             });
             return;
         }
+
+        // --- PROFANITY FILTER ---
+        const inappropriateWords = [
+            'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'pussy', 'utots',
+            'whore', 'slut', 'faggot', 'nigger', 'nigga', 'retard', 'sex', 'sumbagay', 'tits', 'tit',
+            'putangina', 'tanga', 'gago', 'bobo', 'pota', 'puta', 'ulol', 'kantot',
+            'bogo', 'bugo', 'buang', 'amaw', 'giatay', 'ataya', 'yawa', 'pesteng yawa',
+            'piste', 'pisti', 'piskot', 'animal', 'bilat', 'bilatsing', 'burat', 'lubot',
+            'kiki', 'kiking', 'titi', 'otin', 'toti', 'bayot', 'tomboy', 'talong', 'itlog',
+            'kantot', 'iyot', 'iyoton', 'iyota', 'hilas', 'hambog', 'way ayo', 'walay ayo',
+            'way batasan', 'bastos', 'demonyo', 'yawa ka', 'piste ka', 'giatay ka', 'amaw ka',
+            'buang ka', 'bogo ka', 'animal ka', 'bilat ka', 'burat ka', 'utin', 'tin2'
+        ];
+        // Create regex that matches any of the words (case insensitive, word boundaries)
+        const profanityRegex = new RegExp(`\\b(${inappropriateWords.join('|')})\\b`, 'i');
+
+        if (profanityRegex.test(inputValue)) {
+            notify('Message blocked. Please keep the conversation professional and tutoring-focused.', 'error');
+            return;
+        }
+        // ------------------------
 
         const messageData = {
             conversationId: activeConversation.conversation_id,
