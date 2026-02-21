@@ -611,15 +611,22 @@ const TuteeBecomeTutor: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden group">
-        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-            <GraduationCap className="h-8 w-8 text-white" />
+      <div className="bg-gradient-to-br from-indigo-700 via-blue-600 to-indigo-900 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden group">
+        {/* Subtle Background Pattern/Glow */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:bg-white/20 transition-all duration-700"></div>
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
+
+        <div className="flex items-center gap-5 relative z-10">
+          <div className="w-12 h-12 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0 border border-white/20 shadow-inner">
+            <GraduationCap className="h-6 w-6 md:h-8 md:w-8 text-white drop-shadow-sm" />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold">Become a Tutor</h1>
-            <p className="text-blue-100">Elevate your academic journey by sharing your expertise.</p>
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-1 text-white drop-shadow-sm">
+              Become a Tutor
+            </h1>
+            <p className="text-sm md:text-base text-blue-100 font-medium opacity-90 leading-relaxed">
+              Elevate your academic journey by sharing your expertise with fellow students.
+            </p>
           </div>
         </div>
       </div>

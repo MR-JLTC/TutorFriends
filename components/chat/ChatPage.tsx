@@ -569,7 +569,7 @@ const ChatPage: React.FC = () => {
                 unread: 0,
                 id: c.conversation_id,
                 className: activeConversation?.conversation_id === c.conversation_id ? 'bg-indigo-50 border-l-4 border-indigo-500' : '',
-                statusColor: onlineUsers.has(Number(partner?.user_id)) ? '#4CAF50' : undefined, // Green dot if online
+                statusColor: onlineUsers.has(Number(partner?.user_id)) ? '#4CAF50' : '#9ca3af', // Green dot if online, gray if offline
                 statusColorType: 'encircle', // distinctive look
             };
         });
@@ -644,13 +644,18 @@ const ChatPage: React.FC = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-slate-800">{getPartner(activeConversation)?.name}</h3>
-                                    <div className="flex items-center gap-1.5">
-                                        {/* Status of the connection to server */}
-                                        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-
+                                    <div className="flex items-center gap-1.5 mt-0.5">
                                         {/* Status of the PARTNER */}
-                                        {onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) && (
-                                            <span className="text-xs text-green-600 font-bold ml-1">• Active Now</span>
+                                        {onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) ? (
+                                            <>
+                                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                                <span className="text-xs text-green-600 font-bold">Active Now</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                                                <span className="text-xs text-slate-500 font-bold">Offline</span>
+                                            </>
                                         )}
                                     </div>
                                 </div>
