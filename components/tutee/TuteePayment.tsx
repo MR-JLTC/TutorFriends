@@ -356,7 +356,7 @@ const TuteePayment: React.FC = () => {
 
       // Log for debugging
       if (relevantBookings.length > 0) {
-        console.log('Payment bookings with statuses:', relevantBookings.map(b => ({
+        console.log('Payment bookings with statuses:', relevantBookings.map((b: { id: any; status: any; payment: { status: any; payment_id: any; booking_request_id: any; }; }) => ({
           id: b.id,
           bookingStatus: b.status,
           paymentStatus: b.payment?.status,

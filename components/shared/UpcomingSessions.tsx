@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNotifications } from '../../context/NotificationContext';
+import { Calendar, Clock, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Bell } from 'lucide-react';
 
