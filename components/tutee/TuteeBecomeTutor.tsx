@@ -617,10 +617,7 @@ const TuteeBecomeTutor: React.FC = () => {
             <GraduationCap className="h-6 w-6 text-indigo-600" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-800">
-              Become a Tutor
-            </h1>
-            <p className="text-sm md:text-base text-slate-500 mt-0.5">
+            <p className="text-lg md:text-xl font-bold tracking-tight text-slate-800">
               Elevate your academic journey by sharing your expertise.
             </p>
           </div>
