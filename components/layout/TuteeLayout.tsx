@@ -42,9 +42,9 @@ const TuteeLayout: React.FC<TuteeLayoutProps> = ({ children }) => {
         <div className="hidden md:flex"><TuteeSidebar /></div>
 
         {/* Mobile Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 shadow-2xl md:hidden transform transition-all duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 shadow-2xl md:hidden transform transition-all duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}>
-          <div className="flex items-center justify-between h-16 px-6 border-b border-slate-100 bg-white/50 backdrop-blur-md">
+          <div className="flex items-center justify-between h-16 shrink-0 px-6 border-b border-slate-100 bg-white/50 backdrop-blur-md">
             <h2 className="text-lg font-bold text-slate-800 bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">Menu</h2>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
@@ -54,7 +54,7 @@ const TuteeLayout: React.FC<TuteeLayoutProps> = ({ children }) => {
               <X className="h-5 w-5" />
             </button>
           </div>
-          <div className="flex flex-col h-[calc(100vh-4rem)]">
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             <TuteeSidebar />
           </div>
         </div>

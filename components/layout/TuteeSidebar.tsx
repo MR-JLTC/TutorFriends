@@ -611,9 +611,9 @@ const TuteeSidebar: React.FC = () => {
                   <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-2xl w-80">
                     <div className="relative">
                       {/* Arrow */}
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2">
+                      {/* <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2">
                         <div className="w-4 h-4 bg-white border-l-2 border-t-2 border-slate-200 rotate-45 -ml-3"></div>
-                      </div>
+                      </div> */}
 
                       {/* Content */}
                       <div className="flex items-start space-x-3">
@@ -647,7 +647,7 @@ const TuteeSidebar: React.FC = () => {
       </nav>
 
       {/* Profile Container */}
-      <div className="px-3 py-4 border-t border-slate-100 shrink-0">
+      <div className="px-3 pt-4 pb-6 md:pb-4 border-t border-slate-100 shrink-0 bg-white">
         <NavLink
           to="/tutee-dashboard/profile"
           className="flex items-center space-x-3.5 p-2.5 rounded-xl transition-colors duration-200 hover:bg-slate-50 border border-transparent hover:border-slate-100"

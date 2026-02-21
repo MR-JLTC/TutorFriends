@@ -42,12 +42,11 @@ const TutorLayout: React.FC<TutorLayoutProps> = ({ children }) => {
         <div className="flex h-screen bg-slate-50 overflow-hidden">
           {/* Desktop Sidebar */}
           <div className="hidden md:flex"><TutorSidebar /></div>
-          
+
           {/* Mobile Sidebar */}
-          <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 md:hidden transform transition-transform duration-300 ease-in-out ${
-            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}>
-            <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200 bg-white">
+          <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 md:hidden transform transition-transform duration-300 ease-in-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}>
+            <div className="flex items-center justify-between h-16 shrink-0 px-4 border-b border-slate-200 bg-white">
               <h2 className="text-lg font-bold text-slate-800">Menu</h2>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -57,19 +56,19 @@ const TutorLayout: React.FC<TutorLayoutProps> = ({ children }) => {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="overflow-y-auto h-[calc(100vh-4rem)]">
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
               <TutorSidebar />
             </div>
           </div>
-          
+
           {/* Mobile Overlay */}
           {isMobileMenuOpen && (
-            <div 
+            <div
               className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
             />
           )}
-          
+
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <TutorHeader onMenuClick={() => setIsMobileMenuOpen(true)} />
             <main className="flex-1 overflow-y-auto bg-slate-50 overscroll-contain">
