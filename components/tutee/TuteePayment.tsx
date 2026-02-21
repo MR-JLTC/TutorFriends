@@ -602,7 +602,7 @@ const TuteePayment: React.FC = () => {
         </div>
       </div> */}
 
-      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
         <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
           <CreditCard className="h-6 w-6 text-indigo-600" />
         </div>
