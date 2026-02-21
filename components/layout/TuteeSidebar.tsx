@@ -607,22 +607,28 @@ const TuteeSidebar: React.FC = () => {
 
               {/* Hover tooltip - Visible on both Mobile and Desktop */}
               {showTooltip === to && (
-                <div className="absolute z-[100] left-full top-1/2 -translate-y-1/2 ml-2 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-200">
-                  <div className="bg-slate-800 text-white border border-slate-700/50 rounded-xl p-3.5 shadow-xl w-[280px]">
+                <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-4 z-[100] animate-in fade-in-0 zoom-in-95 duration-200 pointer-events-none">
+                  <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-2xl w-80">
                     <div className="relative">
-                      {/* Left Arrow */}
-                      <div className="absolute right-full top-1/2 -translate-y-1/2">
-                        <div className="w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-slate-800"></div>
+                      {/* Arrow */}
+                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2">
+                        <div className="w-4 h-4 bg-white border-l-2 border-t-2 border-slate-200 rotate-45 -ml-3"></div>
                       </div>
 
-                      <div className="flex flex-col space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-[13px] font-semibold text-white tracking-tight leading-none">{label}</h4>
-                          {showNotification && hasPendingPayments && (
-                            <div className="h-1.5 w-1.5 rounded-full bg-red-400"></div>
-                          )}
+                      {/* Content */}
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
                         </div>
-                        <p className="text-[12px] text-slate-300 leading-relaxed font-normal">{description}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-base font-semibold text-slate-800 leading-tight">{label}</h4>
+                            {showNotification && hasPendingPayments && (
+                              <div className="h-1.5 w-1.5 rounded-full bg-red-400"></div>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
