@@ -534,8 +534,11 @@ const TuteeSidebar: React.FC = () => {
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
+                onMouseEnter={() => handleMouseEnter(to)}
+                onMouseLeave={handleMouseLeave}
                 onClick={() => {
                   setViewedPages(prev => new Set(prev).add(to));
+                  setShowTooltip(null);
                 }}
               >
                 {({ isActive }) => (
@@ -598,16 +601,33 @@ const TuteeSidebar: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    {/* Inline Description Component */}
-                    <div className="w-full pl-8 pr-1 mt-1">
-                      <p className={`text-[12px] leading-snug font-medium line-clamp-2 md:line-clamp-none transition-colors duration-200 ${isActive ? 'text-blue-700/80' : 'text-slate-500/80 group-hover/nav-item:text-slate-500'
-                        }`}>
-                        {description}
-                      </p>
-                    </div>
                   </div>
                 )}
               </NavLink>
+
+              {/* Hover tooltip - Visible on both Mobile and Desktop */}
+              {showTooltip === to && (
+                <div className="absolute z-[100] left-full top-1/2 -translate-y-1/2 ml-2 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-200">
+                  <div className="bg-slate-800 text-white border border-slate-700/50 rounded-xl p-3.5 shadow-xl w-[280px]">
+                    <div className="relative">
+                      {/* Left Arrow */}
+                      <div className="absolute right-full top-1/2 -translate-y-1/2">
+                        <div className="w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-slate-800"></div>
+                      </div>
+
+                      <div className="flex flex-col space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-[13px] font-semibold text-white tracking-tight leading-none">{label}</h4>
+                          {showNotification && hasPendingPayments && (
+                            <div className="h-1.5 w-1.5 rounded-full bg-red-400"></div>
+                          )}
+                        </div>
+                        <p className="text-[12px] text-slate-300 leading-relaxed font-normal">{description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
