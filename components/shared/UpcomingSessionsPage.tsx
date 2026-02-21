@@ -96,7 +96,7 @@ const UpcomingSessionsPage: React.FC = () => {
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6">
       <ToastContainer />
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
+      {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
         <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
           <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
           <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">Upcoming Sessions</h1>
@@ -104,7 +104,17 @@ const UpcomingSessionsPage: React.FC = () => {
         <p className="text-xs sm:text-sm md:text-base lg:text-lg text-blue-100/90 leading-relaxed">
           Manage and mark your upcoming sessions
         </p>
+      </div> */}
+
+      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
+          <MessageSquare className="h-6 w-6 text-indigo-600" />
+        </div>
+        <p className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
+          Manage and mark your upcoming sessions
+        </p>
       </div>
+
       <div className="space-y-4 md:space-y-6">
         {bookingRequests.length === 0 ? (
           <Card className="p-8 sm:p-12 text-center bg-white border-slate-100 shadow-sm rounded-2xl">

@@ -1060,12 +1060,20 @@ const TuteeFindAndBookTutors: React.FC = () => {
       <div className="absolute -top-24 -left-10 h-72 w-72 bg-sky-100 blur-3xl opacity-70 pointer-events-none" />
       <div className="absolute top-32 -right-16 h-80 w-80 bg-indigo-100 blur-[120px] opacity-70 pointer-events-none" />
       <div className="relative max-w-6xl mx-auto px-2 sm:px-4 lg:px-0 pt-1 sm:pt-1.5 md:pt-2 pb-4 sm:pb-6 md:pb-10 space-y-3 sm:space-y-4 md:space-y-6">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
+        {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
           <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
             <Search className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
             <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">Find & Book Tutors</h1>
           </div>
           <p className="text-xs sm:text-sm md:text-base lg:text-lg text-blue-100/90 leading-relaxed">
+            Discover verified tutors, explore profiles, and secure your ideal session.
+          </p>
+        </div> */}
+        <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+          <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
+            <Search className="h-6 w-6 text-indigo-600" />
+          </div>
+          <p className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
             Discover verified tutors, explore profiles, and secure your ideal session.
           </p>
         </div>

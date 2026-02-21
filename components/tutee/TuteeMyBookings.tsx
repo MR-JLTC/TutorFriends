@@ -258,7 +258,7 @@ const TuteeMyBookings: React.FC = () => {
     <div className="space-y-3 sm:space-y-4 md:space-y-6">
       <ToastContainer aria-label="Notification messages" />
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
+      {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3 md:gap-0">
           <div className="flex items-center gap-2 sm:gap-3">
             <Bell className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
@@ -281,6 +281,15 @@ const TuteeMyBookings: React.FC = () => {
             <span>Refresh</span>
           </button>
         </div>
+      </div> */}
+
+      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
+          <RefreshCw className="h-6 w-6 text-indigo-600" />
+        </div>
+        <p className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
+          View and manage your tutoring session bookings
+        </p>
       </div>
 
       <div className="space-y-4 md:space-y-6">
