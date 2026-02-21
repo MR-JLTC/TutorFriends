@@ -611,7 +611,7 @@ const TuteeBecomeTutor: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
       {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-700 via-blue-600 to-indigo-900 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden group">
+      <div className="bg-gradient-to-br from-indigo-700 via-blue-600 to-indigo-900 rounded-3xl p-6 md:p-8 px-6 md:px-8 text-white shadow-xl relative overflow-hidden group">
         {/* Subtle Background Pattern/Glow */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:bg-white/20 transition-all duration-700"></div>
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
