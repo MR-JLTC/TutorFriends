@@ -607,15 +607,17 @@ const TuteeBecomeTutor: React.FC = () => {
     // Start verification process
     handleSendVerificationCode();
   };
-
+  const inputStyles = "w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-[3px] focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all duration-300 font-medium text-slate-900 placeholder:text-slate-400 text-sm shadow-sm";
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
-      {/* Header Label */}
-      <div className="mb-4 md:mb-6 pl-1">
-        <h1 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2.5">
-          <GraduationCap className="w-4 h-4 md:w-5 md:h-5 text-indigo-500" />
+      {/* Header */}
+      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
+          <GraduationCap className="h-6 w-6 text-indigo-600" />
+        </div>
+        <p className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
           Elevate your academic journey by sharing your expertise.
-        </h1>
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -705,10 +707,20 @@ const TuteeBecomeTutor: React.FC = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
+                  autoComplete="current-password"
+                  data-form-type="other"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-bwignore="true"
                   onChange={(e) => setPassword(e.target.value.slice(0, 21))}
-                  className="w-full p-3 bg-white rounded-xl text-slate-700 border border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all pr-10"
+                  className={`${inputStyles} pr-10 
+                      [&::-ms-reveal]:hidden 
+                      [&::-webkit-credentials-auto-fill-button]:!hidden 
+                      [&::-webkit-strong-password-auto-fill-button]:!hidden`}
                   placeholder="Set tutor password (min 7 chars)"
                   required
+                  minLength={7}
+                  maxLength={13}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   {showPassword ? <X className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
