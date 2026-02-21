@@ -505,13 +505,13 @@ const TuteeSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-full h-full bg-white flex flex-col border-r border-slate-200">
-      <div className="px-4 py-4 md:py-6 border-b border-slate-200 flex items-center justify-between">
+    <aside className="w-full md:w-64 h-full bg-white flex flex-col border-r border-slate-200 shadow-sm relative z-40">
+      <div className="px-4 py-4 md:py-6 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-3">
           <img src={logoBase64} alt="TutorFriends Logo" className="h-12 w-auto object-contain transition-transform hover:scale-105" />
-          <div>
-            <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500">TutorFriends</h1>
-            <p className="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-1 shadow-sm">Student</p>
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-lg font-black text-slate-800 tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500 truncate">TutorFriends</h1>
+            <p className="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-1 max-md:mt-0.5 truncate">Student Dashboard</p>
           </div>
         </div>
       </div>
@@ -535,73 +535,78 @@ const TuteeSidebar: React.FC = () => {
                   setShowTooltip(null);
                 }}
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center space-x-3.5">
-                    <Icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${hoveredItem === to ? 'text-blue-600 drop-shadow-sm' : 'text-slate-500'}`} />
-                    <span className="font-semibold text-sm tracking-tight">{label}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {/* My Bookings  */}
-                    {to === '/tutee-dashboard/my-bookings' && !viewedPages.has(to) && (
-                      <div className="flex gap-1">
-                        {pendingBookingsCount > 0 && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse border-2 border-white shadow-sm"></div>
-                        )}
-                        {notifications.some(
-                          (n: any) => !n.is_read && (
-                            n.type === 'booking_update' ||
-                            n.message?.toLowerCase().includes('booking') ||
-                            n.message?.toLowerCase().includes('accepted') ||
-                            n.message?.toLowerCase().includes('declined')
-                          )
-                        ) && (
-                            <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse border-2 border-white shadow-sm"></div>
-                          )}
+                {({ isActive }) => (
+                  <div className="flex flex-col w-full">
+                    <div className="flex items-center justify-between w-full relative z-10">
+                      <div className="flex items-center space-x-3.5 min-w-0">
+                        <Icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${hoveredItem === to || isActive ? 'text-blue-600 drop-shadow-sm' : 'text-slate-500'}`} />
+                        <span className="font-semibold text-sm tracking-tight truncate">{label}</span>
                       </div>
-                    )}
 
-                    {/* Payment  */}
-                    {to === '/tutee-dashboard/payment' &&
-                      !viewedPages.has(to) &&
-                      hasPendingPayments && (
-                        <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse border-2 border-white shadow-sm"></div>
-                      )}
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        {/* My Bookings  */}
+                        {to === '/tutee-dashboard/my-bookings' && !viewedPages.has(to) && (
+                          <div className="flex gap-1">
+                            {pendingBookingsCount > 0 && (
+                              <div className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse border-2 border-white shadow-sm"></div>
+                            )}
+                            {notifications.some(
+                              (n: any) => !n.is_read && (
+                                n.type === 'booking_update' ||
+                                n.message?.toLowerCase().includes('booking') ||
+                                n.message?.toLowerCase().includes('accepted') ||
+                                n.message?.toLowerCase().includes('declined')
+                              )
+                            ) && (
+                                <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse border-2 border-white shadow-sm"></div>
+                              )}
+                          </div>
+                        )}
 
-                    {/* After Session  */}
-                    {to === '/tutee-dashboard/after-session' &&
-                      !viewedPages.has(to) &&
-                      hasCompletedSessionsForFeedback && (
-                        <div className="h-2.5 w-2.5 rounded-full bg-purple-500 animate-pulse border-2 border-white shadow-sm"></div>
-                      )}
+                        {/* Payment  */}
+                        {to === '/tutee-dashboard/payment' &&
+                          !viewedPages.has(to) &&
+                          hasPendingPayments && (
+                            <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse border-2 border-white shadow-sm"></div>
+                          )}
 
-                    {/* Become a Tutor  */}
-                    {to === '/tutee-dashboard/become-tutor' &&
-                      !viewedPages.has(to) &&
-                      hasBecomeTutorUpdate && (
-                        <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse border-2 border-white shadow-sm"></div>
-                      )}
+                        {/* After Session  */}
+                        {to === '/tutee-dashboard/after-session' &&
+                          !viewedPages.has(to) &&
+                          hasCompletedSessionsForFeedback && (
+                            <div className="h-2.5 w-2.5 rounded-full bg-purple-500 animate-pulse border-2 border-white shadow-sm"></div>
+                          )}
 
-                    {/* Upcoming Sessions  */}
-                    {showUpcoming && upcomingCount > 0 && (
-                      <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-xs font-bold bg-blue-600 text-white border-2 border-white shadow-sm">
-                        {upcomingCount > 99 ? '99+' : upcomingCount}
-                      </span>
-                    )}
+                        {/* Become a Tutor  */}
+                        {to === '/tutee-dashboard/become-tutor' &&
+                          !viewedPages.has(to) &&
+                          hasBecomeTutorUpdate && (
+                            <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse border-2 border-white shadow-sm"></div>
+                          )}
+
+                        {/* Upcoming Sessions  */}
+                        {showUpcoming && upcomingCount > 0 && (
+                          <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-xs font-bold bg-blue-600 text-white border-2 border-white shadow-sm">
+                            {upcomingCount > 99 ? '99+' : upcomingCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Integrated Mobile Description - always show subtly under the label on mobile so tooltips aren't needed */}
+                    <div className="md:hidden w-full pl-8 pr-1 mt-1">
+                      <p className="text-[12px] text-slate-500/90 leading-snug font-medium line-clamp-2 md:line-clamp-none">{description}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </NavLink>
 
-              {/* Hover tooltip */}
+              {/* Hover tooltip - Desktop ONLY */}
               {showTooltip === to && (
                 <div className="
-                  absolute z-[100] animate-in fade-in-0 zoom-in-95 duration-200
-                  /* Desktop: Right side absolute */
-                  md:left-full md:top-1/2 md:-translate-y-1/2 md:-ml-2
-                  /* Mobile: Fixed card at bottom center */
-                  max-md:fixed max-md:left-4 max-md:right-4 max-md:bottom-20 max-md:w-auto
+                  hidden md:block absolute z-[100] animate-in fade-in-0 zoom-in-95 duration-200
+                  left-full top-1/2 -translate-y-1/2 -ml-2
                 ">
-                  <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] md:w-[320px]">
+                  <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] w-[320px]">
                     <div className="relative">
                       {/* Arrow (Desktop only) */}
                       <div className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-[24px]">
@@ -618,9 +623,9 @@ const TuteeSidebar: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-1.5">
-                            <h4 className="text-[15px] font-bold text-slate-800 tracking-tight leading-none">{label}</h4>
+                            <h4 className="text-[15px] font-bold text-slate-800 tracking-tight leading-none truncate">{label}</h4>
                             {showNotification && hasPendingPayments && (
-                              <div className="flex h-2 w-2 relative">
+                              <div className="flex h-2 w-2 relative flex-shrink-0">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                               </div>
@@ -639,7 +644,7 @@ const TuteeSidebar: React.FC = () => {
       </nav>
 
       {/* Profile Section */}
-      <div className="px-4 py-5 border-t border-slate-200 bg-slate-50/50">
+      <div className="px-4 py-4 md:py-5 border-t border-slate-200 bg-slate-50/50 flex-shrink-0">
         <NavLink to="/tutee-dashboard/profile" className="flex items-center space-x-3 group hover:bg-white p-2.5 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-200 hover:shadow-sm">
           <div className="relative flex-shrink-0">
             {user?.profile_image_url ? (
@@ -659,7 +664,7 @@ const TuteeSidebar: React.FC = () => {
             )}
             <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             <p className="text-sm font-bold text-slate-800 truncate tracking-tight">{user?.name}</p>
             <p className="text-[11px] text-slate-500 truncate font-medium mt-0.5">{user?.email}</p>
           </div>
