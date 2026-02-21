@@ -127,7 +127,7 @@ const TuteeProfile: React.FC = () => {
   }, [courses, universityId]);
 
   return (
-    <div className="p-6">
+    <div className="space-y-6 max-w-5xl mx-auto pb-10">
       <ToastContainer position="top-center" aria-label="Notification center" />
       <h1 className="text-2xl font-bold mb-4">My Profile</h1>
       <Card className="p-6">
@@ -184,7 +184,7 @@ const TuteeProfile: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">Year level</label>
                 <select value={yearLevel as any} onChange={e => setYearLevel(e.target.value ? Number(e.target.value) : '')} className="w-full border px-3 py-2 rounded-md">
                   <option value="">-- Select year level --</option>
-                  {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
+                  {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
 

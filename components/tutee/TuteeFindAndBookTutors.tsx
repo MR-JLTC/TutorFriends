@@ -1056,7 +1056,8 @@ const TuteeFindAndBookTutors: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-800 overflow-hidden">
+    // <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-800 overflow-hidden">
+    <div className="space-y-6 max-w-5xl mx-auto pb-10 bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-800 overflow-hidden">
       {/* <div className="absolute -top-24 -left-10 h-72 w-72 bg-sky-100 blur-3xl opacity-70 pointer-events-none" />
       <div className="absolute top-32 -right-16 h-80 w-80 bg-indigo-100 blur-[120px] opacity-70 pointer-events-none" /> */}
       <div className="relative max-w-6xl mx-auto px-2 sm:px-4 lg:px-0 pt-1 sm:pt-1.5 md:pt-2 pb-4 sm:pb-6 md:pb-10 space-y-3 sm:space-y-4 md:space-y-6">
