@@ -12,15 +12,15 @@ import CourseManagement from './components/adminPages/CourseManagement';
 import PaymentManagement from './components/adminPages/PaymentManagement';
 import AdminProfile from './components/adminPages/AdminProfile';
 import LandingPage from './components/Tutor_TuteePages/LandingPage';
-import TuteeRegistrationPage from './components/Tutor_TuteePages/TuteeRegistrationPage';
-import TutorRegistrationPage from './components/Tutor_TuteePages/TutorRegistrationPage';
+// import TuteeRegistrationPage from './components/Tutor_TuteePages/TuteeRegistrationPage';
+// import TutorRegistrationPage from './components/Tutor_TuteePages/TutorRegistrationPage';
 import TuteeRegistrationPageFull from './components/Tutor_TuteePages/TuteeRegistrationPageFull';
 import TutorRegistrationPageFull from './components/Tutor_TuteePages/TutorRegistrationPageFull';
 import TutorDashboard from './components/Tutor_TuteePages/TutorDashboard';
 import TuteeDashboard from './components/Tutor_TuteePages/TuteeDashboard';
 import UnifiedLoginPage from './components/auth/UnifiedLoginPage';
 import PasswordResetPage from './components/auth/PasswordResetPage';
-import BookingsPage from './components/shared/BookingsPage';
+// import BookingsPage from './components/shared/BookingsPage';
 import { useRestrictInspect } from './hooks/useRestrictInspect';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 
