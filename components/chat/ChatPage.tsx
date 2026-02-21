@@ -265,6 +265,31 @@ const ChatPage: React.FC = () => {
         };
     }, [socket]); // Removed activeConversation from dependency to prevent re-binding listeners
 
+    // --- NEW: Sync online status on load for all visible contacts and conversations ---
+    useEffect(() => {
+        if (!socket || !isConnected || !user) return;
+
+        // Collect all target user IDs from conversations and contacts
+        const existingPartners = new Set(conversations.map((c: any) => {
+            const p = c.tutor_id === user.user_id ? c.tutee : c.tutor;
+            return p?.user_id;
+        }).filter(Boolean));
+
+        availableContacts.forEach(u => existingPartners.add(u.user_id));
+
+        const userIdsToPing = Array.from(existingPartners) as number[];
+
+        if (userIdsToPing.length > 0) {
+            console.log('ChatPage - Pinging online status for:', userIdsToPing);
+            socket.emit('ping_online_users', { userIds: userIdsToPing }, (onlineIds: number[]) => {
+                if (onlineIds && Array.isArray(onlineIds)) {
+                    setOnlineUsers(new Set(onlineIds));
+                }
+            });
+        }
+    }, [socket, isConnected, conversations, availableContacts, user]);
+    // ---------------------------------------------------------------------------------
+
     const fetchConversations = async () => {
         try {
             const res = await apiClient.get('/chat/conversations');
@@ -392,7 +417,17 @@ const ChatPage: React.FC = () => {
             'kiki', 'kiking', 'titi', 'otin', 'toti', 'bayot', 'tomboy', 'talong', 'itlog',
             'kantot', 'iyot', 'iyoton', 'iyota', 'hilas', 'hambog', 'way ayo', 'walay ayo',
             'way batasan', 'bastos', 'demonyo', 'yawa ka', 'piste ka', 'giatay ka', 'amaw ka',
-            'buang ka', 'bogo ka', 'animal ka', 'bilat ka', 'burat ka', 'utin', 'tin2'
+            'buang ka', 'bogo ka', 'animal ka', 'bilat ka', 'burat ka', 'utin', 'tin2',
+            'bwisit ka', 'bwisit', 'y@wa', 'yaw@', '@sshole', 'f@ggot', 'fa@@ot', 'f@@got', 'nigg@',
+            'ret@rd', 'sumb@g@y', 'sumb@gay', 'sumbag@y', 'put@ngin@', 'put@ngina', 'putangin@', 't@ng@', 't@nga', 'tang@',
+            'g@go', 'pot@', 'put@', 'k@ntot', 'bu@ng', '@m@w', '@maw', 'am@w', 'gi@t@y', 'gi@tay', 'giat@y',
+            '@t@y@', '@taya', 'at@y@', '@tay@', 'y@w@', 'y@wa', 'yaw@', 'pesteng y@w@', 'pesteng y@wa', 'pesteng yaw@',
+            '@nim@l', '@nimal', 'anim@l', 'bil@t', 'bil@tsing', 'bur@t', 'b@yot',
+            't@long', 'iyot@n', 'iyot@', 'hil@s', 'h@mbog', 'w@y @yo', 'w@y ayo', 'way @yo', 'w@l@y @yo', 'w@lay ayo', 'wal@y @yo', 'w@l@y ayo',
+            'w@y b@t@s@n', 'w@y batasan', 'way b@t@s@n', 'w@y b@tasan', 'w@y bat@s@n', 'way b@tasan', 'way bat@s@n', 'w@y bat@s@n',
+            'b@stos', '@m@w k@', '@maw k@', 'am@w k@', 'bu@ng k@', '@nim@l k@', '@nimal k@', 'anim@l k@',
+            'bil@t k@', 'bur@t k@', 'y@w@ k@', 'y@wa k@', 'yaw@ k@',
+            'gi@t@y k@', 'gi@tay k@', 'giat@y k@', 'piste k@'
         ];
         // Create regex that matches any of the words (case insensitive, word boundaries)
         const profanityRegex = new RegExp(`\\b(${inappropriateWords.join('|')})\\b`, 'i');
