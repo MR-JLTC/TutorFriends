@@ -610,18 +610,12 @@ const TuteeBecomeTutor: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
-      {/* Header */}
-      <div className="mb-2 md:mb-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-            <GraduationCap className="h-6 w-6 text-indigo-600" />
-          </div>
-          <div>
-            <p className="text-lg md:text-xl font-bold tracking-tight text-slate-800">
-              Elevate your academic journey by sharing your expertise.
-            </p>
-          </div>
-        </div>
+      {/* Header Label */}
+      <div className="mb-4 md:mb-6 pl-1">
+        <h1 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2.5">
+          <GraduationCap className="w-4 h-4 md:w-5 md:h-5 text-indigo-500" />
+          Elevate your academic journey by sharing your expertise.
+        </h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
