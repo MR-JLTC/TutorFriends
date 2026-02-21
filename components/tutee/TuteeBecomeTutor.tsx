@@ -609,7 +609,7 @@ const TuteeBecomeTutor: React.FC = () => {
   };
   const inputStyles = "w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-[3px] focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all duration-300 font-medium text-slate-900 placeholder:text-slate-400 text-sm shadow-sm";
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-5">
+    <div className="space-y-6 max-w-5xl mx-auto pb-2">
       {/* Header */}
       <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
         <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
