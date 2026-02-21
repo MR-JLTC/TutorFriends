@@ -505,50 +505,56 @@ const TuteeSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-full md:w-64 h-full bg-white flex flex-col border-r border-slate-200 shadow-sm relative z-40">
-      <div className="px-4 py-4 md:py-6 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <img src={logoBase64} alt="TutorFriends Logo" className="h-12 w-auto object-contain transition-transform hover:scale-105" />
-          <div className="min-w-0">
-            <h1 className="text-xl md:text-lg font-black text-slate-800 tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500 truncate">TutorFriends</h1>
-            <p className="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-1 max-md:mt-0.5 truncate">Student Dashboard</p>
+    <aside className="w-full md:w-64 h-full bg-white flex flex-col border-r border-slate-200">
+      {/* Header Container */}
+      <div className="px-5 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div className="flex items-center space-x-3.5">
+          <img
+            src={logoBase64}
+            alt="TutorFriends Logo"
+            className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
+          />
+          <div className="flex flex-col justify-center min-w-0">
+            <h1 className="text-[17px] md:text-lg font-bold text-slate-800 tracking-tight leading-tight truncate">TutorFriends</h1>
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-0.5 truncate">Student Menu</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+      {/* Navigation Container */}
+      <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto custom-scrollbar">
         {tuteeNavLinks.map(({ to, icon: Icon, label, description, showNotification, showUpcoming }) => {
           return (
-            <div key={to} className="relative">
+            <div key={to} className="relative group/nav-item">
               <NavLink
                 to={to}
                 className={({ isActive }) =>
-                  `block relative p-3 rounded-xl transition-all duration-200 group ${isActive
-                    ? 'bg-blue-50/80 text-blue-700 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] border border-blue-100/50'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
+                  `block px-3.5 py-3 rounded-xl transition-all duration-200 ${isActive
+                    ? 'bg-blue-50/80 text-blue-700 font-medium'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
-                onMouseEnter={() => handleMouseEnter(to)}
-                onMouseLeave={handleMouseLeave}
                 onClick={() => {
                   setViewedPages(prev => new Set(prev).add(to));
-                  setShowTooltip(null);
                 }}
               >
                 {({ isActive }) => (
                   <div className="flex flex-col w-full">
-                    <div className="flex items-center justify-between w-full relative z-10">
+                    <div className="flex items-center justify-between w-full">
                       <div className="flex items-center space-x-3.5 min-w-0">
-                        <Icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${hoveredItem === to || isActive ? 'text-blue-600 drop-shadow-sm' : 'text-slate-500'}`} />
-                        <span className="font-semibold text-sm tracking-tight truncate">{label}</span>
+                        <Icon
+                          className={`h-5 w-5 flex-shrink-0 transition-all duration-200 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover/nav-item:text-slate-600'
+                            }`}
+                        />
+                        <span className="text-[14px] font-semibold tracking-tight truncate">{label}</span>
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                        {/* My Bookings  */}
+                        {/* My Bookings Badges */}
                         {to === '/tutee-dashboard/my-bookings' && !viewedPages.has(to) && (
-                          <div className="flex gap-1">
+                          <div className="flex gap-1.5 items-center">
                             {pendingBookingsCount > 0 && (
-                              <div className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse border-2 border-white shadow-sm"></div>
+                              <div className="h-2 w-2 rounded-full bg-orange-500"></div>
                             )}
                             {notifications.some(
                               (n: any) => !n.is_read && (
@@ -558,115 +564,83 @@ const TuteeSidebar: React.FC = () => {
                                 n.message?.toLowerCase().includes('declined')
                               )
                             ) && (
-                                <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse border-2 border-white shadow-sm"></div>
+                                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
                               )}
                           </div>
                         )}
 
-                        {/* Payment  */}
+                        {/* Payment Badge */}
                         {to === '/tutee-dashboard/payment' &&
                           !viewedPages.has(to) &&
                           hasPendingPayments && (
-                            <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse border-2 border-white shadow-sm"></div>
+                            <div className="h-2 w-2 rounded-full bg-red-500"></div>
                           )}
 
-                        {/* After Session  */}
+                        {/* After Session Badge */}
                         {to === '/tutee-dashboard/after-session' &&
                           !viewedPages.has(to) &&
                           hasCompletedSessionsForFeedback && (
-                            <div className="h-2.5 w-2.5 rounded-full bg-purple-500 animate-pulse border-2 border-white shadow-sm"></div>
+                            <div className="h-2 w-2 rounded-full bg-purple-500"></div>
                           )}
 
-                        {/* Become a Tutor  */}
+                        {/* Become a Tutor Badge */}
                         {to === '/tutee-dashboard/become-tutor' &&
                           !viewedPages.has(to) &&
                           hasBecomeTutorUpdate && (
-                            <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse border-2 border-white shadow-sm"></div>
+                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
                           )}
 
-                        {/* Upcoming Sessions  */}
+                        {/* Upcoming Sessions Number Badge */}
                         {showUpcoming && upcomingCount > 0 && (
-                          <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-xs font-bold bg-blue-600 text-white border-2 border-white shadow-sm">
+                          <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[11px] font-bold bg-blue-600 text-white">
                             {upcomingCount > 99 ? '99+' : upcomingCount}
                           </span>
                         )}
                       </div>
                     </div>
-                    {/* Integrated Mobile Description - always show subtly under the label on mobile so tooltips aren't needed */}
-                    <div className="md:hidden w-full pl-8 pr-1 mt-1">
-                      <p className="text-[12px] text-slate-500/90 leading-snug font-medium line-clamp-2 md:line-clamp-none">{description}</p>
+                    {/* Inline Description Component */}
+                    <div className="w-full pl-8 pr-1 mt-1">
+                      <p className={`text-[12px] leading-snug font-medium line-clamp-2 md:line-clamp-none transition-colors duration-200 ${isActive ? 'text-blue-700/80' : 'text-slate-500/80 group-hover/nav-item:text-slate-500'
+                        }`}>
+                        {description}
+                      </p>
                     </div>
                   </div>
                 )}
               </NavLink>
-
-              {/* Hover tooltip - Desktop ONLY */}
-              {showTooltip === to && (
-                <div className="
-                  hidden md:block absolute z-[100] animate-in fade-in-0 zoom-in-95 duration-200
-                  left-full top-1/2 -translate-y-1/2 -ml-2
-                ">
-                  <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] w-[320px]">
-                    <div className="relative">
-                      {/* Arrow (Desktop only) */}
-                      <div className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-[24px]">
-                        <div className="w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-r-[8px] border-r-slate-200/80"></div>
-                        <div className="w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-r-[7px] border-r-white absolute top-1/2 -translate-y-1/2 left-[2px]"></div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex items-start space-x-3.5">
-                        <div className="flex-shrink-0 mt-0.5">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center rounded-xl text-blue-600 shadow-sm border border-blue-100/50">
-                            <Icon className="w-5 h-5 drop-shadow-sm" />
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1.5">
-                            <h4 className="text-[15px] font-bold text-slate-800 tracking-tight leading-none truncate">{label}</h4>
-                            {showNotification && hasPendingPayments && (
-                              <div className="flex h-2 w-2 relative flex-shrink-0">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-[13px] text-slate-600 leading-relaxed font-medium">{description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           );
         })}
       </nav>
 
-      {/* Profile Section */}
-      <div className="px-4 py-4 md:py-5 border-t border-slate-200 bg-slate-50/50 flex-shrink-0">
-        <NavLink to="/tutee-dashboard/profile" className="flex items-center space-x-3 group hover:bg-white p-2.5 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-200 hover:shadow-sm">
-          <div className="relative flex-shrink-0">
+      {/* Profile Container */}
+      <div className="px-3 py-4 border-t border-slate-100 shrink-0">
+        <NavLink
+          to="/tutee-dashboard/profile"
+          className="flex items-center space-x-3.5 p-2.5 rounded-xl transition-colors duration-200 hover:bg-slate-50 border border-transparent hover:border-slate-100"
+        >
+          <div className="relative shrink-0">
             {user?.profile_image_url ? (
               <img
                 src={getFileUrl(user.profile_image_url)}
                 alt={user.name}
-                className="h-11 w-11 rounded-full object-cover border-2 border-white shadow-sm transition-transform duration-300 group-hover:scale-105"
+                className="h-[42px] w-[42px] rounded-full object-cover shadow-sm ring-1 ring-slate-200"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                 }}
               />
             ) : (
-              <div className="h-11 w-11 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-sm transition-transform duration-300 group-hover:scale-105">
+              <div className="h-[42px] w-[42px] rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm ring-1 ring-blue-200/50">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
             )}
-            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
+            {/* Online Indicator Box */}
+            <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-[2px] border-white rounded-full"></div>
           </div>
           <div className="flex-1 min-w-0 overflow-hidden">
-            <p className="text-sm font-bold text-slate-800 truncate tracking-tight">{user?.name}</p>
-            <p className="text-[11px] text-slate-500 truncate font-medium mt-0.5">{user?.email}</p>
+            <p className="text-[14px] font-semibold text-slate-800 truncate tracking-tight">{user?.name}</p>
+            <p className="text-[12px] text-slate-500 truncate mt-0.5">{user?.email}</p>
           </div>
         </NavLink>
       </div>
