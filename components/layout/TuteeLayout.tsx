@@ -54,7 +54,7 @@ const TuteeLayout: React.FC<TuteeLayoutProps> = ({ children }) => {
               <X className="h-5 w-5" />
             </button>
           </div>
-          <div className="overflow-y-auto h-[calc(100vh-4rem)] p-4">
+          <div className="flex flex-col h-[calc(100vh-4rem)]">
             <TuteeSidebar />
           </div>
         </div>

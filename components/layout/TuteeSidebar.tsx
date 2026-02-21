@@ -507,7 +507,7 @@ const TuteeSidebar: React.FC = () => {
   return (
     <aside className="w-full md:w-64 h-full bg-white flex flex-col border-r border-slate-200">
       {/* Header Container */}
-      <div className="px-5 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <div className="hidden md:flex px-5 py-6 border-b border-slate-100 items-center justify-between shrink-0">
         <div className="flex items-center space-x-3.5">
           <img
             src={logoBase64}
@@ -522,7 +522,7 @@ const TuteeSidebar: React.FC = () => {
       </div>
 
       {/* Navigation Container */}
-      <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto md:overflow-visible custom-scrollbar">
         {tuteeNavLinks.map(({ to, icon: Icon, label, description, showNotification, showUpcoming }) => {
           return (
             <div key={to} className="relative group/nav-item">
@@ -605,9 +605,9 @@ const TuteeSidebar: React.FC = () => {
                 )}
               </NavLink>
 
-              {/* Hover tooltip - Visible on both Mobile and Desktop */}
+              {/* Hover tooltip - Desktop */}
               {showTooltip === to && (
-                <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-4 z-[100] animate-in fade-in-0 zoom-in-95 duration-200 pointer-events-none">
+                <div className="hidden md:block absolute left-full top-1/2 transform -translate-y-1/2 ml-4 z-[100] animate-in fade-in-0 zoom-in-95 duration-200 pointer-events-none">
                   <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-2xl w-80">
                     <div className="relative">
                       {/* Arrow */}
@@ -632,6 +632,13 @@ const TuteeSidebar: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Mobile Inline Description */}
+              {showTooltip === to && (
+                <div className="md:hidden mt-2 mb-1 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl animate-in slide-in-from-top-2 duration-200">
+                  <p className="text-xs text-slate-600 leading-relaxed">{description}</p>
                 </div>
               )}
             </div>
