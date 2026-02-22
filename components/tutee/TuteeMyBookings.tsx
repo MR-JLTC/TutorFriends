@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, Calendar, Clock, User, BookOpen, RefreshCw, AlertCircle, CheckCircle2, XCircle, Star } from 'lucide-react';
+import { Bell, Calendar, Clock, User, BookOpen, Info, AlertCircle, CheckCircle2, XCircle, Star } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import apiClient from '../../services/api';
@@ -283,11 +283,11 @@ const TuteeMyBookings: React.FC = () => {
         </div>
       </div> */}
 
-      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
-        <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
-          <RefreshCw className="h-6 w-6 text-indigo-600" />
+      <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
+        <div className="flex items-center justify-center shrink-0">
+          <Info className="h-8 w-8 text-white" />
         </div>
-        <p className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
+        <p className="text-lg md:text-xl font-bold text-white tracking-tight">
           View and manage your tutoring session bookings
         </p>
       </div>

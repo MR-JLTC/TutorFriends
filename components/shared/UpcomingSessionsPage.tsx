@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../../services/api';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { MessageSquare, Clock, CheckCircle, X, AlertCircle } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Info } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import RescheduleModal from './RescheduleModal';
@@ -106,11 +106,11 @@ const UpcomingSessionsPage: React.FC = () => {
         </p>
       </div> */}
 
-      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
-        <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
-          <MessageSquare className="h-6 w-6 text-indigo-600" />
+      <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
+        <div className="flex items-center justify-center shrink-0">
+          <Info className="h-8 w-8 text-white" />
         </div>
-        <p className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
+        <p className="text-lg md:text-xl font-bold text-white tracking-tight">
           Manage and mark your upcoming sessions
         </p>
       </div>

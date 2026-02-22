@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileText, X, Download, ExternalLink } from 'lucide-react';
+import { Search, FileText, X, Info, ExternalLink } from 'lucide-react';
 import apiClient, { getFileUrl } from '../../services/api';
 import Modal from '../ui/Modal';
 import { toast } from 'react-toastify';
@@ -1070,11 +1070,11 @@ const TuteeFindAndBookTutors: React.FC = () => {
             Discover verified tutors, explore profiles, and secure your ideal session.
           </p>
         </div> */}
-        <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
-          <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
-            <Search className="h-6 w-6 text-indigo-600" />
+        <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
+          <div className="flex items-center justify-center shrink-0">
+            <Info className="h-8 w-8 text-white" />
           </div>
-          <p className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
+          <p className="text-lg md:text-xl font-bold text-white tracking-tight">
             Discover verified tutors, explore profiles, and secure your ideal session.
           </p>
         </div>
