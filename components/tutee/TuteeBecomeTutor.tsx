@@ -612,8 +612,8 @@ const TuteeBecomeTutor: React.FC = () => {
     <div className="space-y-4 max-w-5xl mx-auto pb-5">
       {/* Header */}
       <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
-        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-          <Info className="h-6 w-6 text-white" />
+        <div className="flex items-center justify-center shrink-0">
+          <Info className="h-8 w-8 text-white" />
         </div>
         <p className="text-lg md:text-xl font-bold text-white tracking-tight">
           Elevate your academic journey by sharing your expertise.
