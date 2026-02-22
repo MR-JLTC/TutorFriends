@@ -611,11 +611,11 @@ const TuteeBecomeTutor: React.FC = () => {
   return (
     <div className="space-y-4 max-w-5xl mx-auto pb-5">
       {/* Header */}
-      <div className="bg-white rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-slate-100 flex items-center gap-4">
-        <div className="w-12 h-12 bg-indigo-50/80 rounded-xl flex items-center justify-center shrink-0">
-          <GraduationCap className="h-6 w-6 text-indigo-600" />
+      <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
+        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+          <Info className="h-6 w-6 text-white" />
         </div>
-        <p className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
+        <p className="text-lg md:text-xl font-bold text-white tracking-tight">
           Elevate your academic journey by sharing your expertise.
         </p>
       </div>
