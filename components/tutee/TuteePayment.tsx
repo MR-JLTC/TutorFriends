@@ -601,16 +601,13 @@ const TuteePayment: React.FC = () => {
           </button>
         </div>
       </div> */}
-
-      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-slate-100 flex items-center gap-4">
-        <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
-          <div className="flex items-center justify-center shrink-0">
-            <Info className="h-8 w-8 text-white" />
-          </div>
-          <p className="text-lg md:text-xl font-bold text-white tracking-tight">
-            Manage your session payments and track payment history
-          </p>
+      <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
+        <div className="flex items-center justify-center shrink-0">
+          <Info className="h-8 w-8 text-white" />
         </div>
+        <p className="text-lg md:text-xl font-bold text-white tracking-tight">
+          Manage your session payments and track payment history
+        </p>
         <button
           onClick={async () => {
             await fetchBookings(true);
@@ -625,7 +622,6 @@ const TuteePayment: React.FC = () => {
           <span>Refresh</span>
         </button>
       </div>
-
       {
         error ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 text-red-700 -mx-2 sm:-mx-3 md:mx-0">
