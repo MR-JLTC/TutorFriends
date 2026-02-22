@@ -127,39 +127,47 @@ const TuteeProfile: React.FC = () => {
   }, [courses, universityId]);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-10">
+    <div className="space-y-4 max-w-5xl mx-auto pb-10 px-3 sm:px-4 md:px-0">
       <ToastContainer position="top-center" aria-label="Notification center" />
-      <h1 className="text-2xl font-bold mb-4">My Profile</h1>
-      <Card className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          <div className="flex flex-col items-center">
-            <div className="h-28 w-28 rounded-full overflow-hidden border-2 border-slate-200 mb-3">
-              {user?.profile_image_url ? (
-                <img src={getFileUrl(user.profile_image_url)} alt={user?.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-semibold">{user?.name?.charAt(0).toUpperCase() || 'U'}</div>
-              )}
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-800 mb-4 md:mb-6 px-1 sm:px-0">My Profile</h1>
+
+      <Card className="p-4 sm:p-6 md:p-8 lg:p-10 w-full rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-6 sm:gap-8 md:gap-10 lg:gap-12 items-center md:items-start text-left">
+
+          {/* Left Column: Avatar */}
+          <div className="w-full md:w-1/3 lg:w-1/4 flex flex-col items-center">
+            <div className="relative group mb-4">
+              <div className="h-28 w-28 sm:h-32 sm:w-32 md:h-40 md:w-40 rounded-full overflow-hidden border-4 border-slate-100 shadow-md bg-slate-50">
+                {user?.profile_image_url ? (
+                  <img src={getFileUrl(user.profile_image_url)} alt={user?.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                )}
+              </div>
             </div>
-            <label className={`px-3 py-2 text-sm rounded-md bg-gray-100 border ${isUploading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-200'}`}>
-              {isUploading ? 'Uploading…' : 'Change photo'}
+            <label className={`w-full max-w-[200px] text-center px-4 py-2.5 text-sm font-bold rounded-xl transition-all ${isUploading ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 cursor-pointer shadow-sm'}`}>
+              {isUploading ? 'Uploading…' : 'Change Photo'}
               <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" disabled={isUploading} />
             </label>
           </div>
 
-          <div className="md:col-span-2">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Full name</label>
-                <input className="w-full border px-3 py-2 rounded-md" value={name} onChange={e => setName(e.target.value)} />
+          {/* Right Column: Form */}
+          <div className="w-full md:w-2/3 lg:w-3/4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Full Name</label>
+                <input className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-colors" value={name} onChange={e => setName(e.target.value)} />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <input className="w-full border px-3 py-2 rounded-md" value={email} onChange={e => setEmail(e.target.value)} />
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Email Address</label>
+                <input className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-colors" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">University</label>
-                <select value={universityId as any} onChange={e => setUniversityId(e.target.value ? Number(e.target.value) : '')} className="w-full border px-3 py-2 rounded-md">
+              <div className="col-span-1">
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">University</label>
+                <select value={universityId as any} onChange={e => setUniversityId(e.target.value ? Number(e.target.value) : '')} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-colors">
                   <option value="">-- Select university --</option>
                   {universities.map(u => (
                     <option key={u.university_id} value={u.university_id}>{u.name || u.university_name || u.display_name}</option>
@@ -167,33 +175,37 @@ const TuteeProfile: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Course</label>
-                <select value={courseId as any} onChange={e => setCourseId(e.target.value ? Number(e.target.value) : '')} className="w-full border px-3 py-2 rounded-md">
+              <div className="col-span-1">
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Year Level</label>
+                <select value={yearLevel as any} onChange={e => setYearLevel(e.target.value ? Number(e.target.value) : '')} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-colors">
+                  <option value="">-- Select year level --</option>
+                  {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Course</label>
+                <select value={courseId as any} onChange={e => setCourseId(e.target.value ? Number(e.target.value) : '')} className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-colors mb-2">
                   <option value="">-- Select course --</option>
                   {filteredCourses.map(c => (
                     <option key={c.course_id || c.id} value={c.course_id || c.id}>{c.course_name || c.name}</option>
                   ))}
                 </select>
                 {!courseId && (
-                  <input className="w-full border px-3 py-2 rounded-md mt-2" placeholder="Or enter course name" value={courseName} onChange={e => setCourseName(e.target.value)} />
+                  <input className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-colors" placeholder="Or enter course name manually" value={courseName} onChange={e => setCourseName(e.target.value)} />
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Year level</label>
-                <select value={yearLevel as any} onChange={e => setYearLevel(e.target.value ? Number(e.target.value) : '')} className="w-full border px-3 py-2 rounded-md">
-                  <option value="">-- Select year level --</option>
-                  {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </div>
+              {emailDomainError && <div className="sm:col-span-2 text-sm font-semibold text-red-600 bg-red-50 px-4 py-3 rounded-lg border border-red-100">{emailDomainError}</div>}
+            </div>
 
-              {emailDomainError && <div className="text-sm text-red-600">{emailDomainError}</div>}
-
-              <div className="flex items-center gap-3 mt-4">
-                <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving…' : 'Save changes'}</Button>
-                <Button variant="secondary" onClick={() => { setName(user?.name || ''); setEmail(user?.email || ''); }}>Cancel</Button>
-              </div>
+            <div className="flex flex-col sm:flex-row items-center gap-3 mt-8 pt-6 border-t border-slate-100">
+              <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl shadow-md">
+                {isSaving ? 'Saving Changes…' : 'Save Changes'}
+              </Button>
+              <Button variant="secondary" onClick={() => { setName(user?.name || ''); setEmail(user?.email || ''); }} className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl border border-slate-200">
+                Cancel
+              </Button>
             </div>
           </div>
         </div>
