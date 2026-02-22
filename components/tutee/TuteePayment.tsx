@@ -605,7 +605,7 @@ const TuteePayment: React.FC = () => {
         <div className="flex items-center justify-center shrink-0">
           <Info className="h-8 w-8 text-white" />
         </div>
-        <p className="text-lg md:text-xl font-bold text-white tracking-tight">
+        <p className="flex-1 text-lg md:text-xl font-bold text-white tracking-tight">
           Manage your session payments and track payment history
         </p>
         <button
@@ -613,13 +613,13 @@ const TuteePayment: React.FC = () => {
             await fetchBookings(true);
             await fetchPaymentHistory();
           }}
-          className="mt-2 sm:mt-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 active:text-blue-800 bg-white hover:bg-blue-50 active:bg-blue-100 rounded-lg sm:rounded-xl transition-all shadow-md hover:shadow-lg w-full sm:w-auto touch-manipulation flex items-center justify-center gap-2"
+          className="ml-auto flex-shrink-0 mt-2 sm:mt-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 active:text-blue-800 bg-white hover:bg-blue-50 active:bg-blue-100 rounded-lg sm:rounded-xl transition-all shadow-md hover:shadow-lg w-full sm:w-auto touch-manipulation flex items-center justify-center gap-2"
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-          <svg className="w-3.5 h-3.5 sm:w-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 sm:w-4 sm:w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          <span>Refresh</span>
+          <span className="whitespace-nowrap">Refresh</span>
         </button>
       </div>
       {
