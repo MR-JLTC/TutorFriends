@@ -1682,6 +1682,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                                     >
                                       <div className="relative z-10 flex flex-col gap-1.5 min-w-0 w-full">
                                         <span className="block break-words font-semibold w-full">{s}</span>
+                                        {/* Ratings Section */}
                                         {subjectRating && subjectRating.count > 0 ? (
                                           <div className="flex items-center gap-1.5 flex-wrap min-w-0 w-full">
                                             <div className="flex items-center flex-shrink-0">
@@ -1706,6 +1707,46 @@ const TuteeFindAndBookTutors: React.FC = () => {
                                         ) : (
                                           <span className="text-[10px] sm:text-xs text-slate-500 italic">No ratings yet</span>
                                         )}
+
+                                        {/* Supporting Documents for this Subject */}
+                                        {(() => {
+                                          const docsForSubject = tutorDocuments.filter((doc: any) => {
+                                            if (!doc.document_tag) return false;
+                                            try {
+                                              const tags = JSON.parse(doc.document_tag);
+                                              return Array.isArray(tags) && tags.includes(s);
+                                            } catch (e) {
+                                              return String(doc.document_tag) === s;
+                                            }
+                                          });
+
+                                          if (docsForSubject.length === 0) return null;
+
+                                          return (
+                                            <div className="mt-1 pt-2 border-t border-sky-200/50 flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                              {docsForSubject.map((doc: any, docIdx: number) => (
+                                                <button
+                                                  key={doc.document_id || docIdx}
+                                                  onClick={() => {
+                                                    if (doc.file_url) {
+                                                      setSelectedDocument({
+                                                        url: getFileUrl(doc.file_url),
+                                                        type: doc.file_type || 'image/jpeg',
+                                                        name: doc.file_name || `Document ${docIdx + 1}`
+                                                      });
+                                                      setDocumentViewerOpen(true);
+                                                    }
+                                                  }}
+                                                  className="inline-flex items-center gap-1.5 px-2 py-1 bg-white/60 hover:bg-white text-emerald-700 text-[10px] sm:text-[11px] font-medium rounded border border-emerald-200 hover:border-emerald-300 transition-colors shadow-sm"
+                                                  title={`View ${doc.file_name || 'Document'}`}
+                                                >
+                                                  <FileText className="w-3 h-3" />
+                                                  <span className="max-w-[80px] truncate">{doc.file_name || 'Document'}</span>
+                                                </button>
+                                              ))}
+                                            </div>
+                                          );
+                                        })()}
                                       </div>
                                       <div className="absolute inset-0 bg-gradient-to-r from-sky-600 to-indigo-600 rounded-lg opacity-0 group-hover:opacity-10 transition-opacity"></div>
                                     </button>
