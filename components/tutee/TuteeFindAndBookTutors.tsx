@@ -2573,7 +2573,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                   className="p-2.5 bg-white/80 hover:bg-white backdrop-blur-md text-slate-600 hover:text-red-600 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 group"
                   title="Close viewer"
                 >
-                  <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
+                  {/* <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" /> */}
                 </button>
               </div>
             </div>
