@@ -983,7 +983,17 @@ const LandingPage: React.FC = () => {
                   <p className="text-sm text-sky-300 font-medium">Connecting Minds, Building Futures</p>
                 </div>
               </div>
-              <p className="text-slate-400 leading-relaxed text-base">Connecting students with qualified tutors for academic success. Empowering learners and educators to achieve their goals together through personalized learning experiences.</p>
+              <p className="text-slate-400 leading-relaxed text-base mb-6">Connecting students with qualified tutors for academic success. Empowering learners and educators to achieve their goals together through personalized learning experiences.</p>
+
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 shadow-sm backdrop-blur-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                </span>
+                <span className="text-xs font-semibold text-sky-400 tracking-wider uppercase">
+                  Version 3.1.9 • Production
+                </span>
+              </div>
             </div>
 
             <div>
@@ -1209,16 +1219,6 @@ const LandingPage: React.FC = () => {
             <p className="text-slate-500 text-sm text-center sm:text-left">&copy; {new Date().getFullYear()} TutorFriends. All rights reserved.</p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-              <div className="flex items-center gap-2 group cursor-default">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-                </span>
-                <span className="text-xs font-semibold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 tracking-wider uppercase group-hover:from-sky-300 group-hover:to-indigo-300 transition-colors">
-                  Version 3.1.9 • Production
-                </span>
-              </div>
-
               <button
                 type="button"
                 className="flex items-center gap-3 group cursor-pointer px-2 py-1 rounded-xl transition-all duration-300 focus:outline-none"
