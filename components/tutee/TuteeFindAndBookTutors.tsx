@@ -2549,12 +2549,11 @@ const TuteeFindAndBookTutors: React.FC = () => {
           <Modal
             isOpen={true}
             onClose={() => setDocumentViewerOpen(false)}
-            title={selectedDocument.name}
             maxWidth="7xl"
             className="w-full h-full sm:h-[90vh] sm:max-w-7xl flex flex-col p-0 sm:rounded-2xl overflow-hidden bg-white"
             contentClassName="flex-1 overflow-hidden p-0 bg-slate-50 flex flex-col relative"
             footer={null} // We rely on the custom close button and potential overlay controls
-          >
+            title={''} children={''}          >
             {/* Header / Controls Overlay */}
             <div className="absolute top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none">
               <div className="bg-white/80 backdrop-blur-md text-slate-800 px-4 py-2 rounded-full border border-slate-200 shadow-sm pointer-events-auto max-w-[70%] truncate">
@@ -2566,7 +2565,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                   className="p-2.5 bg-white/80 hover:bg-white backdrop-blur-md text-slate-600 hover:text-indigo-600 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200"
                   title="Open in new tab"
                 >
-                  {/* <ExternalLink className="w-5 h-5" /> */}
+                  <ExternalLink className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setDocumentViewerOpen(false)}
