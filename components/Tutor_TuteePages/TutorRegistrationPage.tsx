@@ -409,18 +409,18 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
   const [isLoadingModel, setIsLoadingModel] = useState(false);
   const modelLoadingPromiseRef = useRef<Promise<any> | null>(null);
 
-  const loadNsfwModel = async (): Promise<boolean> => {
+  const loadNsfwModel = async (): Promise<any> => {
     if (nsfwModel) {
-      return true; // Model already loaded
+      return nsfwModel; // Model already loaded
     }
 
     // If model is already loading, wait for the existing promise
     if (modelLoadingPromiseRef.current) {
       try {
         const model = await modelLoadingPromiseRef.current;
-        return !!model;
+        return model;
       } catch {
-        return false;
+        return null;
       }
     }
 
@@ -437,13 +437,13 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       modelLoadingPromiseRef.current = null;
       setIsLoadingModel(false);
       console.log('NSFWJS model loaded successfully');
-      return true;
+      return model;
     } catch (error) {
       console.error('Failed to load NSFWJS model:', error);
       modelLoadingPromiseRef.current = null;
       setIsLoadingModel(false);
       notify('Failed to load image analysis model. Please try again.', 'error');
-      return false;
+      return null;
     }
   };
 
@@ -1123,8 +1123,8 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
 
   const analyzeImageContent = async (file: File): Promise<boolean> => {
     // Lazy load the model if not already loaded
-    const modelLoaded = await loadNsfwModel();
-    if (!modelLoaded || !nsfwModel) {
+    const loadedModel = await loadNsfwModel();
+    if (!loadedModel) {
       console.log('NSFWJS model could not be loaded');
       notify('Image analysis is temporarily unavailable. Please try again in a moment.', 'error');
       return false;
@@ -1157,7 +1157,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
             }
 
             // Analyze with NSFWJS
-            const predictions = await nsfwModel.classify(imageData);
+            const predictions = await loadedModel.classify(imageData);
             console.log('NSFWJS predictions:', predictions);
 
             // Check for inappropriate content
@@ -2004,7 +2004,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                           type="text"
                           value={fullName}
                           onChange={(e) => {
-                            const next = e.target.value.replace(/[^A-Za-z\-\s]/g, '').slice(0, 60);
+                            const next = e.target.value.replace(/[^A-Za-z.\-\s]/g, '').slice(0, 60);
                             setFullName(next);
                           }}
                           className="w-full py-2 sm:py-2.5 pl-3 sm:pl-3 lg:pl-3 pr-3 sm:pr-3 lg:pr-3 text-sm sm:text-base lg:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
@@ -2161,7 +2161,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                     <textarea
                       value={bio}
                       onChange={(e) => {
-                        const filtered = e.target.value.replace(/[^A-Za-z\s]/g, '');
+                        const filtered = e.target.value.replace(/[^A-Za-z\s,\.]/g, '');
                         setBio(filtered);
                       }}
                       rows={4}
