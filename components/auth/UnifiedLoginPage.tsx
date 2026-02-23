@@ -335,7 +335,7 @@ const UnifiedLoginPage: React.FC = () => {
                       [&::-webkit-credentials-auto-fill-button]:!hidden 
                       [&::-webkit-strong-password-auto-fill-button]:!hidden`}
                       minLength={7}
-                      maxLength={13}
+                      maxLength={21}
                       placeholder="••••••••"
                     />
                     <button

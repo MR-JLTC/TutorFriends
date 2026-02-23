@@ -92,6 +92,17 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
   const [sessionRate, setSessionRate] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Validate password
+  const passwordError = useMemo(() => {
+    if (!password) return null;
+    if (password.length < 8) return 'Password must be at least 8 characters long.';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter.';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter.';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number.';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return 'Password must contain at least one special character.';
+    return null;
+  }, [password]);
+
   // Validate session rate (100-800)
   const sessionRateError = useMemo(() => {
     if (!sessionRate) return null; // Empty is allowed (optional field)
@@ -1432,8 +1443,8 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
       notify('Please verify your email address before submitting the application.', 'error');
       return;
     }
-    if (password.length < 7 || password.length > 21) {
-      notify('Password must be between 7 and 21 characters.', 'error');
+    if (passwordError) {
+      notify(passwordError, 'error');
       return;
     }
     if (!hideYearLevel && !yearLevel) {
@@ -2020,9 +2031,9 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                         <input
                           type={showPassword ? "text" : "password"}
                           value={password}
-                          onChange={(e) => setPassword(e.target.value.slice(0, 21))}
-                          minLength={7}
-                          maxLength={21}
+                          onChange={(e) => setPassword(e.target.value.slice(0, 50))}
+                          minLength={8}
+                          maxLength={50}
                           autoComplete="new-password"
                           data-form-type="other"
                           data-lpignore="true"
@@ -2033,7 +2044,10 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                             MozAppearance: 'textfield'
                           }}
                           required
-                          className="w-full py-2 sm:py-2.5 pl-3 sm:pl-4 lg:pl-3 pr-10 sm:pr-12 lg:pr-10 text-sm sm:text-base lg:text-sm border border-slate-300 rounded-lg [&::-webkit-credentials-auto-fill-button]:!hidden [&::-ms-reveal]:hidden [&::-webkit-strong-password-auto-fill-button]:!hidden"
+                          className={`w-full py-2 sm:py-2.5 pl-3 sm:pl-4 lg:pl-3 pr-10 sm:pr-12 lg:pr-10 text-sm sm:text-base lg:text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 transition-all ${passwordError && password.length > 0
+                              ? 'border-red-400 bg-red-50 focus:border-red-500'
+                              : 'border-slate-300 focus:border-blue-500'
+                            } [&::-webkit-credentials-auto-fill-button]:!hidden [&::-ms-reveal]:hidden [&::-webkit-strong-password-auto-fill-button]:!hidden`}
                           placeholder="Desired Password"
                         />
                         <button
@@ -2054,6 +2068,16 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                           )}
                         </button>
                       </div>
+                      {passwordError && password.length > 0 ? (
+                        <p className="text-xs text-red-600 mt-1 flex items-start">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 000 16zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <span className="break-words">{passwordError}</span>
+                        </p>
+                      ) : (
+                        <p className="text-xs text-slate-500 mt-1">At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special character</p>
+                      )}
                     </div>
 
                     {!hideCourse && (
