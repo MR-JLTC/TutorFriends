@@ -938,11 +938,12 @@ const TuteeFindAndBookTutors: React.FC = () => {
     setIsProfileOpen(true);
     try {
       const tutorId = tutorUser.tutor_profile.tutor_id;
-      const [profileRes, availRes, bookingsRes, documentsRes] = await Promise.all([
+      const [profileRes, availRes, bookingsRes, documentsRes, subjectAppsRes] = await Promise.all([
         apiClient.get(`/tutors/${tutorId}/profile`),
         apiClient.get(`/tutors/${tutorId}/availability`),
         apiClient.get(`/tutors/${tutorId}/booking-requests`).catch(() => ({ data: [] })),
         apiClient.get(`/tutors/${tutorId}/documents`).catch(() => ({ data: [] })),
+        apiClient.get(`/tutors/${tutorId}/subject-applications`).catch(() => ({ data: [] })),
       ]);
       setSelectedTutorProfile({
         user: tutorUser,
@@ -960,23 +961,39 @@ const TuteeFindAndBookTutors: React.FC = () => {
       }
       setTutorBookingRequests(bookings);
 
-      // Extract documents from response - ensure we get all documents
-      let documents: any[] = [];
+      // Extract general documents from response
+      let generalDocuments: any[] = [];
       if (Array.isArray(documentsRes.data)) {
-        documents = documentsRes.data;
+        generalDocuments = documentsRes.data;
       } else if (Array.isArray(documentsRes.data?.data)) {
-        documents = documentsRes.data.data;
+        generalDocuments = documentsRes.data.data;
       } else if (documentsRes.data && typeof documentsRes.data === 'object') {
-        // Try to extract documents from nested structure
         const data = documentsRes.data;
         if (data.documents && Array.isArray(data.documents)) {
-          documents = data.documents;
+          generalDocuments = data.documents;
         } else if (data.docs && Array.isArray(data.docs)) {
-          documents = data.docs;
+          generalDocuments = data.docs;
         }
       }
-      console.log('Fetched tutor documents:', documents);
-      setTutorDocuments(documents);
+
+      // Extract subject-specific documents from subject applications
+      let subjectDocuments: any[] = [];
+      const apps = Array.isArray(subjectAppsRes.data) ? subjectAppsRes.data :
+        (Array.isArray(subjectAppsRes.data?.data) ? subjectAppsRes.data.data : []);
+
+      apps.forEach((app: any) => {
+        if (app.documents && Array.isArray(app.documents)) {
+          const docsWithSubjectTag = app.documents.map((doc: any) => ({
+            ...doc,
+            document_tag: app.subject_name // Use subject_name as the tag for mapping later
+          }));
+          subjectDocuments = [...subjectDocuments, ...docsWithSubjectTag];
+        }
+      });
+
+      const allDocuments = [...generalDocuments, ...subjectDocuments];
+      console.log('Fetched tutor documents:', allDocuments);
+      setTutorDocuments(allDocuments);
     } catch (err) {
       console.error('Failed to load tutor profile', err);
       setSelectedTutorProfile({ user: tutorUser, profile: null, availability: [] });
