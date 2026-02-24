@@ -1315,7 +1315,9 @@ const TuteeFindAndBookTutors: React.FC = () => {
                         <svg className="w-3.5 h-3.5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0v-5.5a2.5 2.5 0 015 0V21m-5 0h5m-5 0v-5.5a2.5 2.5 0 015 0V21" />
                         </svg>
-                        <span className="text-xs text-slate-600">{t.university_name || 'N/A'}</span>
+                        <span className="text-xs text-slate-600">
+                          {t.university_name ? t.university_name.split(' ').map((word: string) => word.charAt(0).toUpperCase()).join('') : 'N/A'}
+                        </span>
                       </div>
 
                       {/* Ratings */}
@@ -1393,7 +1395,9 @@ const TuteeFindAndBookTutors: React.FC = () => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-xs sm:text-sm md:text-base text-slate-800 truncate">{t.name}</div>
-                        <div className="text-[10px] sm:text-xs md:text-sm text-slate-500 truncate">{t.university_name || 'N/A'}</div>
+                        <div className="text-[10px] sm:text-xs md:text-sm text-slate-500 group-hover:text-white transition-colors duration-300 truncate">
+                          {t.university_name ? t.university_name.split(' ').map((word: string) => word.charAt(0).toUpperCase()).join('') : 'N/A'}
+                        </div>
                         <div className="mt-2 space-y-2">
                           {/* Ratings */}
                           <div className="flex items-center gap-1">
