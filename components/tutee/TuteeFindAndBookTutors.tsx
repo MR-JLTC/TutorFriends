@@ -1284,8 +1284,12 @@ const TuteeFindAndBookTutors: React.FC = () => {
               {filteredTutors.map(t => {
                 const profileSubjects: string[] = (t as any).profile?.subjects || (t as any).tutor_profile?.subjects || [];
                 return (
-                  <div key={t.user_id} className="group relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-4 shadow-sm hover:shadow-xl hover:border-sky-200 transition-all duration-200 flex flex-col h-full">
-                    <div className="absolute inset-x-0 inset-y-0 rounded-2xl bg-gradient-to-r from-sky-400 via-indigo-400 to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -z-10 bg-[length:100%_4px] bg-no-repeat bg-top" />
+                  <div key={t.user_id} className="group relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-4 shadow-sm hover:shadow-xl hover:border-transparent transition-all duration-200 flex flex-col h-full overflow-hidden z-0">
+                    {/* The curved background header */}
+                    <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-sky-400 via-indigo-400 to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10 bg-top" />
+                    {/* A masking div to blend the rest of the card back to white */}
+                    <div className="absolute inset-x-0 bottom-0 top-32 bg-white pointer-events-none -z-10 transition-colors" />
+
                     {/* Mobile: Centered Layout */}
                     <div className="flex flex-col items-center text-center sm:hidden flex-1">
                       {/* Profile Picture */}
@@ -1514,12 +1518,6 @@ const TuteeFindAndBookTutors: React.FC = () => {
                       )}
                       Message
                     </button>
-                    <button
-                      onClick={() => { setIsProfileOpen(false); setShowBookingForm(false); setBookingForm({ subject: '', date: '', time: '', duration: 1, student_notes: '' }); }}
-                      className="px-6 py-2.5 border-2 border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                    >
-                      Close
-                    </button>
                   </>
                 ) : (
                   <>
@@ -1551,12 +1549,6 @@ const TuteeFindAndBookTutors: React.FC = () => {
                           Submit Booking
                         </>
                       )}
-                    </button>
-                    <button
-                      onClick={() => { setShowBookingForm(false); setBookingForm({ subject: '', date: '', time: '', duration: 1, student_notes: '' }); }}
-                      className="px-6 py-2.5 border-2 border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition-colors"
-                    >
-                      Cancel
                     </button>
                   </>
                 )}
