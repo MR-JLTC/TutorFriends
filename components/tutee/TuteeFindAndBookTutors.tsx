@@ -1316,7 +1316,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0v-5.5a2.5 2.5 0 015 0V21m-5 0h5m-5 0v-5.5a2.5 2.5 0 015 0V21" />
                         </svg>
                         <span className="text-xs text-slate-600">
-                          {t.university_name ? t.university_name.split(' ').map((word: string) => word.charAt(0).toUpperCase()).join('') : 'N/A'}
+                          {t.university_name || 'N/A'}
                         </span>
                       </div>
 
@@ -1395,8 +1395,8 @@ const TuteeFindAndBookTutors: React.FC = () => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-xs sm:text-sm md:text-base text-slate-800 truncate">{t.name}</div>
-                        <div className="text-[10px] sm:text-xs md:text-sm text-slate-500 group-hover:text-white transition-colors duration-300 truncate">
-                          {t.university_name ? t.university_name.split(' ').map((word: string) => word.charAt(0).toUpperCase()).join('') : 'N/A'}
+                        <div className="text-[10px] sm:text-xs md:text-sm text-slate-500 group-hover:text-white transition-colors duration-300">
+                          {t.university_name || 'N/A'}
                         </div>
                         <div className="mt-2 space-y-2">
                           {/* Ratings */}
@@ -1492,6 +1492,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
             maxWidth={showBookingForm ? "7xl" : "5xl"}
             className={`${showBookingForm ? 'w-full h-full sm:h-[90vh] flex flex-col' : 'md:max-w-[90vw] lg:max-w-5xl'} rounded-b-xl sm:rounded-b-2xl`}
             contentClassName={`${showBookingForm ? 'flex-1 overflow-y-auto' : ''}`}
+            hideCloseButton={true}
             footer={
               <>
                 {!showBookingForm ? (

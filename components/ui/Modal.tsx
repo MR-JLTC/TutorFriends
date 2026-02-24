@@ -11,11 +11,12 @@ interface ModalProps {
   contentClassName?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '5xl' | '6xl' | '7xl';
   hideScrollbar?: boolean;
+  hideCloseButton?: boolean;
 }
 
 import ReactDOM from 'react-dom';
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, className = '', contentClassName = '', maxWidth = '2xl', hideScrollbar = false }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, className = '', contentClassName = '', maxWidth = '2xl', hideScrollbar = false, hideCloseButton = false }) => {
   if (!isOpen) return null;
 
   const maxWidthClasses = {
@@ -36,17 +37,19 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer,
         {title && (
           <div className="flex justify-between items-center p-4 sm:p-5 border-b border-slate-200 flex-shrink-0">
             <h2 className="text-lg sm:text-xl font-bold text-slate-800 pr-2">{title}</h2>
-            <button
-              onClick={onClose}
-              className="text-slate-500 hover:text-slate-800 active:text-slate-900 text-2xl sm:text-3xl leading-none p-1 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors touch-manipulation flex-shrink-0"
-              style={{ WebkitTapHighlightColor: 'transparent' }}
-              aria-label="Close modal"
-            >
-              &times;
-            </button>
+            {!hideCloseButton && (
+              <button
+                onClick={onClose}
+                className="text-slate-500 hover:text-slate-800 active:text-slate-900 text-2xl sm:text-3xl leading-none p-1 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors touch-manipulation flex-shrink-0"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+                aria-label="Close modal"
+              >
+                &times;
+              </button>
+            )}
           </div>
         )}
-        {!title && (
+        {!title && !hideCloseButton && (
           <div className="absolute top-3 right-3 z-10">
             <button
               onClick={onClose}
