@@ -985,13 +985,19 @@ const LandingPage: React.FC = () => {
               </div>
               <p className="text-slate-400 leading-relaxed text-base mb-6">Connecting students with qualified tutors for academic success. Empowering learners and educators to achieve their goals together through personalized learning experiences.</p>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 shadow-sm backdrop-blur-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-                </span>
-                <span className="text-xs font-semibold text-sky-400 tracking-wider uppercase">
-                  Version 3.2.0 • Production
+              <div className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700 shadow-inner group transition-all duration-300 hover:bg-slate-800 hover:border-slate-600">
+                <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-300 tracking-wide">
+                    v3.2.0
+                  </span>
+                </div>
+                <div className="w-px h-3 bg-slate-700"></div>
+                <span className="text-[10px] font-semibold text-sky-400/90 tracking-widest uppercase group-hover:text-sky-400 transition-colors duration-300">
+                  Production
                 </span>
               </div>
             </div>
