@@ -2561,7 +2561,9 @@ const TuteeFindAndBookTutors: React.FC = () => {
             className="w-full h-full sm:h-[90vh] sm:max-w-7xl flex flex-col p-0 sm:rounded-2xl overflow-hidden bg-white"
             contentClassName="flex-1 overflow-hidden p-0 bg-slate-50 flex flex-col relative"
             footer={null} // We rely on the custom close button and potential overlay controls
-            title={''} children={''}          >
+            title={''} children={''}
+            hideCloseButton={true}
+          >
             {/* Header / Controls Overlay */}
             <div className="absolute top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none">
               <div className="bg-white/80 backdrop-blur-md text-slate-800 px-4 py-2 rounded-full border border-slate-200 shadow-sm pointer-events-auto max-w-[70%] truncate">
