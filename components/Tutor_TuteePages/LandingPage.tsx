@@ -991,7 +991,7 @@ const LandingPage: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                 </span>
                 <span className="text-xs font-semibold text-sky-400 tracking-wider uppercase">
-                  Version 3.1.9 • Production
+                  Version 3.2.0 • Production
                 </span>
               </div>
             </div>

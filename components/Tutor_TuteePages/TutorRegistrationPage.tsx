@@ -2045,8 +2045,8 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                           }}
                           required
                           className={`w-full py-2 sm:py-2.5 pl-3 sm:pl-4 lg:pl-3 pr-10 sm:pr-12 lg:pr-10 text-sm sm:text-base lg:text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 transition-all ${passwordError && password.length > 0
-                              ? 'border-red-400 bg-red-50 focus:border-red-500'
-                              : 'border-slate-300 focus:border-blue-500'
+                            ? 'border-red-400 bg-red-50 focus:border-red-500'
+                            : 'border-slate-300 focus:border-blue-500'
                             } [&::-webkit-credentials-auto-fill-button]:!hidden [&::-ms-reveal]:hidden [&::-webkit-strong-password-auto-fill-button]:!hidden`}
                           placeholder="Desired Password"
                         />
@@ -2074,6 +2074,13 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 000 16zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                           </svg>
                           <span className="break-words">{passwordError}</span>
+                        </p>
+                      ) : password.length > 0 && !passwordError ? (
+                        <p className="text-xs text-green-600 mt-1 flex items-start font-medium transition-all duration-300">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Secured password. Meets all requirements.
                         </p>
                       ) : (
                         <p className="text-xs text-slate-500 mt-1">At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special character</p>

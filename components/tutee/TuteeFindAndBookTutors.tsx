@@ -1285,7 +1285,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                 const profileSubjects: string[] = (t as any).profile?.subjects || (t as any).tutor_profile?.subjects || [];
                 return (
                   <div key={t.user_id} className="group relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-4 shadow-sm hover:shadow-xl hover:border-sky-200 transition-all duration-200 flex flex-col h-full">
-                    <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-sky-400 via-indigo-400 to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-x-0 inset-y-0 rounded-2xl bg-gradient-to-r from-sky-400 via-indigo-400 to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -z-10 bg-[length:100%_4px] bg-no-repeat bg-top" />
                     {/* Mobile: Centered Layout */}
                     <div className="flex flex-col items-center text-center sm:hidden flex-1">
                       {/* Profile Picture */}
@@ -1578,6 +1578,16 @@ const TuteeFindAndBookTutors: React.FC = () => {
                     {/* Enhanced Header Section */}
                     <div className="relative rounded-xl sm:rounded-2xl lg:rounded-2xl overflow-hidden shadow-2xl">
                       <div className="bg-gradient-to-br from-sky-600 via-indigo-600 to-indigo-700 p-4 sm:p-6 md:p-7 lg:p-8 text-white relative overflow-hidden">
+                        {/* Close button top right */}
+                        <button
+                          onClick={() => { setIsProfileOpen(false); setShowBookingForm(false); setBookingForm({ subject: '', date: '', time: '', duration: 1, student_notes: '' }); }}
+                          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2 sm:p-2.5 rounded-full bg-black/10 hover:bg-black/20 text-white/90 hover:text-white backdrop-blur-sm transition-all duration-200"
+                        >
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+
                         {/* Enhanced decorative background pattern */}
                         <div className="absolute inset-0 opacity-10">
                           <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 bg-white rounded-full -mr-16 sm:-mr-24 md:-mr-28 lg:-mr-32 -mt-16 sm:-mt-24 md:-mt-28 lg:-mt-32"></div>
