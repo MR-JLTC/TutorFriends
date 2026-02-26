@@ -18,49 +18,88 @@ import apiClient, { getFileUrl } from '../../services/api';
 import { useToast } from '../ui/Toast';
 import { updateRoleUser } from '../../utils/authRole';
 
+// const tuteeNavLinks = [
+//   {
+//     to: '/tutee-dashboard/become-tutor',
+//     icon: GraduationCap,
+//     label: 'Become a Tutor',
+//     description: 'Apply to become a tutor by selecting subjects and uploading supporting documents like transcripts.',
+//   },
+//   {
+//     to: '/tutee-dashboard/find-tutors',
+//     icon: Search,
+//     label: 'Find & Book Tutors',
+//     description: 'Browse tutors filtered by your course subjects, view their profiles, ratings, and availability to book a session.',
+//   },
+//   {
+//     to: '/tutee-dashboard/my-bookings',
+//     icon: Bell,
+//     label: 'My Bookings',
+//     description: 'View and manage your tutoring session bookings.',
+//   },
+//   {
+//     to: '/tutee-dashboard/upcoming-sessions',
+//     icon: User, // reuse simple icon; consider replacing with Calendar where available
+//     label: 'Upcoming Sessions',
+//     description: 'See your scheduled sessions in the next 30 days.',
+//     showUpcoming: true,
+//   },
+//   {
+//     to: '/tutee-dashboard/messages',
+//     icon: User, // TODO: Import MessageSquare if available or use generic
+//     label: 'Messages',
+//     description: 'Chat with your tutors in real-time.',
+//   },
+//   {
+//     to: '/tutee-dashboard/payment',
+//     icon: CreditCard,
+//     label: 'Payment',
+//     description: 'View tutor payment information, upload proof of payment via GCash, and wait for tutor approval.',
+//     showNotification: true, // This will be used to conditionally show the notification dot
+//   },
+//   {
+//     to: '/tutee-dashboard/after-session',
+//     icon: Star,
+//     label: 'After Session',
+//     description: 'Leave feedback and rating for completed sessions to help future students make informed decisions.',
+//   },
+// ];
 const tuteeNavLinks = [
   {
     to: '/tutee-dashboard/become-tutor',
     icon: GraduationCap,
-    label: 'Become a Tutor',
     description: 'Apply to become a tutor by selecting subjects and uploading supporting documents like transcripts.',
   },
   {
     to: '/tutee-dashboard/find-tutors',
     icon: Search,
-    label: 'Find & Book Tutors',
     description: 'Browse tutors filtered by your course subjects, view their profiles, ratings, and availability to book a session.',
   },
   {
     to: '/tutee-dashboard/my-bookings',
     icon: Bell,
-    label: 'My Bookings',
     description: 'View and manage your tutoring session bookings.',
   },
   {
     to: '/tutee-dashboard/upcoming-sessions',
     icon: User, // reuse simple icon; consider replacing with Calendar where available
-    label: 'Upcoming Sessions',
     description: 'See your scheduled sessions in the next 30 days.',
     showUpcoming: true,
   },
   {
     to: '/tutee-dashboard/messages',
     icon: User, // TODO: Import MessageSquare if available or use generic
-    label: 'Messages',
     description: 'Chat with your tutors in real-time.',
   },
   {
     to: '/tutee-dashboard/payment',
     icon: CreditCard,
-    label: 'Payment',
     description: 'View tutor payment information, upload proof of payment via GCash, and wait for tutor approval.',
     showNotification: true, // This will be used to conditionally show the notification dot
   },
   {
     to: '/tutee-dashboard/after-session',
     icon: Star,
-    label: 'After Session',
     description: 'Leave feedback and rating for completed sessions to help future students make informed decisions.',
   },
 ];
