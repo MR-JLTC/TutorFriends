@@ -609,21 +609,20 @@ const TuteeSidebar: React.FC = () => {
               {/* Hover tooltip - Desktop */}
               {showTooltip === to && (
                 <div className="hidden md:block absolute left-full top-1/2 transform -translate-y-1/2 ml-4 z-[100] animate-in fade-in-0 zoom-in-95 duration-200 pointer-events-none">
-                  <div className="bg-slate-800 text-white rounded-xl px-4 py-3 shadow-xl w-72 border border-slate-700/50 backdrop-blur-sm">
+                  <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-xl w-72 backdrop-blur-sm">
                     <div className="relative">
                       {/* Content */}
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-0.5">
-                          <Info className="w-4 h-4 text-blue-400" />
+                          <Info className="w-4 h-4 text-blue-500" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <h4 className="text-sm font-medium text-slate-100 leading-tight">{label}</h4>
+                          <div className="flex items-center justify-between mb-1">
                             {showNotification && hasPendingPayments && (
-                              <div className="h-1.5 w-1.5 rounded-full bg-red-400"></div>
+                              <div className="h-1.5 w-1.5 rounded-full bg-red-500 absolute top-0 right-0"></div>
                             )}
                           </div>
-                          <p className="text-xs text-slate-300 leading-relaxed font-light">{description}</p>
+                          <p className="text-sm text-slate-600 leading-relaxed font-normal">{description}</p>
                         </div>
                       </div>
                     </div>
