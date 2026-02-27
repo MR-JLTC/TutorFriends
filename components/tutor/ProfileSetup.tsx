@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { useAuth } from '../../hooks/useAuth';
 import { useVerification } from '../../context/VerificationContext';
-import { User, Camera, CreditCard, Star, Edit, Save, X, CheckCircle, Clock, Mail } from 'lucide-react';
+import { User, Camera, CreditCard, Star, Edit, Save, X, CheckCircle, Clock, Mail, Info } from 'lucide-react';
 import { updateRoleUser } from '../../utils/authRole';
 
 interface TutorProfile {
@@ -111,7 +111,7 @@ const ProfileSetup: React.FC = () => {
       console.log('Profile response data:', response.data);
       console.log('Profile photo URL from API:', response.data.profile_photo);
       console.log('User profile_image_url:', user?.profile_image_url);
-      
+
       // Prefer API value, then keep existing state if already updated, then fallback to user context
       setProfile(prev => {
         let profilePhotoUrl = response.data.profile_photo || prev.profile_photo || user?.profile_image_url || '';
@@ -260,7 +260,7 @@ const ProfileSetup: React.FC = () => {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
           console.log('Profile image upload response:', profileResponse.data);
-          
+
           // The backend returns { success: true, profile_image_url: fileUrl }
           let profilePhotoUrl = profileResponse.data.profile_image_url || profileResponse.data?.data?.profile_image_url;
           if (profilePhotoUrl) {
@@ -270,7 +270,7 @@ const ProfileSetup: React.FC = () => {
             }
             console.log('Setting profile photo URL to:', profilePhotoUrl);
             setProfile(prev => ({ ...prev, profile_photo: profilePhotoUrl }));
-            
+
             // Also update user context if available
             if (user) {
               const updatedUser = { ...user, profile_image_url: profilePhotoUrl };
@@ -300,7 +300,7 @@ const ProfileSetup: React.FC = () => {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
           console.log('GCash QR upload response:', gcashResponse.data);
-          
+
           // The backend returns { success: true, gcash_qr_url: fileUrl }
           let gcashQRUrl = gcashResponse.data.gcash_qr_url || gcashResponse.data?.data?.gcash_qr_url;
           if (gcashQRUrl) {
@@ -323,10 +323,10 @@ const ProfileSetup: React.FC = () => {
       setIsEditing(false);
       setProfileImage(null);
       setGcashQR(null);
-      
+
       // Refresh profile from server to ensure accurate persisted values
       await fetchProfile();
-      
+
       alert('Profile updated successfully!');
     } catch (error: any) {
       console.error('Failed to save profile:', error);
@@ -346,9 +346,8 @@ const ProfileSetup: React.FC = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${
-          i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'
-        }`}
+        className={`h-4 w-4 ${i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'
+          }`}
       />
     ));
   };
@@ -356,7 +355,7 @@ const ProfileSetup: React.FC = () => {
   // Calculate average rating per subject
   const subjectRatings = useMemo(() => {
     const ratingsBySubject: Record<string, number[]> = {};
-    
+
     bookingRequests.forEach(booking => {
       if (booking.tutee_rating && booking.tutee_rating > 0 && booking.subject) {
         if (!ratingsBySubject[booking.subject]) {
@@ -382,42 +381,46 @@ const ProfileSetup: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-5 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
       {/* Enhanced Header */}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-2xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-2xl"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-2xl"></div>
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
         </div>
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 drop-shadow-lg">Profile Setup</h1>
-            <p className="text-xs sm:text-sm md:text-base text-white/90 leading-tight">Manage your public profile and payment information</p>
+        <div className="relative flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 sm:gap-6">
+          <div className="min-w-0 flex-1 flex items-center gap-3 sm:gap-4 bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-2 sm:p-2.5 bg-white/20 rounded-lg shadow-sm shrink-0">
+              <Info className="h-5 w-5 sm:h-6 sm:w-6 text-white drop-shadow-md" />
+            </div>
+            <p className="text-sm sm:text-base md:text-lg text-white font-medium leading-snug tracking-wide text-shadow-sm">
+              Manage your public profile and payment information
+            </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-xl w-full sm:w-auto">
-            <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold text-slate-800 border-2 flex items-center justify-center space-x-2 ${applicationStatus === 'approved' ? 'border-green-400 bg-green-50' : 'border-red-400 bg-red-50'}`}>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg w-full lg:w-auto border border-white/40">
+            <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold border-2 flex items-center justify-center space-x-2 shadow-inner transition-colors duration-300 ${applicationStatus === 'approved' ? 'border-green-400 bg-green-50 text-green-800' : 'border-red-400 bg-red-50 text-red-800'}`}>
               {applicationStatus === 'approved' ? (
                 <>
                   <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                  <span className="whitespace-nowrap">Approved</span>
+                  <span className="whitespace-nowrap tracking-wide">Approved</span>
                 </>
               ) : (
                 <>
                   <X className="h-4 w-4 text-red-600 flex-shrink-0" />
-                  <span className="whitespace-nowrap">Not Approved</span>
+                  <span className="whitespace-nowrap tracking-wide">Not Approved</span>
                 </>
               )}
             </div>
             <div className="flex space-x-2">
               {isEditing ? (
                 <>
-                  <Button variant="secondary" onClick={() => setIsEditing(false)} className="!px-3 sm:!px-4 !py-2 text-xs sm:text-sm flex-1 sm:flex-none">
+                  <Button variant="secondary" onClick={() => setIsEditing(false)} className="!px-3 sm:!px-4 !py-2 text-xs sm:text-sm flex-1 sm:flex-none font-medium border-slate-200 hover:bg-slate-100 transition-colors">
                     Cancel
                   </Button>
-                  <Button onClick={saveProfile} disabled={loading} className="!px-3 sm:!px-4 !py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl text-xs sm:text-sm flex-1 sm:flex-none">
+                  <Button onClick={saveProfile} disabled={loading} className="!px-3 sm:!px-4 !py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg text-xs sm:text-sm flex-1 sm:flex-none font-medium border border-primary-500/50 transition-all active:scale-95">
                     {loading ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </>
               ) : (
-                <Button onClick={() => setIsEditing(true)} className="!px-3 sm:!px-4 !py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 text-xs sm:text-sm w-full sm:w-auto">
+                <Button onClick={() => setIsEditing(true)} className="!px-3 sm:!px-4 !py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 text-xs sm:text-sm w-full sm:w-auto font-medium border border-primary-500/50 transition-all active:scale-95">
                   <Edit className="h-4 w-4 flex-shrink-0" />
                   <span>Edit Profile</span>
                 </Button>
@@ -439,7 +442,7 @@ const ProfileSetup: React.FC = () => {
                     src={URL.createObjectURL(profileImage)}
                     alt="Profile Preview"
                     className="w-full h-full object-cover"
-                    style={{aspectRatio: '1/1'}}
+                    style={{ aspectRatio: '1/1' }}
                   />
                 </div>
                 {applicationStatus === 'approved' && (
@@ -477,7 +480,7 @@ const ProfileSetup: React.FC = () => {
                     src={getFileUrl(profile.profile_photo || (user as any)?.profile_image_url || '')}
                     alt="Profile"
                     className="w-full h-full object-cover"
-                    style={{aspectRatio: '1/1'}}
+                    style={{ aspectRatio: '1/1' }}
                     onError={(e) => {
                       console.error('Failed to load profile image. Original URL:', profile.profile_photo || (user as any)?.profile_image_url);
                       console.error('Constructed URL:', getFileUrl(profile.profile_photo || (user as any)?.profile_image_url || ''));
@@ -540,7 +543,7 @@ const ProfileSetup: React.FC = () => {
               </div>
             )}
           </div>
-          
+
           {/* Tutor Name and Email - Below Profile Image */}
           <div className="text-center">
             <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1.5">
@@ -552,7 +555,7 @@ const ProfileSetup: React.FC = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl shadow-lg">
@@ -560,7 +563,7 @@ const ProfileSetup: React.FC = () => {
             </div>
             <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Your Profile</h2>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 p-4 rounded-xl border-2 border-primary-200/50 shadow-lg hover:shadow-xl transition-all">
               <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide mb-2">Approved Subjects</p>
@@ -582,7 +585,7 @@ const ProfileSetup: React.FC = () => {
           </div>
           <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Bio & Description</h2>
         </div>
-        
+
         {isEditing ? (
           <>
             <textarea
@@ -659,7 +662,7 @@ const ProfileSetup: React.FC = () => {
           </div>
           <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Payment Information</h2>
         </div>
-        
+
         <div className="space-y-4 sm:space-y-5">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">
@@ -692,7 +695,7 @@ const ProfileSetup: React.FC = () => {
             ) : (
               <div className="bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 p-4 rounded-xl border-2 border-primary-200/50 shadow-sm">
                 <p className="text-primary-700 font-bold text-lg sm:text-xl">
-                  {profile.session_rate_per_hour != null 
+                  {profile.session_rate_per_hour != null
                     ? `₱${Number(profile.session_rate_per_hour).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     : <span className="text-slate-500 italic font-normal">No session rate set yet</span>}
                 </p>
@@ -733,7 +736,7 @@ const ProfileSetup: React.FC = () => {
               </div>
             )}
           </div>
-          
+
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">
               GCash QR Code
