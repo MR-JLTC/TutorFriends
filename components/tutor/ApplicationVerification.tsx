@@ -5,7 +5,7 @@ import Card from '../ui/Card';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../hooks/useAuth';
 import { useVerification } from '../../context/VerificationContext';
-import { FileText, Upload, CheckCircle, Clock, Plus, X, User, Camera, CreditCard, Edit } from 'lucide-react';
+import { FileText, Upload, CheckCircle, Clock, Plus, X, User, Camera, CreditCard, Edit, Info } from 'lucide-react';
 
 interface TutorProfileData {
   profile_photo: string;
@@ -215,7 +215,7 @@ const ApplicationVerification: React.FC = () => {
           documents = documentsRes.data.docs;
         }
       }
-      
+
       if (documents.length > 0) {
         setExistingProofDocuments(documents.map((doc: any) => ({
           id: doc.document_id || doc.id,
@@ -239,15 +239,15 @@ const ApplicationVerification: React.FC = () => {
       setExistingProfilePhotoUrl(response.data.profile_photo || '');
       setGcashNumber(response.data.gcash_number || '');
       setExistingGcashQRUrl(response.data.gcash_qr || '');
-      
+
       // Get course_id from profile to filter subjects
       if (response.data.course_id) {
         setTutorCourseId(response.data.course_id);
       }
-      
+
       // Fetch documents for all statuses
       await fetchTutorDocuments();
-      
+
       // If rejected, fetch full data for reapplication
       if (applicationStatus === 'rejected') {
         await fetchFullTutorDataForReapplication();
@@ -275,7 +275,7 @@ const ApplicationVerification: React.FC = () => {
       } catch (e) {
         console.log('Could not fetch course_id from applications endpoint:', e);
       }
-      
+
       // Approach 2: Try from user's tutor_profile if available in context
       if (user?.tutor_profile?.course_id) {
         setTutorCourseId(user.tutor_profile.course_id);
@@ -291,10 +291,10 @@ const ApplicationVerification: React.FC = () => {
     try {
       // Reset profile photo state to ensure we show existing image
       setProfilePhoto(null);
-      
+
       // First, fetch subject applications to ensure we have the latest data
       await fetchSubjectApplications();
-      
+
       // Fetch tutor data with all needed fields
       // Note: Documents endpoint doesn't exist (only POST for uploading)
       // Documents will be uploaded fresh during reapplication
@@ -302,17 +302,17 @@ const ApplicationVerification: React.FC = () => {
         apiClient.get(`/tutors/${tutorId}/profile`),
         apiClient.get(`/tutors/${tutorId}/availability`)
       ]);
-      
+
       console.log('Profile response data:', profileRes.data);
       console.log('Profile photo URL from API:', profileRes.data.profile_photo);
       console.log('User profile_image_url:', user?.profile_image_url);
-      
+
       // Populate form fields
       if (user?.name) setFullName(user.name);
       setBio(profileRes.data.bio || '');
       setGcashNumber(profileRes.data.gcash_number || '');
       setSessionRate(profileRes.data.session_rate_per_hour?.toString() || '');
-      
+
       // Fetch year level from tutor application endpoint (since it's not in profile)
       try {
         const applicationsRes = await apiClient.get('/tutors/applications').catch(() => ({ data: [] }));
@@ -323,7 +323,7 @@ const ApplicationVerification: React.FC = () => {
       } catch (e) {
         console.error('Failed to fetch year level:', e);
       }
-      
+
       // Set subjects from subject applications - include ALL subjects (approved, pending, rejected)
       // This allows users to see all their subjects and manage them
       // Wait for subjectApplications to be updated (will use the state that was just fetched)
@@ -336,7 +336,7 @@ const ApplicationVerification: React.FC = () => {
         file_name: string;
         file_type: string;
       }>> = {};
-      
+
       (currentSubjectApps.data || []).forEach((app: any) => {
         subjectsSet.add(app.subject_name);
         // Initialize new files array
@@ -353,11 +353,11 @@ const ApplicationVerification: React.FC = () => {
           initialExistingDocumentsMap[app.subject_name] = [];
         }
       });
-      
+
       setReapplicationSubjects(subjectsSet);
       setSubjectFilesMap(initialSubjectFilesMap);
       setExistingSubjectDocumentsMap(initialExistingDocumentsMap);
-      
+
       // Fetch general proof documents (tutor documents)
       try {
         // Use the new GET endpoint to fetch tutor documents directly
@@ -376,7 +376,7 @@ const ApplicationVerification: React.FC = () => {
         console.error('Failed to fetch proof documents:', e);
         setExistingProofDocuments([]);
       }
-      
+
       // Set availability
       if (availabilityRes.data && Array.isArray(availabilityRes.data)) {
         const availabilityMap: Record<string, DayAvailability> = {};
@@ -392,13 +392,13 @@ const ApplicationVerification: React.FC = () => {
         });
         setReapplicationAvailability(availabilityMap);
       }
-      
+
       // Fetch profile image - prioritize profile_photo from API, then user profile_image_url
       const profilePhotoUrl = profileRes.data.profile_photo || user?.profile_image_url || '';
       console.log('Setting profile photo URL to:', profilePhotoUrl);
       setExistingProfilePhotoUrl(profilePhotoUrl);
       setExistingGcashQRUrl(profileRes.data.gcash_qr || '');
-      
+
       console.log('Profile image state updated. existingProfilePhotoUrl:', profilePhotoUrl);
     } catch (error) {
       console.error('Failed to fetch full tutor data:', error);
@@ -422,12 +422,12 @@ const ApplicationVerification: React.FC = () => {
   const handleCustomSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     setOtherSubject(inputValue);
-    
+
     // Check if the input matches any available subject
-    const matchingSubject = availableSubjects.find(subject => 
+    const matchingSubject = availableSubjects.find(subject =>
       subject.subject_name.toLowerCase() === inputValue.toLowerCase()
     );
-    
+
     if (matchingSubject) {
       // If match found, select it in dropdown and disable custom input
       setSubjectToAdd(matchingSubject.subject_name);
@@ -444,7 +444,7 @@ const ApplicationVerification: React.FC = () => {
   const handleSubjectDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
     setSubjectToAdd(selectedValue);
-    
+
     // If "Select a subject..." is chosen, enable custom input
     if (selectedValue === '') {
       setIsCustomInputDisabled(false);
@@ -485,7 +485,7 @@ const ApplicationVerification: React.FC = () => {
 
   // Reapplication form handlers
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  
+
   const addReapplicationSubject = (subjectName: string) => {
     if (!subjectName) return;
     setReapplicationSubjects(prev => new Set(prev).add(subjectName));
@@ -677,7 +677,7 @@ const ApplicationVerification: React.FC = () => {
   const submitNewSubjectApplication = async () => {
     // Determine which subject to use: dropdown selection or custom input
     const selectedSubject = subjectToAdd || otherSubject.trim();
-    
+
     if (!tutorId || !selectedSubject || newSubjectDocuments.length === 0) {
       alert('Please select a subject (or enter a custom subject) and upload supporting documents.');
       return;
@@ -687,7 +687,7 @@ const ApplicationVerification: React.FC = () => {
       const form = new FormData();
       form.append('subject_name', selectedSubject);
       newSubjectDocuments.forEach(f => form.append('files', f));
-      
+
       await apiClient.post(`/tutors/${tutorId}/subject-application`, form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -724,12 +724,12 @@ const ApplicationVerification: React.FC = () => {
   const getFileUrl = (url: string) => {
     if (!url) return '';
     console.log('Getting file URL for:', url);
-    
+
     if (url.startsWith('http://') || url.startsWith('https://')) {
       console.log('URL is already absolute:', url);
       return url;
     }
-    
+
     // Profile images are served directly at /user_profile_images/ without /api prefix
     if (url.startsWith('/user_profile_images/') || url.startsWith('user_profile_images/')) {
       const cleanUrl = url.startsWith('/') ? url : `/${url}`;
@@ -738,7 +738,7 @@ const ApplicationVerification: React.FC = () => {
       console.log('Constructed profile image URL:', fullUrl);
       return fullUrl;
     }
-    
+
     // Files are served directly at /tutor_documents/ without /api/files/ prefix
     if (url.startsWith('/tutor_documents/') || url.startsWith('tutor_documents/')) {
       const cleanUrl = url.startsWith('/') ? url : `/${url}`;
@@ -747,7 +747,7 @@ const ApplicationVerification: React.FC = () => {
       console.log('Constructed tutor document URL:', fullUrl);
       return fullUrl;
     }
-    
+
     // For other files, use the standard /files/ endpoint
     const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
     const fullUrl = `${apiClient.defaults.baseURL}/files/${cleanUrl}`;
@@ -757,7 +757,7 @@ const ApplicationVerification: React.FC = () => {
 
   const handleOpenDocument = (fileUrl: string, fileType?: string) => {
     console.log('Opening document:', { fileUrl, fileType });
-    
+
     const normalizedType = (fileType || '').toLowerCase();
     if (normalizedType.startsWith('image/') || normalizedType === 'application/pdf') {
       console.log('Opening in preview modal:', { fileUrl, fileType: normalizedType });
@@ -790,23 +790,24 @@ const ApplicationVerification: React.FC = () => {
 
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-2xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-2xl"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-2xl"></div>
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
         </div>
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 drop-shadow-lg flex items-center gap-2 sm:gap-3">
-              <FileText className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 flex-shrink-0" />
-              <span className="truncate">Application & Verification</span>
-            </h1>
-            <p className="text-xs sm:text-sm md:text-base text-white/90 leading-tight">Manage your tutor application and subject expertise</p>
+        <div className="relative flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 sm:gap-6">
+          <div className="min-w-0 flex-1 flex items-center gap-3 sm:gap-4 bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-2 sm:p-2.5 bg-white/20 rounded-lg shadow-sm shrink-0">
+              <Info className="h-5 w-5 sm:h-6 sm:w-6 text-white drop-shadow-md" />
+            </div>
+            <p className="text-sm sm:text-base md:text-lg text-white font-medium leading-snug tracking-wide text-shadow-sm">
+              Manage your tutor application and subject expertise
+            </p>
           </div>
-          <div className={`px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 rounded-full text-xs sm:text-sm md:text-base font-semibold bg-white/95 backdrop-blur-sm text-slate-800 shadow-xl flex-shrink-0 border-2 ${getStatusColor(applicationStatus).replace('bg-', 'border-').replace(' text-', ' ')}`}>
+          <div className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold border-2 flex items-center justify-center space-x-2 shadow-inner transition-colors duration-300 w-full lg:w-auto ${getStatusColor(applicationStatus)}`}>
             <div className="flex items-center space-x-2">
               {getStatusIcon(applicationStatus)}
-              <span className="whitespace-nowrap">{applicationStatus.charAt(0).toUpperCase() + applicationStatus.slice(1)}</span>
+              <span className="whitespace-nowrap tracking-wide">{applicationStatus.charAt(0).toUpperCase() + applicationStatus.slice(1)}</span>
             </div>
           </div>
         </div>
@@ -824,7 +825,7 @@ const ApplicationVerification: React.FC = () => {
                 If you believe this is an error, please contact support or try logging out and logging back in.
               </p>
               <div className="mt-2.5 sm:mt-3 md:mt-4">
-                <Button 
+                <Button
                   onClick={() => window.location.href = '/tutor-registration'}
                   className="w-full sm:w-auto bg-white text-primary-700 hover:bg-primary-50 border-2 border-primary-600 font-semibold text-xs sm:text-sm md:text-base py-1.5 sm:py-2"
                 >
@@ -844,7 +845,7 @@ const ApplicationVerification: React.FC = () => {
           </div>
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Main Application Status</h2>
         </div>
-        
+
         {applicationStatus?.toLowerCase() === 'approved' ? (
           <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border-2 border-green-200/50 rounded-xl p-4 sm:p-5 shadow-lg">
             <div className="flex items-start sm:items-center">
@@ -866,7 +867,7 @@ const ApplicationVerification: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm sm:text-base md:text-lg font-bold text-red-800">Your application has been rejected</p>
                 <p className="text-xs sm:text-sm text-red-700 mt-1.5">Your application did not meet the requirements. Please review the feedback below and resubmit if needed.</p>
-                
+
                 {/* Admin Rejection Reason - Always show this section when rejected */}
                 <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-gradient-to-br from-red-100 to-red-50 border-2 border-red-300/50 rounded-xl shadow-sm">
                   <p className="text-xs sm:text-sm font-semibold text-red-800 mb-2">Rejection Reason:</p>
@@ -876,9 +877,9 @@ const ApplicationVerification: React.FC = () => {
                     <p className="text-xs sm:text-sm text-red-600 italic">No specific rejection reason was provided. Please review your application and ensure all requirements are met before resubmitting.</p>
                   )}
                 </div>
-                
+
                 <div className="mt-3 sm:mt-4">
-                  <Button 
+                  <Button
                     onClick={async () => {
                       // Fetch fresh data before showing form
                       await fetchFullTutorDataForReapplication();
@@ -917,7 +918,7 @@ const ApplicationVerification: React.FC = () => {
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Approved Subjects of Expertise</h2>
           </div>
           {isVerified && (
-            <Button 
+            <Button
               onClick={() => setShowNewSubjectForm(true)}
               className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl text-xs sm:text-sm md:text-base py-2 sm:py-2.5 px-4 sm:px-5"
             >
@@ -926,7 +927,7 @@ const ApplicationVerification: React.FC = () => {
             </Button>
           )}
         </div>
-        
+
         <div className="flex flex-wrap gap-2 sm:gap-2.5">
           {subjectApplications
             .filter(app => app.status === 'approved')
@@ -971,7 +972,7 @@ const ApplicationVerification: React.FC = () => {
               <X className="h-5 w-5" />
             </button>
           </div>
-          
+
           <div className="space-y-3 sm:space-y-4">
             <div>
               <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
@@ -990,22 +991,22 @@ const ApplicationVerification: React.FC = () => {
                   .filter(s => {
                     const normalizedName = s.subject_name.toLowerCase();
                     // Check if there's an existing application for this subject
-                    const existingApp = subjectApplications.find(app => 
+                    const existingApp = subjectApplications.find(app =>
                       app.subject_name.toLowerCase() === normalizedName
                     );
-                    
+
                     // Allow selection if:
                     // 1. No existing application, OR
                     // 2. Existing application is rejected (can reapply)
                     if (!existingApp) {
                       return true; // No existing application, can apply
                     }
-                    
+
                     // Only allow if rejected - this allows reapplying for rejected subjects
                     return existingApp.status === 'rejected';
                   })
                   .map(s => {
-                    const isRejected = subjectApplications.find(app => 
+                    const isRejected = subjectApplications.find(app =>
                       app.subject_name.toLowerCase() === s.subject_name.toLowerCase() && app.status === 'rejected'
                     );
                     return (
@@ -1016,7 +1017,7 @@ const ApplicationVerification: React.FC = () => {
                   })}
               </select>
             </div>
-            
+
             <div>
               <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                 Custom Subject (Optional)
@@ -1031,14 +1032,13 @@ const ApplicationVerification: React.FC = () => {
               </p>
               <input
                 type="text"
-                className={`w-full border rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm ${
-                  isCustomInputDisabled 
-                    ? 'border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed' 
+                className={`w-full border rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm ${isCustomInputDisabled
+                    ? 'border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed'
                     : 'border-slate-300 bg-white'
-                }`}
+                  }`}
                 placeholder={
-                  isCustomInputDisabled 
-                    ? "Custom input disabled - subject found in dropdown" 
+                  isCustomInputDisabled
+                    ? "Custom input disabled - subject found in dropdown"
                     : "Type your custom subject name (e.g., Advanced Calculus, Organic Chemistry)"
                 }
                 value={otherSubject}
@@ -1046,7 +1046,7 @@ const ApplicationVerification: React.FC = () => {
                 disabled={isCustomInputDisabled}
               />
             </div>
-            
+
             <div>
               <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                 Supporting Documents
@@ -1066,7 +1066,7 @@ const ApplicationVerification: React.FC = () => {
                 </ul>
               )}
             </div>
-            
+
             {/* Subject Preview */}
             {(subjectToAdd || otherSubject.trim()) && (
               <div className="bg-primary-50 border border-primary-200 rounded-lg p-2.5 sm:p-3">
@@ -1086,9 +1086,9 @@ const ApplicationVerification: React.FC = () => {
                 </p>
               </div>
             )}
-            
+
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button 
+              <Button
                 onClick={submitNewSubjectApplication}
                 disabled={(!subjectToAdd && !otherSubject.trim()) || newSubjectDocuments.length === 0}
                 className="w-full sm:w-auto bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl text-xs sm:text-sm md:text-base py-2 sm:py-2.5 px-4 sm:px-5"
@@ -1111,7 +1111,7 @@ const ApplicationVerification: React.FC = () => {
           </div>
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Supporting Documents</h2>
         </div>
-        
+
         {existingProofDocuments.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
             {existingProofDocuments.map((doc) => (
@@ -1192,7 +1192,7 @@ const ApplicationVerification: React.FC = () => {
                     Applied: {new Date(app.created_at).toLocaleDateString()}
                   </span>
                 </div>
-                
+
                 {app.status === 'rejected' && (
                   <div className="mt-4 p-4 sm:p-5 bg-gradient-to-br from-red-50 via-rose-50 to-red-50 border-2 border-red-200/50 rounded-xl shadow-lg">
                     <div className="flex items-start space-x-3">
@@ -1217,7 +1217,7 @@ const ApplicationVerification: React.FC = () => {
                           <div>
                             <p className="text-xs sm:text-sm font-semibold text-red-700 mb-2">No specific feedback provided</p>
                             <p className="text-xs sm:text-sm text-red-600">
-                              The application was rejected based on current requirements and standards. 
+                              The application was rejected based on current requirements and standards.
                               You can reapply with additional documentation or qualifications.
                             </p>
                           </div>
@@ -1231,7 +1231,7 @@ const ApplicationVerification: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {app.status === 'approved' && (
                   <div className="mt-4 p-4 sm:p-5 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border-2 border-green-200/50 rounded-xl shadow-lg">
                     <div className="flex items-center space-x-3">
@@ -1244,7 +1244,7 @@ const ApplicationVerification: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {app.status === 'pending' && (
                   <div className="mt-4 p-4 sm:p-5 bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-50 border-2 border-yellow-200/50 rounded-xl shadow-lg">
                     <div className="flex items-center space-x-3">
@@ -1267,7 +1267,7 @@ const ApplicationVerification: React.FC = () => {
                         <li key={doc.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-gradient-to-r from-slate-50 via-primary-50/50 to-slate-50 rounded-xl p-3 border-2 border-slate-200/50 hover:border-primary-300 hover:shadow-md transition-all">
                           <div className="flex items-center min-w-0 flex-1">
                             <div className="p-1.5 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg mr-2.5 flex-shrink-0">
-                              <FileText className="h-4 w-4 text-primary-600"/>
+                              <FileText className="h-4 w-4 text-primary-600" />
                             </div>
                             <button
                               type="button"
@@ -1320,7 +1320,7 @@ const ApplicationVerification: React.FC = () => {
             </Button>
           </div>
 
-          
+
           <div className="space-y-3 sm:space-y-4 md:space-y-6">
             {/* Full Name */}
             <div>
@@ -1373,7 +1373,7 @@ const ApplicationVerification: React.FC = () => {
                 onChange={(e) => {
                   // Only allow numbers, must start with 09, max 11 characters
                   const value = e.target.value.replace(/[^0-9]/g, '');
-                  
+
                   // Empty input
                   if (value.length === 0) {
                     setGcashNumber('');
@@ -1451,13 +1451,13 @@ const ApplicationVerification: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3 md:gap-4">
                 <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-slate-200 flex items-center justify-center border-2 sm:border-4 border-white shadow-lg flex-shrink-0 mx-auto sm:mx-0">
                   {profilePhoto ? (
-                    <img src={URL.createObjectURL(profilePhoto)} alt="Profile Preview" className="w-full h-full object-cover" style={{aspectRatio: '1/1'}} />
+                    <img src={URL.createObjectURL(profilePhoto)} alt="Profile Preview" className="w-full h-full object-cover" style={{ aspectRatio: '1/1' }} />
                   ) : existingProfilePhotoUrl ? (
-                    <img 
-                      src={getFileUrl(existingProfilePhotoUrl)} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover" 
-                      style={{aspectRatio: '1/1'}}
+                    <img
+                      src={getFileUrl(existingProfilePhotoUrl)}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      style={{ aspectRatio: '1/1' }}
                       onError={(e) => {
                         console.error('Failed to load profile image. Original URL:', existingProfilePhotoUrl);
                         console.error('Constructed URL:', getFileUrl(existingProfilePhotoUrl));
@@ -1500,7 +1500,7 @@ const ApplicationVerification: React.FC = () => {
               <p className="text-[10px] sm:text-xs text-slate-500 mb-1.5 sm:mb-2">
                 You can add new subjects or reapply for previously rejected subjects. Each subject requires supporting documents.
               </p>
-              
+
               {/* Subject selector */}
               <div className="mb-3 sm:mb-4">
                 <select
@@ -1520,7 +1520,7 @@ const ApplicationVerification: React.FC = () => {
                       </option>
                     ))}
                 </select>
-                <Button 
+                <Button
                   onClick={() => {
                     if (subjectToAdd) {
                       addReapplicationSubject(subjectToAdd);
@@ -1532,7 +1532,7 @@ const ApplicationVerification: React.FC = () => {
                 >
                   Add Subject
                 </Button>
-                
+
                 <div className="mt-2">
                   <input
                     type="text"
@@ -1544,7 +1544,7 @@ const ApplicationVerification: React.FC = () => {
                       const filtered = e.target.value.replace(/[^A-Za-z\s\-()]/g, '');
                       setOtherSubject(filtered);
                       // Check if filtered value matches any available subject
-                      const matchingSubject = availableSubjects.find(subject => 
+                      const matchingSubject = availableSubjects.find(subject =>
                         subject.subject_name.toLowerCase() === filtered.toLowerCase()
                       );
                       if (matchingSubject) {
@@ -1598,7 +1598,7 @@ const ApplicationVerification: React.FC = () => {
                         <label className="block text-[10px] sm:text-xs font-medium text-slate-700 mb-1">
                           Supporting Documents for {subject}
                         </label>
-                        
+
                         {/* Display existing documents */}
                         {(existingSubjectDocumentsMap[subject] || []).length > 0 && (
                           <div className="mb-3">
@@ -1632,7 +1632,7 @@ const ApplicationVerification: React.FC = () => {
                             </ul>
                           </div>
                         )}
-                        
+
                         <input
                           type="file"
                           multiple
@@ -1673,7 +1673,7 @@ const ApplicationVerification: React.FC = () => {
               <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                 Proof Documents <span className="text-red-500">*</span>
               </label>
-              
+
               {/* Display existing proof documents */}
               {existingProofDocuments.length > 0 && (
                 <div className="mb-3">
@@ -1707,7 +1707,7 @@ const ApplicationVerification: React.FC = () => {
                   </ul>
                 </div>
               )}
-              
+
               <input
                 type="file"
                 multiple
@@ -1739,7 +1739,7 @@ const ApplicationVerification: React.FC = () => {
               <p className="text-[10px] sm:text-xs text-slate-500 mb-1.5 sm:mb-2">
                 Select the days and time slots when you're available for tutoring sessions.
               </p>
-              
+
               {/* Day selector */}
               <div className="mb-3 sm:mb-4">
                 <select
@@ -1828,14 +1828,14 @@ const ApplicationVerification: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 sm:pt-5 border-t-2 border-slate-200">
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 onClick={() => setShowReapplicationForm(false)}
                 className="w-full sm:w-auto text-xs sm:text-sm md:text-base py-2 sm:py-2.5 px-4 sm:px-5 order-2 sm:order-1"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={async () => {
                   if (!tutorId) {
                     alert('Tutor not found');
@@ -1873,7 +1873,7 @@ const ApplicationVerification: React.FC = () => {
                     alert('Please add at least one proof document');
                     return;
                   }
-                  
+
                   setIsSubmittingReapplication(true);
                   try {
                     // Update tutor basic info
@@ -1912,27 +1912,27 @@ const ApplicationVerification: React.FC = () => {
                     for (const subject of Array.from(reapplicationSubjects)) {
                       const files = subjectFilesMap[subject] || [];
                       const hasExistingDocs = existingSubjectDocumentsMap[subject] && existingSubjectDocumentsMap[subject].length > 0;
-                      
+
                       // Submit subject application
                       // If subject has new files, upload them
                       // If subject only has existing documents, still reapply (backend will handle it)
                       const form = new FormData();
                       form.append('subject_name', subject);
                       form.append('is_reapplication', 'true'); // Mark as reapplication
-                      
+
                       if (files.length > 0) {
                         // Has new files - upload them
                         files.forEach(f => form.append('files', f));
                       }
                       // If only has existing documents, form will have no files but is_reapplication flag
                       // Backend will check for existing documents and allow the reapplication
-                      
+
                       // Skip if no files and no existing documents (shouldn't happen due to validation)
                       if (files.length === 0 && !hasExistingDocs) {
                         console.warn(`Skipping subject "${subject}" - no files or existing documents`);
                         continue;
                       }
-                      
+
                       await apiClient.post(`/tutors/${tutorId}/subject-application`, form, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                       });
