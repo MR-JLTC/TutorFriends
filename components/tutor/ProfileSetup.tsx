@@ -146,7 +146,7 @@ const ProfileSetup: React.FC = () => {
     // Basic client-side validation
     const bioToSave = (profile.bio || '').trim();
     const gcashToSave = (profile.gcash_number || '').trim();
-    const bioValid = !bioToSave || /^[A-Za-z\s]+$/.test(bioToSave);
+    const bioValid = !bioToSave || /^[A-Za-z\s\.,]+$/.test(bioToSave);
     const gcashValid = !gcashToSave || /^09\d{9}$/.test(gcashToSave);
     if (!bioValid) {
       alert('Bio can contain letters and spaces only.');
@@ -598,7 +598,7 @@ const ProfileSetup: React.FC = () => {
                 handleInputChange('bio', filtered);
               }}
             />
-            {profile.bio && /[^A-Za-z\s,\.]/g.test(profile.bio) && (
+            {profile.bio && /[^A-Za-z\s,\.]/.test(profile.bio) && (
               <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
                 <X className="h-3 w-3" />
                 Bio can contain letters and spaces only.
