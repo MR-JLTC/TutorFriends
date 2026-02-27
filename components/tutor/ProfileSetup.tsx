@@ -594,7 +594,7 @@ const ProfileSetup: React.FC = () => {
               placeholder="Tell students about your teaching experience, specialties, and approach..."
               value={profile.bio}
               onChange={(e) => {
-                const filtered = e.target.value.replace(/[^A-Za-z\s]/g, '');
+                const filtered = e.target.value.replace(/[^A-Za-z\s,\.]/g, '');
                 handleInputChange('bio', filtered);
               }}
             />
