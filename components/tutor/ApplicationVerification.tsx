@@ -790,22 +790,22 @@ const ApplicationVerification: React.FC = () => {
 
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
         </div>
-        <div className="relative flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 sm:gap-6">
-          <div className="min-w-0 flex-1 flex items-center gap-3 sm:gap-4 bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
-            <div className="p-2 sm:p-2.5 bg-white/20 rounded-lg shadow-sm shrink-0">
-              <Info className="h-5 w-5 sm:h-6 sm:w-6 text-white drop-shadow-md" />
+        <div className="relative flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 lg:gap-6">
+          <div className="min-w-0 flex-1 flex items-center gap-2.5 sm:gap-3 bg-white/10 p-2 sm:p-3 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg shadow-sm shrink-0">
+              <Info className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-md" />
             </div>
-            <p className="text-sm sm:text-base md:text-lg text-white font-medium leading-snug tracking-wide text-shadow-sm">
+            <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
               Manage your tutor application and subject expertise
             </p>
           </div>
-          <div className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold border-2 flex items-center justify-center space-x-2 shadow-inner transition-colors duration-300 w-full lg:w-auto ${getStatusColor(applicationStatus)}`}>
-            <div className="flex items-center space-x-2">
+          <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold border-2 flex items-center justify-center space-x-1.5 shadow-inner transition-colors duration-300 w-full lg:w-auto ${getStatusColor(applicationStatus)}`}>
+            <div className="flex items-center space-x-1.5">
               {getStatusIcon(applicationStatus)}
               <span className="whitespace-nowrap tracking-wide">{applicationStatus.charAt(0).toUpperCase() + applicationStatus.slice(1)}</span>
             </div>
@@ -1033,8 +1033,8 @@ const ApplicationVerification: React.FC = () => {
               <input
                 type="text"
                 className={`w-full border rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm ${isCustomInputDisabled
-                    ? 'border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed'
-                    : 'border-slate-300 bg-white'
+                  ? 'border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed'
+                  : 'border-slate-300 bg-white'
                   }`}
                 placeholder={
                   isCustomInputDisabled

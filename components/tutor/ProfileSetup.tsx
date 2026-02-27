@@ -381,30 +381,30 @@ const ProfileSetup: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-5 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
       {/* Enhanced Header */}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
         </div>
-        <div className="relative flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 sm:gap-6">
-          <div className="min-w-0 flex-1 flex items-center gap-3 sm:gap-4 bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
-            <div className="p-2 sm:p-2.5 bg-white/20 rounded-lg shadow-sm shrink-0">
-              <Info className="h-5 w-5 sm:h-6 sm:w-6 text-white drop-shadow-md" />
+        <div className="relative flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 lg:gap-6">
+          <div className="min-w-0 flex-1 flex items-center gap-2.5 sm:gap-3 bg-white/10 p-2 sm:p-3 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg shadow-sm shrink-0">
+              <Info className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-md" />
             </div>
-            <p className="text-sm sm:text-base md:text-lg text-white font-medium leading-snug tracking-wide text-shadow-sm">
+            <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
               Manage your public profile and payment information
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg w-full lg:w-auto border border-white/40">
-            <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold border-2 flex items-center justify-center space-x-2 shadow-inner transition-colors duration-300 ${applicationStatus === 'approved' ? 'border-green-400 bg-green-50 text-green-800' : 'border-red-400 bg-red-50 text-red-800'}`}>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 bg-white/95 backdrop-blur-sm rounded-xl p-2 sm:p-2.5 shadow-lg w-full lg:w-auto border border-white/40">
+            <div className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold border-2 flex items-center justify-center space-x-1.5 shadow-inner transition-colors duration-300 ${applicationStatus === 'approved' ? 'border-green-400 bg-green-50 text-green-800' : 'border-red-400 bg-red-50 text-red-800'}`}>
               {applicationStatus === 'approved' ? (
                 <>
-                  <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
                   <span className="whitespace-nowrap tracking-wide">Approved</span>
                 </>
               ) : (
                 <>
-                  <X className="h-4 w-4 text-red-600 flex-shrink-0" />
+                  <X className="h-3.5 w-3.5 text-red-600 flex-shrink-0" />
                   <span className="whitespace-nowrap tracking-wide">Not Approved</span>
                 </>
               )}
@@ -412,16 +412,16 @@ const ProfileSetup: React.FC = () => {
             <div className="flex space-x-2">
               {isEditing ? (
                 <>
-                  <Button variant="secondary" onClick={() => setIsEditing(false)} className="!px-3 sm:!px-4 !py-2 text-xs sm:text-sm flex-1 sm:flex-none font-medium border-slate-200 hover:bg-slate-100 transition-colors">
+                  <Button variant="secondary" onClick={() => setIsEditing(false)} className="!px-3 sm:!px-4 !py-1 sm:!py-1.5 text-xs sm:text-sm flex-1 sm:flex-none font-medium border-slate-200 hover:bg-slate-100 transition-colors">
                     Cancel
                   </Button>
-                  <Button onClick={saveProfile} disabled={loading} className="!px-3 sm:!px-4 !py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg text-xs sm:text-sm flex-1 sm:flex-none font-medium border border-primary-500/50 transition-all active:scale-95">
+                  <Button onClick={saveProfile} disabled={loading} className="!px-3 sm:!px-4 !py-1 sm:!py-1.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg text-xs sm:text-sm flex-1 sm:flex-none font-medium border border-primary-500/50 transition-all active:scale-95">
                     {loading ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </>
               ) : (
-                <Button onClick={() => setIsEditing(true)} className="!px-3 sm:!px-4 !py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 text-xs sm:text-sm w-full sm:w-auto font-medium border border-primary-500/50 transition-all active:scale-95">
-                  <Edit className="h-4 w-4 flex-shrink-0" />
+                <Button onClick={() => setIsEditing(true)} className="!px-3 sm:!px-4 !py-1 sm:!py-1.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg flex items-center justify-center space-x-1.5 text-xs sm:text-sm w-full sm:w-auto font-medium border border-primary-500/50 transition-all active:scale-95">
+                  <Edit className="h-3.5 w-3.5 flex-shrink-0" />
                   <span>Edit Profile</span>
                 </Button>
               )}
