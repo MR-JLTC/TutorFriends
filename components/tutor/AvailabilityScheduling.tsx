@@ -664,36 +664,36 @@ const AvailabilityScheduling: React.FC = () => {
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-4 sm:pb-6 md:pb-8">
       {/* Enhanced Header */}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8 text-white shadow-2xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 text-white shadow-lg relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-2xl"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-2xl"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -mr-16 -mt-16 blur-xl"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full -ml-12 -mb-12 blur-xl"></div>
         </div>
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="min-w-0 flex-1 flex items-center gap-2.5 sm:gap-3 bg-white/10 p-2 sm:p-3 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
-            <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg shadow-sm shrink-0">
-              <Info className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-md" />
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3">
+          <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5 bg-white/10 p-2 sm:p-2.5 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-1 sm:p-1.5 bg-white/20 rounded-md shadow-sm shrink-0">
+              <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white drop-shadow-md" />
             </div>
-            <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+            <p className="text-[11px] sm:text-xs md:text-sm text-white font-medium leading-snug tracking-wide text-shadow-sm">
               Manage your weekly availability and update your schedule anytime</p>
           </div>
           <div className="flex w-full sm:w-auto mt-2 sm:mt-0">
             {isEditing ? (
               <button
                 onClick={saveAvailability}
-                className="flex items-center justify-center space-x-2 bg-white/95 backdrop-blur-sm text-primary-600 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-xl font-semibold hover:bg-white transition-all shadow-xl hover:shadow-2xl text-xs sm:text-sm md:text-base w-full sm:w-auto touch-manipulation"
+                className="flex items-center justify-center space-x-1.5 bg-white/95 backdrop-blur-sm text-primary-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold hover:bg-white transition-all shadow-md hover:shadow-lg text-[11px] sm:text-xs md:text-sm w-full sm:w-auto touch-manipulation"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <Save className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 <span>Save Changes</span>
               </button>
             ) : (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center justify-center space-x-2 bg-white/95 backdrop-blur-sm text-primary-600 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-xl font-semibold hover:bg-white transition-all shadow-xl hover:shadow-2xl text-xs sm:text-sm md:text-base w-full sm:w-auto touch-manipulation"
+                className="flex items-center justify-center space-x-1.5 bg-white/95 backdrop-blur-sm text-primary-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold hover:bg-white transition-all shadow-md hover:shadow-lg text-[11px] sm:text-xs md:text-sm w-full sm:w-auto touch-manipulation"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <Edit className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 <span>Edit Schedule</span>
               </button>
             )}
