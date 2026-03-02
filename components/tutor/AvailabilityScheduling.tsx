@@ -670,7 +670,7 @@ const AvailabilityScheduling: React.FC = () => {
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-2xl"></div>
         </div>
         <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="min-w-0 flex-1 flex items-center gap-2.5 sm:gap-3 bg-white/10 p-2 sm:p-3 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">>
+          <div className="min-w-0 flex-1 flex items-center gap-2.5 sm:gap-3 bg-white/10 p-2 sm:p-3 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
             <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg shadow-sm shrink-0">
               <Info className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-md" />
             </div>
