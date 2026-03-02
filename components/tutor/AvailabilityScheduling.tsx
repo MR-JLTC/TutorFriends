@@ -674,7 +674,7 @@ const AvailabilityScheduling: React.FC = () => {
             <div className="p-1 sm:p-1.5 bg-white/20 rounded-md shadow-sm shrink-0">
               <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white drop-shadow-md" />
             </div>
-            <p className="text-[11px] sm:text-xs md:text-sm text-white font-medium leading-snug tracking-wide text-shadow-sm">
+            <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
               Manage your weekly availability and update your schedule anytime</p>
           </div>
           <div className="flex w-full sm:w-auto mt-2 sm:mt-0">
@@ -1450,7 +1450,7 @@ const AvailabilityScheduling: React.FC = () => {
           </div>
         </div>
       </Card>
-    </div>
+    </div >
   );
 };
 
