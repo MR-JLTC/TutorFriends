@@ -426,7 +426,7 @@ const ChatPage: React.FC = () => {
             't@long', 'iyot@n', 'iyot@', 'hil@s', 'h@mbog', 'w@y @yo', 'w@y ayo', 'way @yo', 'w@l@y @yo', 'w@lay ayo', 'wal@y @yo', 'w@l@y ayo',
             'w@y b@t@s@n', 'w@y batasan', 'way b@t@s@n', 'w@y b@tasan', 'w@y bat@s@n', 'way b@tasan', 'way bat@s@n', 'w@y bat@s@n',
             'b@stos', '@m@w k@', '@maw k@', 'am@w k@', 'bu@ng k@', '@nim@l k@', '@nimal k@', 'anim@l k@',
-            'bil@t k@', 'bur@t k@', 'y@w@ k@', 'y@wa k@', 'yaw@ k@',
+            'bil@t k@', 'bur@t k@', 'y@w@ k@', 'y@wa k@', 'yaw@ k@', 'pakyou', 'paku', 'pak u', 'pak you',
             'gi@t@y k@', 'gi@tay k@', 'giat@y k@', 'piste k@', 'putangina mo', 'fuckyou', 'pakyou', 'pakyo', 'paku'
         ];
         // Create regex that matches any of the words (case insensitive, word boundaries)
