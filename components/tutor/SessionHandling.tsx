@@ -573,645 +573,645 @@ const SessionHandlingContent: React.FC = () => {
               </p>
             </div>
 
-            {/* Optional: Add a subtle action button or indicator here if needed in future */}
             {/* <div className="hidden md:block p-3 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
              <span className="text-xs font-bold text-white/80 uppercase tracking-widest">Active System</span>
           </div> */}
           </div>
         </div>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-          <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50 hover:shadow-2xl transition-all duration-300">
-            <div className="flex items-center">
-              <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl mr-3 flex-shrink-0 shadow-lg">
-                <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Total Requests</p>
-                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-700">{stats.total}</p>
-              </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+        <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50 hover:shadow-2xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl mr-3 flex-shrink-0 shadow-lg">
+              <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
-          </Card>
-
-          <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50 hover:shadow-2xl transition-all duration-300">
-            <div className="flex items-center">
-              <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl mr-3 flex-shrink-0 shadow-lg">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Pending</p>
-                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-700">{stats.pending}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50 hover:shadow-2xl transition-all duration-300">
-            <div className="flex items-center">
-              <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl mr-3 flex-shrink-0 shadow-lg">
-                <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Awaiting Payment</p>
-                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-700">{stats.awaiting_payment}</p>
-              </div>
-            </div>
-          </Card>
-
-          {/* Upcoming widget removed from Session Handling — upcoming sessions live in the dedicated Upcoming Sessions sidebar page. */}
-        </div>
-
-        {/* Unified Filter & Calendar Section */}
-        <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50">
-          <div className="space-y-6">
-            {/* Status Filter Tabs */}
-            <div>
-              <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <span className="w-1 h-4 bg-primary-500 rounded-full"></span>
-                Filter by Status
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: 'all', label: 'All Requests' },
-                  { key: 'pending', label: 'Pending' },
-                  { key: 'awaiting_payment', label: 'Awaiting Payment' },
-                  { key: 'confirmed', label: 'Confirmed' },
-                  { key: 'upcoming', label: 'Upcoming' },
-                  { key: 'declined', label: 'Declined' }
-                ].map(tab => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setFilter(tab.key as any)}
-                    className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm hover:shadow-md touch-manipulation ${filter === tab.key
-                      ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-primary-500/30'
-                      : 'text-slate-600 hover:text-slate-800 bg-white border border-slate-200 hover:border-primary-300'
-                      }`}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                  >
-                    <span className="inline-flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span>{tab.label}</span>
-                      {tab.key === 'pending' && hasUnreviewedBookings && (
-                        <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
-                          {stats.pending}
-                        </span>
-                      )}
-                      {tab.key === 'awaiting_payment' && hasUnreviewedPaymentProof && (
-                        <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
-                          !
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="h-px bg-slate-200/60 w-full" />
-
-            {/* Calendar Filter */}
-            <div>
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2 mr-2">
-                    <span className="w-1 h-4 bg-primary-500 rounded-full"></span>
-                    Filter by Date
-                  </h3>
-                  <div className="flex gap-2 items-center bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
-                    <Calendar className="h-4 w-4 text-primary-500" />
-                    <select
-                      value={currentDate.getMonth()}
-                      onChange={(e) => setCurrentDate(new Date(currentDate.getFullYear(), parseInt(e.target.value), 1))}
-                      className="bg-transparent font-semibold text-slate-700 text-sm border-none focus:ring-0 cursor-pointer py-1 pr-6 pl-0"
-                    >
-                      {Array.from({ length: 12 }).map((_, i) => (
-                        <option key={i} value={i}>
-                          {new Date(2000, i, 1).toLocaleString('default', { month: 'short' })}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={currentDate.getFullYear()}
-                      onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), currentDate.getMonth(), 1))}
-                      className="bg-transparent font-semibold text-slate-700 text-sm border-none focus:ring-0 cursor-pointer py-1 pr-6 pl-0"
-                    >
-                      {Array.from({ length: 10 }).map((_, i) => {
-                        const year = new Date().getFullYear() - 2 + i;
-                        return <option key={year} value={year}>{year}</option>;
-                      })}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                  <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setCurrentDate(new Date())}
-                    className="px-3 py-1.5 text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-all border border-primary-200"
-                  >
-                    Today
-                  </button>
-                  <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-slate-50/50 rounded-xl p-3 border border-slate-100">
-                <div className="grid grid-cols-7 gap-1 text-center mb-1">
-                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(day => (
-                    <div key={day} className="text-[10px] font-bold text-slate-400 uppercase">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-7 gap-1">
-                  {Array.from({ length: getFirstDayOfMonth(currentDate) }).map((_, i) => (
-                    <div key={`empty-${i}`} className="h-8 sm:h-9" />
-                  ))}
-
-                  {Array.from({ length: getDaysInMonth(currentDate) }).map((_, i) => {
-                    const day = i + 1;
-                    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                    const isSelected = selectedDate && isSameDay(date, selectedDate);
-                    const isToday = isSameDay(date, new Date());
-
-                    // Get all sessions for this date
-                    const sessionsOnDate = getSessionsOnDate(date);
-                    const hasSession = sessionsOnDate.length > 0;
-
-                    return (
-                      <div key={day} className="relative group">
-                        <button
-                          onClick={() => setSelectedDate(isSelected ? null : date)}
-                          className={`
-                                    relative h-9 sm:h-11 w-full rounded-xl flex flex-col items-center justify-center transition-all text-sm
-                                    ${isSelected
-                              ? 'bg-primary-600 text-white shadow-md transform scale-105 z-10 font-bold'
-                              : 'hover:bg-white text-slate-600 hover:text-slate-900 border border-transparent hover:border-slate-200 hover:shadow-sm'}
-                                    ${isToday && !isSelected ? 'bg-primary-50 text-primary-700 font-bold border-primary-100' : ''}
-                                `}
-                        >
-                          <span className="z-10 relative">{day}</span>
-                          {hasSession && (
-                            <span className={`absolute bottom-1.5 w-5 h-1.5 rounded-full shadow-sm transition-all duration-300 ${isSelected ? 'bg-white/90' : 'bg-primary-500'}`} />
-                          )}
-                        </button>
-
-                        {/* Tooltip for sessions - Restored & Improved */}
-                        {hasSession && (
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-48 bg-white text-slate-700 text-xs rounded-lg shadow-xl border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 overflow-hidden mb-1">
-                            <div className="bg-slate-50 px-3 py-1.5 border-b border-slate-100">
-                              <p className="font-bold text-slate-800">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
-                            </div>
-                            <div className="p-1 space-y-0.5">
-                              {sessionsOnDate.map((session) => (
-                                <div key={session.id} className="px-2 py-1.5 hover:bg-slate-50 rounded flex flex-col gap-0.5 text-left">
-                                  <span className="font-semibold text-primary-700 truncate block">{session.subject}</span>
-                                  <div className="flex items-center justify-between text-[10px] text-slate-500 w-full">
-                                    <span>{session.time}</span>
-                                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium whitespace-nowrap ${session.status === 'confirmed' || session.status === 'upcoming' ? 'bg-green-100 text-green-700' :
-                                      session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-slate-100 text-slate-600'
-                                      }`}>
-                                      {session.status === 'awaiting_payment' ? 'payment' : session.status}
-                                    </span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {selectedDate && (
-                <div className="mt-3 flex justify-between items-center bg-primary-50 px-3 py-2 rounded-lg border border-primary-100 animate-in fade-in slide-in-from-top-1">
-                  <p className="text-xs text-primary-800 font-medium">
-                    Viewing: <span className="font-bold">{selectedDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                  </p>
-                  <button
-                    onClick={() => setSelectedDate(null)}
-                    className="text-xs font-bold text-primary-600 hover:text-primary-800 hover:underline"
-                  >
-                    Clear Date
-                  </button>
-                </div>
-              )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Total Requests</p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-700">{stats.total}</p>
             </div>
           </div>
         </Card>
 
-        {/* Booking Requests */}
-        <div className="space-y-3 sm:space-y-4 pb-4">
-          {filteredRequests.length === 0 ? (
-            <Card className="p-6 sm:p-8 text-center">
-              <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-slate-400 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-base sm:text-lg font-medium text-slate-900 mb-1">No booking requests</h3>
-              <p className="text-xs sm:text-sm md:text-base text-slate-600">
-                {filter === 'all'
-                  ? "You haven't received any booking requests yet."
-                  : `No ${filter.replace('_', ' ')} requests found.`
-                }
-              </p>
-            </Card>
-          ) : (
-            filteredRequests.map(request => {
-              const statusColors: Record<string, string> = {
-                'pending': 'bg-gradient-to-r from-yellow-500 to-amber-500',
-                'accepted': 'bg-gradient-to-r from-primary-500 to-primary-700',
-                'confirmed': 'bg-gradient-to-r from-green-500 to-emerald-500',
-                'awaiting_payment': 'bg-gradient-to-r from-orange-500 to-amber-500',
-                'upcoming': 'bg-gradient-to-r from-primary-500 to-primary-700',
-                'completed': 'bg-gradient-to-r from-purple-500 to-primary-700',
-                'declined': 'bg-gradient-to-r from-red-500 to-rose-500',
-                'cancelled': 'bg-gradient-to-r from-slate-500 to-slate-600',
-              };
+        <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50 hover:shadow-2xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl mr-3 flex-shrink-0 shadow-lg">
+              <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Pending</p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-700">{stats.pending}</p>
+            </div>
+          </div>
+        </Card>
 
-              return (
-                <Card
-                  key={request.id}
-                  className={`group relative bg-white rounded-2xl shadow-sm hover:shadow-md border-2 ${isOverdue(request)
-                    ? 'border-red-200 hover:border-red-300'
-                    : 'border-slate-100 hover:border-primary-200'
-                    } transition-all duration-300 overflow-hidden`}
+        <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50 hover:shadow-2xl transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl mr-3 flex-shrink-0 shadow-lg">
+              <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Awaiting Payment</p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-700">{stats.awaiting_payment}</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Upcoming widget removed from Session Handling — upcoming sessions live in the dedicated Upcoming Sessions sidebar page. */}
+      </div>
+
+      {/* Unified Filter & Calendar Section */}
+      <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50">
+        <div className="space-y-6">
+          {/* Status Filter Tabs */}
+          <div>
+            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-primary-500 rounded-full"></span>
+              Filter by Status
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'all', label: 'All Requests' },
+                { key: 'pending', label: 'Pending' },
+                { key: 'awaiting_payment', label: 'Awaiting Payment' },
+                { key: 'confirmed', label: 'Confirmed' },
+                { key: 'upcoming', label: 'Upcoming' },
+                { key: 'declined', label: 'Declined' }
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setFilter(tab.key as any)}
+                  className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm hover:shadow-md touch-manipulation ${filter === tab.key
+                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-primary-500/30'
+                    : 'text-slate-600 hover:text-slate-800 bg-white border border-slate-200 hover:border-primary-300'
+                    }`}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  {/* Status Bar Indicator */}
-                  <div className={`absolute top-0 bottom-0 left-0 w-1.5 ${statusColors[request.status] || 'bg-slate-300'}`} />
-
-                  <div className="p-4 sm:p-5 md:p-6 pl-5 sm:pl-7 md:pl-8">
-                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                      {/* Left Column: Avatar */}
-                      <div className="flex-shrink-0">
-                        <button
-                          onClick={async () => {
-                            const sid = request.student.user_id;
-                            if (!sid) {
-                              toast.error('Student ID not available');
-                              return;
-                            }
-                            setTuteeProfileLoading(true);
-                            setTuteeProfile({ user_id: sid, name: request.student.name, email: request.student.email, profile_image_url: (request.student as any)?.profile_image_url || (request.student as any)?.profile_image || '' });
-                            setIsTuteeModalOpen(true);
-                            try {
-                              let profileData: any = null;
-                              try {
-                                const pRes = await apiClient.get(`/users/${sid}/profile`);
-                                profileData = pRes.data;
-                              } catch (e) {
-                                try {
-                                  const r = await apiClient.get(`/users/${sid}`);
-                                  profileData = r.data;
-                                } catch (e2) {
-                                  profileData = { user_id: sid, ...request.student };
-                                }
-                              }
-                              try {
-                                const bRes = await apiClient.get(`/users/${sid}/bookings`);
-                                const bookingsArr = Array.isArray(bRes.data) ? bRes.data : (Array.isArray(bRes.data?.data) ? bRes.data.data : []);
-                                profileData._bookingsCount = bookingsArr.length;
-                              } catch (e) { }
-
-                              setTuteeProfile(profileData || { user_id: sid, ...request.student });
-                            } catch (err) {
-                              setTuteeProfile({ user_id: sid, ...request.student });
-                            } finally {
-                              setTuteeProfileLoading(false);
-                            }
-                          }}
-                          className="group/avatar relative h-16 w-16 sm:h-20 sm:w-20 rounded-full ring-4 ring-white shadow-lg transition-transform transform group-hover/avatar:scale-105 focus:outline-none focus:ring-primary-500 overflow-hidden"
-                          title="View tutee profile"
-                        >
-                          <img
-                            src={getFileUrl(request.student.profile_image_url || '')}
-                            alt={request.student.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(request.student.name)}&background=f1f5f9&color=475569&size=128`;
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black/0 group-hover/avatar:bg-black/10 transition-colors flex items-center justify-center">
-                            {/* Hint overlay on hover could go here, keeping it clean for now */}
-                          </div>
-                        </button>
-                      </div>
-
-                      {/* Right Column: Content */}
-                      <div className="flex-1 min-w-0">
-                        {/* Header: Subject & Status */}
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
-                          <div>
-                            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight mb-1">
-                              {request.subject}
-                            </h3>
-                            <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
-                              <span className="text-slate-900 font-semibold">{request.student.name}</span>
-                              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                              <span>Requested on {new Date(request.created_at).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-
-                          {/* Status Badge */}
-                          <div className={`self-start inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border shadow-sm ${request.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                            request.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
-                              request.status === 'completed' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                request.status === 'awaiting_payment' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                                  request.status === 'upcoming' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                    request.status === 'declined' ? 'bg-red-50 text-red-700 border-red-200' :
-                                      'bg-slate-50 text-slate-700 border-slate-200'
-                            }`}>
-                            <span className={`w-2 h-2 rounded-full mr-2 ${request.status === 'pending' ? 'bg-yellow-500' :
-                              request.status === 'confirmed' ? 'bg-green-500' :
-                                request.status === 'completed' ? 'bg-purple-500' :
-                                  request.status === 'awaiting_payment' ? 'bg-orange-500' :
-                                    request.status === 'upcoming' ? 'bg-blue-500' :
-                                      request.status === 'declined' ? 'bg-red-500' :
-                                        'bg-slate-500'
-                              }`}></span>
-                            {hasSessionStarted(request) && request.status === 'upcoming' ? 'Session Started' : request.status.replace('_', ' ')}
-                          </div>
-                        </div>
-
-                        {/* Details Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-6 mb-4">
-                          <div className="flex items-center gap-2 text-slate-600">
-                            <Calendar className="h-4 w-4 text-primary-500" />
-                            <span className="text-sm font-medium">{new Date(request.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-slate-600">
-                            <Clock className="h-4 w-4 text-primary-500" />
-                            <span className="text-sm font-medium">{request.time}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-slate-600">
-                            <Clock className="h-4 w-4 text-primary-500" />
-                            <span className="text-sm font-medium">{request.duration} hr{request.duration !== 1 ? 's' : ''}</span>
-                          </div>
-                        </div>
-
-                        {/* Notes Section */}
-                        {request.student_notes && (
-                          <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100 text-sm text-slate-600">
-                            <span className="font-semibold text-slate-700 mr-2">Note:</span>
-                            {request.student_notes}
-                          </div>
-                        )}
-
-                        {/* Action Buttons Row */}
-                        <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-3">
-                          {request.status === 'pending' && (
-                            <>
-                              <Button
-                                onClick={() => { setAcceptTarget(request); setAcceptConfirmOpen(true); }}
-                                disabled={loading}
-                                className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm flex items-center gap-2 transition-colors"
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                                Accept
-                              </Button>
-                              <Button
-                                variant="secondary"
-                                onClick={() => handleBookingAction(request.id, 'decline')}
-                                disabled={loading}
-                                className="text-slate-700 hover:text-red-700 hover:bg-red-50 border-slate-200 hover:border-red-200 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors"
-                              >
-                                <X className="h-4 w-4" />
-                                Decline
-                              </Button>
-                            </>
-                          )}
-
-                          {(request.status === 'upcoming' || request.status === 'confirmed') && (
-                            <Button
-                              variant="secondary"
-                              onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
-                              disabled={loading}
-                              className="text-primary-700 bg-primary-50 hover:bg-primary-100 border-primary-200 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors"
-                            >
-                              <Clock className="h-4 w-4" />
-                              Reschedule
-                            </Button>
-                          )}
-
-                          {isSessionEligibleForMarkAsDone(request) && (
-                            <Button
-                              onClick={() => handleMarkDone(request.id)}
-                              disabled={loading}
-                              className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm flex items-center gap-2 transition-colors"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                              Mark as done
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })
-          )}
-        </div>
-
-        {/* Tutee Profile Modal */}
-        {isTuteeModalOpen && (
-          <Modal
-            isOpen={true}
-            onClose={() => { setIsTuteeModalOpen(false); setTuteeProfile(null); }}
-            title="Tutee Profile"
-            footer={<Button onClick={() => { setIsTuteeModalOpen(false); setTuteeProfile(null); }}>Close</Button>}
-          >
-            {tuteeProfileLoading ? (
-              <div className="text-slate-600">Loading profile...</div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-20 w-20 rounded-full overflow-hidden border">
-                    <img src={getFileUrl(tuteeProfile?.profile_image_url || tuteeProfile?.profile_image || '')} alt={tuteeProfile?.name || 'Tutee'} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tuteeProfile?.name || 'Tutee')}`; }} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xl font-semibold">{tuteeProfile?.name || tuteeProfile?.email}</div>
-                    <div className="text-sm text-slate-600">{tuteeProfile?.email}</div>
-                    {tuteeProfile?.university_name || tuteeProfile?.university_id ? (
-                      <div className="text-sm text-slate-500 mt-1">{tuteeProfile?.university_name || ''}</div>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="text-sm text-slate-500">Joined: {tuteeProfile?.created_at ? new Date(tuteeProfile.created_at).toLocaleDateString() : '—'}</div>
-                    <div className="text-sm text-slate-500">Bookings: {tuteeProfile?._bookingsCount ?? '—'}</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    {tuteeProfile?.course_name || tuteeProfile?.course_id ? (
-                      <div><strong>Course:</strong> {tuteeProfile?.course_name || ''}</div>
-                    ) : null}
-                    {tuteeProfile?.year_level ? (
-                      <div><strong>Year level:</strong> {tuteeProfile.year_level}</div>
-                    ) : null}
-                    {tuteeProfile?.phone || tuteeProfile?.contact_number ? (
-                      <div><strong>Phone:</strong> {tuteeProfile.phone || tuteeProfile.contact_number} <button onClick={async () => { try { await navigator.clipboard.writeText(tuteeProfile.phone || tuteeProfile.contact_number); toast.success('Phone copied'); } catch { toast.error('Unable to copy'); } }} className="ml-2 text-xs text-primary-600">Copy</button></div>
-                    ) : null}
-                    {tuteeProfile?.city || tuteeProfile?.country ? (
-                      <div><strong>Location:</strong> {[tuteeProfile.city, tuteeProfile.country].filter(Boolean).join(', ')}</div>
-                    ) : null}
-                  </div>
-
-                  <div className="space-y-2">
-                    {tuteeProfile?.bio && (
-                      <div>
-                        <strong>Bio</strong>
-                        <p className="text-sm text-slate-700 mt-1">{tuteeProfile.bio}</p>
-                      </div>
+                  <span className="inline-flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
+                    <span>{tab.label}</span>
+                    {tab.key === 'pending' && hasUnreviewedBookings && (
+                      <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
+                        {stats.pending}
+                      </span>
                     )}
-                    <div className="flex items-center gap-2 mt-2">
-                      {tuteeProfile?.email && (
-                        <a href={`mailto:${tuteeProfile.email}`} className="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">Send email</a>
-                      )}
-                      {tuteeProfile?.phone && (
-                        <button onClick={async () => { try { await navigator.clipboard.writeText(tuteeProfile.phone); toast.success('Phone copied'); } catch { toast.error('Unable to copy'); } }} className="px-3 py-1 border rounded-md text-sm">Copy phone</button>
-                      )}
-                    </div>
-                  </div>
+                    {tab.key === 'awaiting_payment' && hasUnreviewedPaymentProof && (
+                      <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
+                        !
+                      </span>
+                    )}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-slate-200/60 w-full" />
+
+          {/* Calendar Filter */}
+          <div>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2 mr-2">
+                  <span className="w-1 h-4 bg-primary-500 rounded-full"></span>
+                  Filter by Date
+                </h3>
+                <div className="flex gap-2 items-center bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                  <Calendar className="h-4 w-4 text-primary-500" />
+                  <select
+                    value={currentDate.getMonth()}
+                    onChange={(e) => setCurrentDate(new Date(currentDate.getFullYear(), parseInt(e.target.value), 1))}
+                    className="bg-transparent font-semibold text-slate-700 text-sm border-none focus:ring-0 cursor-pointer py-1 pr-6 pl-0"
+                  >
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <option key={i} value={i}>
+                        {new Date(2000, i, 1).toLocaleString('default', { month: 'short' })}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={currentDate.getFullYear()}
+                    onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), currentDate.getMonth(), 1))}
+                    className="bg-transparent font-semibold text-slate-700 text-sm border-none focus:ring-0 cursor-pointer py-1 pr-6 pl-0"
+                  >
+                    {Array.from({ length: 10 }).map((_, i) => {
+                      const year = new Date().getFullYear() - 2 + i;
+                      return <option key={year} value={year}>{year}</option>;
+                    })}
+                  </select>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentDate(new Date())}
+                  className="px-3 py-1.5 text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-all border border-primary-200"
+                >
+                  Today
+                </button>
+                <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all border border-slate-200">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+              <div className="grid grid-cols-7 gap-1 text-center mb-1">
+                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(day => (
+                  <div key={day} className="text-[10px] font-bold text-slate-400 uppercase">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
+                {Array.from({ length: getFirstDayOfMonth(currentDate) }).map((_, i) => (
+                  <div key={`empty-${i}`} className="h-8 sm:h-9" />
+                ))}
+
+                {Array.from({ length: getDaysInMonth(currentDate) }).map((_, i) => {
+                  const day = i + 1;
+                  const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                  const isSelected = selectedDate && isSameDay(date, selectedDate);
+                  const isToday = isSameDay(date, new Date());
+
+                  // Get all sessions for this date
+                  const sessionsOnDate = getSessionsOnDate(date);
+                  const hasSession = sessionsOnDate.length > 0;
+
+                  return (
+                    <div key={day} className="relative group">
+                      <button
+                        onClick={() => setSelectedDate(isSelected ? null : date)}
+                        className={`
+                                    relative h-9 sm:h-11 w-full rounded-xl flex flex-col items-center justify-center transition-all text-sm
+                                    ${isSelected
+                            ? 'bg-primary-600 text-white shadow-md transform scale-105 z-10 font-bold'
+                            : 'hover:bg-white text-slate-600 hover:text-slate-900 border border-transparent hover:border-slate-200 hover:shadow-sm'}
+                                    ${isToday && !isSelected ? 'bg-primary-50 text-primary-700 font-bold border-primary-100' : ''}
+                                `}
+                      >
+                        <span className="z-10 relative">{day}</span>
+                        {hasSession && (
+                          <span className={`absolute bottom-1.5 w-5 h-1.5 rounded-full shadow-sm transition-all duration-300 ${isSelected ? 'bg-white/90' : 'bg-primary-500'}`} />
+                        )}
+                      </button>
+
+                      {/* Tooltip for sessions - Restored & Improved */}
+                      {hasSession && (
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-48 bg-white text-slate-700 text-xs rounded-lg shadow-xl border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 overflow-hidden mb-1">
+                          <div className="bg-slate-50 px-3 py-1.5 border-b border-slate-100">
+                            <p className="font-bold text-slate-800">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                          </div>
+                          <div className="p-1 space-y-0.5">
+                            {sessionsOnDate.map((session) => (
+                              <div key={session.id} className="px-2 py-1.5 hover:bg-slate-50 rounded flex flex-col gap-0.5 text-left">
+                                <span className="font-semibold text-primary-700 truncate block">{session.subject}</span>
+                                <div className="flex items-center justify-between text-[10px] text-slate-500 w-full">
+                                  <span>{session.time}</span>
+                                  <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium whitespace-nowrap ${session.status === 'confirmed' || session.status === 'upcoming' ? 'bg-green-100 text-green-700' :
+                                    session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-slate-100 text-slate-600'
+                                    }`}>
+                                    {session.status === 'awaiting_payment' ? 'payment' : session.status}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {selectedDate && (
+              <div className="mt-3 flex justify-between items-center bg-primary-50 px-3 py-2 rounded-lg border border-primary-100 animate-in fade-in slide-in-from-top-1">
+                <p className="text-xs text-primary-800 font-medium">
+                  Viewing: <span className="font-bold">{selectedDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                </p>
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="text-xs font-bold text-primary-600 hover:text-primary-800 hover:underline"
+                >
+                  Clear Date
+                </button>
               </div>
             )}
-          </Modal>
-        )}
-        {/* Accept Confirmation Modal for tutors */}
-        {acceptConfirmOpen && acceptTarget && (
-          <Modal
-            isOpen={true}
-            onClose={() => { setAcceptConfirmOpen(false); setAcceptTarget(null); }}
-            title="Confirm Accept Booking"
-            footer={
-              <>
-                <button
-                  onClick={async () => {
-                    // call the existing handler which updates server and refreshes list
-                    await handleBookingAction(acceptTarget.id, 'accept');
-                    setAcceptConfirmOpen(false);
-                    setAcceptTarget(null);
-                  }}
-                  disabled={loading}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 shadow-md"
-                >
-                  {loading ? 'Accepting...' : 'Confirm Accept'}
-                </button>
-                <button
-                  onClick={() => { setAcceptConfirmOpen(false); setAcceptTarget(null); }}
-                  className="px-4 py-2 border rounded-md hover:bg-slate-100 ml-2"
-                >
-                  Cancel
-                </button>
-              </>
-            }
-          >
-            <div className="space-y-4">
-              <div className="rounded-lg overflow-hidden shadow-sm">
-                <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-4 text-white flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-lg">
-                    <img
-                      src={
-                        acceptTarget.student.profile_image_url
-                          ? getFileUrl(acceptTarget.student.profile_image_url)
-                          : `https://ui-avatars.com/api/?name=${encodeURIComponent(acceptTarget.student.name)}&background=10b981&color=fff&size=128`
-                      }
-                      alt={acceptTarget.student.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(acceptTarget.student.name)}&background=10b981&color=fff&size=128`;
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-lg truncate">Accept booking from {acceptTarget.student.name}</div>
-                    <div className="text-sm opacity-90 truncate">{acceptTarget.student.email}</div>
-                  </div>
-                  <div className="ml-auto text-sm inline-flex items-center bg-white/20 px-2 py-1 rounded text-white flex-shrink-0">
-                    {acceptTarget.duration} hr{acceptTarget.duration !== 1 ? 's' : ''}
+          </div>
+        </div>
+      </Card>
+
+      {/* Booking Requests */}
+      <div className="space-y-3 sm:space-y-4 pb-4">
+        {filteredRequests.length === 0 ? (
+          <Card className="p-6 sm:p-8 text-center">
+            <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-slate-400 mx-auto mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-medium text-slate-900 mb-1">No booking requests</h3>
+            <p className="text-xs sm:text-sm md:text-base text-slate-600">
+              {filter === 'all'
+                ? "You haven't received any booking requests yet."
+                : `No ${filter.replace('_', ' ')} requests found.`
+              }
+            </p>
+          </Card>
+        ) : (
+          filteredRequests.map(request => {
+            const statusColors: Record<string, string> = {
+              'pending': 'bg-gradient-to-r from-yellow-500 to-amber-500',
+              'accepted': 'bg-gradient-to-r from-primary-500 to-primary-700',
+              'confirmed': 'bg-gradient-to-r from-green-500 to-emerald-500',
+              'awaiting_payment': 'bg-gradient-to-r from-orange-500 to-amber-500',
+              'upcoming': 'bg-gradient-to-r from-primary-500 to-primary-700',
+              'completed': 'bg-gradient-to-r from-purple-500 to-primary-700',
+              'declined': 'bg-gradient-to-r from-red-500 to-rose-500',
+              'cancelled': 'bg-gradient-to-r from-slate-500 to-slate-600',
+            };
+
+            return (
+              <Card
+                key={request.id}
+                className={`group relative bg-white rounded-2xl shadow-sm hover:shadow-md border-2 ${isOverdue(request)
+                  ? 'border-red-200 hover:border-red-300'
+                  : 'border-slate-100 hover:border-primary-200'
+                  } transition-all duration-300 overflow-hidden`}
+              >
+                {/* Status Bar Indicator */}
+                <div className={`absolute top-0 bottom-0 left-0 w-1.5 ${statusColors[request.status] || 'bg-slate-300'}`} />
+
+                <div className="p-4 sm:p-5 md:p-6 pl-5 sm:pl-7 md:pl-8">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                    {/* Left Column: Avatar */}
+                    <div className="flex-shrink-0">
+                      <button
+                        onClick={async () => {
+                          const sid = request.student.user_id;
+                          if (!sid) {
+                            toast.error('Student ID not available');
+                            return;
+                          }
+                          setTuteeProfileLoading(true);
+                          setTuteeProfile({ user_id: sid, name: request.student.name, email: request.student.email, profile_image_url: (request.student as any)?.profile_image_url || (request.student as any)?.profile_image || '' });
+                          setIsTuteeModalOpen(true);
+                          try {
+                            let profileData: any = null;
+                            try {
+                              const pRes = await apiClient.get(`/users/${sid}/profile`);
+                              profileData = pRes.data;
+                            } catch (e) {
+                              try {
+                                const r = await apiClient.get(`/users/${sid}`);
+                                profileData = r.data;
+                              } catch (e2) {
+                                profileData = { user_id: sid, ...request.student };
+                              }
+                            }
+                            try {
+                              const bRes = await apiClient.get(`/users/${sid}/bookings`);
+                              const bookingsArr = Array.isArray(bRes.data) ? bRes.data : (Array.isArray(bRes.data?.data) ? bRes.data.data : []);
+                              profileData._bookingsCount = bookingsArr.length;
+                            } catch (e) { }
+
+                            setTuteeProfile(profileData || { user_id: sid, ...request.student });
+                          } catch (err) {
+                            setTuteeProfile({ user_id: sid, ...request.student });
+                          } finally {
+                            setTuteeProfileLoading(false);
+                          }
+                        }}
+                        className="group/avatar relative h-16 w-16 sm:h-20 sm:w-20 rounded-full ring-4 ring-white shadow-lg transition-transform transform group-hover/avatar:scale-105 focus:outline-none focus:ring-primary-500 overflow-hidden"
+                        title="View tutee profile"
+                      >
+                        <img
+                          src={getFileUrl(request.student.profile_image_url || '')}
+                          alt={request.student.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(request.student.name)}&background=f1f5f9&color=475569&size=128`;
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover/avatar:bg-black/10 transition-colors flex items-center justify-center">
+                          {/* Hint overlay on hover could go here, keeping it clean for now */}
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Right Column: Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Header: Subject & Status */}
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                        <div>
+                          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight mb-1">
+                            {request.subject}
+                          </h3>
+                          <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
+                            <span className="text-slate-900 font-semibold">{request.student.name}</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                            <span>Requested on {new Date(request.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className={`self-start inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border shadow-sm ${request.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                          request.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
+                            request.status === 'completed' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                              request.status === 'awaiting_payment' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                request.status === 'upcoming' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                  request.status === 'declined' ? 'bg-red-50 text-red-700 border-red-200' :
+                                    'bg-slate-50 text-slate-700 border-slate-200'
+                          }`}>
+                          <span className={`w-2 h-2 rounded-full mr-2 ${request.status === 'pending' ? 'bg-yellow-500' :
+                            request.status === 'confirmed' ? 'bg-green-500' :
+                              request.status === 'completed' ? 'bg-purple-500' :
+                                request.status === 'awaiting_payment' ? 'bg-orange-500' :
+                                  request.status === 'upcoming' ? 'bg-blue-500' :
+                                    request.status === 'declined' ? 'bg-red-500' :
+                                      'bg-slate-500'
+                            }`}></span>
+                          {hasSessionStarted(request) && request.status === 'upcoming' ? 'Session Started' : request.status.replace('_', ' ')}
+                        </div>
+                      </div>
+
+                      {/* Details Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-6 mb-4">
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Calendar className="h-4 w-4 text-primary-500" />
+                          <span className="text-sm font-medium">{new Date(request.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Clock className="h-4 w-4 text-primary-500" />
+                          <span className="text-sm font-medium">{request.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Clock className="h-4 w-4 text-primary-500" />
+                          <span className="text-sm font-medium">{request.duration} hr{request.duration !== 1 ? 's' : ''}</span>
+                        </div>
+                      </div>
+
+                      {/* Notes Section */}
+                      {request.student_notes && (
+                        <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100 text-sm text-slate-600">
+                          <span className="font-semibold text-slate-700 mr-2">Note:</span>
+                          {request.student_notes}
+                        </div>
+                      )}
+
+                      {/* Action Buttons Row */}
+                      <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-3">
+                        {request.status === 'pending' && (
+                          <>
+                            <Button
+                              onClick={() => { setAcceptTarget(request); setAcceptConfirmOpen(true); }}
+                              disabled={loading}
+                              className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm flex items-center gap-2 transition-colors"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              Accept
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() => handleBookingAction(request.id, 'decline')}
+                              disabled={loading}
+                              className="text-slate-700 hover:text-red-700 hover:bg-red-50 border-slate-200 hover:border-red-200 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors"
+                            >
+                              <X className="h-4 w-4" />
+                              Decline
+                            </Button>
+                          </>
+                        )}
+
+                        {(request.status === 'upcoming' || request.status === 'confirmed') && (
+                          <Button
+                            variant="secondary"
+                            onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
+                            disabled={loading}
+                            className="text-primary-700 bg-primary-50 hover:bg-primary-100 border-primary-200 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors"
+                          >
+                            <Clock className="h-4 w-4" />
+                            Reschedule
+                          </Button>
+                        )}
+
+                        {isSessionEligibleForMarkAsDone(request) && (
+                          <Button
+                            onClick={() => handleMarkDone(request.id)}
+                            disabled={loading}
+                            className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm flex items-center gap-2 transition-colors"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            Mark as done
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="p-4 bg-white">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="text-sm">
-                      <div className="font-medium">Subject</div>
-                      <div className="text-slate-700">{acceptTarget.subject}</div>
-                    </div>
-                    <div className="text-sm">
-                      <div className="font-medium">When</div>
-                      <div className="text-slate-700">{new Date(acceptTarget.date).toLocaleDateString()} · {acceptTarget.time}</div>
-                    </div>
-                    <div className="text-sm sm:col-span-2">
-                      <div className="font-medium">Notes</div>
-                      <div className="text-slate-700">{acceptTarget.student_notes || 'No notes'}</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 text-xs text-slate-500">Accepting will notify the student that their booking is approved. You can still cancel later if needed.</div>
-                </div>
-              </div>
-            </div>
-          </Modal>
-        )}
-        {/* Tutor resolution status */}
-        {resolvingTutor && (
-          <Card className="p-4 sm:p-5 mb-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-medium text-slate-800">Loading tutor information…</h3>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1">Resolving your tutor profile. This may take a moment.</p>
-              </div>
-              <div className="text-xs sm:text-sm text-slate-500">Please wait…</div>
-            </div>
-          </Card>
-        )}
-
-        {resolveError && (
-          <Card className="p-4 sm:p-5 border-2 border-red-200 bg-red-50 mb-4">
-            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-medium text-red-800">Failed to load tutor information</h3>
-                <p className="text-xs sm:text-sm text-red-700 mt-2 break-words">{resolveError}</p>
-                <p className="text-xs sm:text-sm text-slate-500 mt-2">Possible causes: backend not running, expired session, or missing tutor profile.</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <Button onClick={() => resolveTutorIdAndFetch()} className="px-4 py-2.5 text-sm min-h-[44px] w-full sm:w-auto">Retry</Button>
-                <Button variant="secondary" onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/login'); }} className="px-4 py-2.5 text-sm min-h-[44px] w-full sm:w-auto">Sign in again</Button>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Reschedule Modal */}
-        {isRescheduleModalOpen && rescheduleTarget && (
-          <RescheduleModal
-            open={isRescheduleModalOpen}
-            bookingId={rescheduleTarget.id}
-            onClose={() => { setIsRescheduleModalOpen(false); setRescheduleTarget(null); }}
-            onSuccess={() => {
-              setIsRescheduleModalOpen(false);
-              setRescheduleTarget(null);
-              fetchBookingRequests(); // Refresh the list after successful reschedule
-            }}
-          />
+              </Card>
+            );
+          })
         )}
       </div>
-      );
+
+      {/* Tutee Profile Modal */}
+      {isTuteeModalOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => { setIsTuteeModalOpen(false); setTuteeProfile(null); }}
+          title="Tutee Profile"
+          footer={<Button onClick={() => { setIsTuteeModalOpen(false); setTuteeProfile(null); }}>Close</Button>}
+        >
+          {tuteeProfileLoading ? (
+            <div className="text-slate-600">Loading profile...</div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="h-20 w-20 rounded-full overflow-hidden border">
+                  <img src={getFileUrl(tuteeProfile?.profile_image_url || tuteeProfile?.profile_image || '')} alt={tuteeProfile?.name || 'Tutee'} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tuteeProfile?.name || 'Tutee')}`; }} />
+                </div>
+                <div className="flex-1">
+                  <div className="text-xl font-semibold">{tuteeProfile?.name || tuteeProfile?.email}</div>
+                  <div className="text-sm text-slate-600">{tuteeProfile?.email}</div>
+                  {tuteeProfile?.university_name || tuteeProfile?.university_id ? (
+                    <div className="text-sm text-slate-500 mt-1">{tuteeProfile?.university_name || ''}</div>
+                  ) : null}
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="text-sm text-slate-500">Joined: {tuteeProfile?.created_at ? new Date(tuteeProfile.created_at).toLocaleDateString() : '—'}</div>
+                  <div className="text-sm text-slate-500">Bookings: {tuteeProfile?._bookingsCount ?? '—'}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  {tuteeProfile?.course_name || tuteeProfile?.course_id ? (
+                    <div><strong>Course:</strong> {tuteeProfile?.course_name || ''}</div>
+                  ) : null}
+                  {tuteeProfile?.year_level ? (
+                    <div><strong>Year level:</strong> {tuteeProfile.year_level}</div>
+                  ) : null}
+                  {tuteeProfile?.phone || tuteeProfile?.contact_number ? (
+                    <div><strong>Phone:</strong> {tuteeProfile.phone || tuteeProfile.contact_number} <button onClick={async () => { try { await navigator.clipboard.writeText(tuteeProfile.phone || tuteeProfile.contact_number); toast.success('Phone copied'); } catch { toast.error('Unable to copy'); } }} className="ml-2 text-xs text-primary-600">Copy</button></div>
+                  ) : null}
+                  {tuteeProfile?.city || tuteeProfile?.country ? (
+                    <div><strong>Location:</strong> {[tuteeProfile.city, tuteeProfile.country].filter(Boolean).join(', ')}</div>
+                  ) : null}
+                </div>
+
+                <div className="space-y-2">
+                  {tuteeProfile?.bio && (
+                    <div>
+                      <strong>Bio</strong>
+                      <p className="text-sm text-slate-700 mt-1">{tuteeProfile.bio}</p>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 mt-2">
+                    {tuteeProfile?.email && (
+                      <a href={`mailto:${tuteeProfile.email}`} className="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">Send email</a>
+                    )}
+                    {tuteeProfile?.phone && (
+                      <button onClick={async () => { try { await navigator.clipboard.writeText(tuteeProfile.phone); toast.success('Phone copied'); } catch { toast.error('Unable to copy'); } }} className="px-3 py-1 border rounded-md text-sm">Copy phone</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
+      {/* Accept Confirmation Modal for tutors */}
+      {acceptConfirmOpen && acceptTarget && (
+        <Modal
+          isOpen={true}
+          onClose={() => { setAcceptConfirmOpen(false); setAcceptTarget(null); }}
+          title="Confirm Accept Booking"
+          footer={
+            <>
+              <button
+                onClick={async () => {
+                  // call the existing handler which updates server and refreshes list
+                  await handleBookingAction(acceptTarget.id, 'accept');
+                  setAcceptConfirmOpen(false);
+                  setAcceptTarget(null);
+                }}
+                disabled={loading}
+                className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 shadow-md"
+              >
+                {loading ? 'Accepting...' : 'Confirm Accept'}
+              </button>
+              <button
+                onClick={() => { setAcceptConfirmOpen(false); setAcceptTarget(null); }}
+                className="px-4 py-2 border rounded-md hover:bg-slate-100 ml-2"
+              >
+                Cancel
+              </button>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <div className="rounded-lg overflow-hidden shadow-sm">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-4 text-white flex items-center gap-4">
+                <div className="h-16 w-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-lg">
+                  <img
+                    src={
+                      acceptTarget.student.profile_image_url
+                        ? getFileUrl(acceptTarget.student.profile_image_url)
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(acceptTarget.student.name)}&background=10b981&color=fff&size=128`
+                    }
+                    alt={acceptTarget.student.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(acceptTarget.student.name)}&background=10b981&color=fff&size=128`;
+                    }}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-lg truncate">Accept booking from {acceptTarget.student.name}</div>
+                  <div className="text-sm opacity-90 truncate">{acceptTarget.student.email}</div>
+                </div>
+                <div className="ml-auto text-sm inline-flex items-center bg-white/20 px-2 py-1 rounded text-white flex-shrink-0">
+                  {acceptTarget.duration} hr{acceptTarget.duration !== 1 ? 's' : ''}
+                </div>
+              </div>
+              <div className="p-4 bg-white">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="text-sm">
+                    <div className="font-medium">Subject</div>
+                    <div className="text-slate-700">{acceptTarget.subject}</div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-medium">When</div>
+                    <div className="text-slate-700">{new Date(acceptTarget.date).toLocaleDateString()} · {acceptTarget.time}</div>
+                  </div>
+                  <div className="text-sm sm:col-span-2">
+                    <div className="font-medium">Notes</div>
+                    <div className="text-slate-700">{acceptTarget.student_notes || 'No notes'}</div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs text-slate-500">Accepting will notify the student that their booking is approved. You can still cancel later if needed.</div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {/* Tutor resolution status */}
+      {resolvingTutor && (
+        <Card className="p-4 sm:p-5 mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-medium text-slate-800">Loading tutor information…</h3>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">Resolving your tutor profile. This may take a moment.</p>
+            </div>
+            <div className="text-xs sm:text-sm text-slate-500">Please wait…</div>
+          </div>
+        </Card>
+      )}
+
+      {resolveError && (
+        <Card className="p-4 sm:p-5 border-2 border-red-200 bg-red-50 mb-4">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-medium text-red-800">Failed to load tutor information</h3>
+              <p className="text-xs sm:text-sm text-red-700 mt-2 break-words">{resolveError}</p>
+              <p className="text-xs sm:text-sm text-slate-500 mt-2">Possible causes: backend not running, expired session, or missing tutor profile.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button onClick={() => resolveTutorIdAndFetch()} className="px-4 py-2.5 text-sm min-h-[44px] w-full sm:w-auto">Retry</Button>
+              <Button variant="secondary" onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/login'); }} className="px-4 py-2.5 text-sm min-h-[44px] w-full sm:w-auto">Sign in again</Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Reschedule Modal */}
+      {isRescheduleModalOpen && rescheduleTarget && (
+        <RescheduleModal
+          open={isRescheduleModalOpen}
+          bookingId={rescheduleTarget.id}
+          onClose={() => { setIsRescheduleModalOpen(false); setRescheduleTarget(null); }}
+          onSuccess={() => {
+            setIsRescheduleModalOpen(false);
+            setRescheduleTarget(null);
+            fetchBookingRequests(); // Refresh the list after successful reschedule
+          }}
+        />
+      )}
+    </div>
+  );
 };
 
 const SessionHandling: React.FC = () => {
   return (
-      <ErrorBoundary>
-        <SessionHandlingContent />
-      </ErrorBoundary>
-      );
+    <ErrorBoundary>
+      <SessionHandlingContent />
+    </ErrorBoundary>
+  );
 };
 
-      export default SessionHandling;
+export default SessionHandling;
