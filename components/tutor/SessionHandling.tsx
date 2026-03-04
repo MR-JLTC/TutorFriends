@@ -551,7 +551,7 @@ const SessionHandlingContent: React.FC = () => {
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex-1 space-y-2">
+          {/* <div className="flex-1 space-y-2">
             <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5 bg-white/10 p-2 sm:p-2.5 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
               <div className="p-1 sm:p-1.5 bg-white/20 rounded-md shadow-sm shrink-0">
                 <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
@@ -560,6 +560,14 @@ const SessionHandlingContent: React.FC = () => {
                 Seamlessly manage your tutoring requests, track sessions, and monitor payments.
               </p>
             </div>
+          </div> */}
+          <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5 bg-white/10 p-2 sm:p-2.5 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-1 sm:p-1.5 bg-white/20 rounded-md shadow-sm shrink-0">
+              <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+            </div>
+            <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+              Seamlessly manage your tutoring requests, track sessions, and monitor payments.
+            </p>
           </div>
         </div>
       </div>
