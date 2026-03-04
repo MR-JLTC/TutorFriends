@@ -427,7 +427,7 @@ const ChatPage: React.FC = () => {
             'w@y b@t@s@n', 'w@y batasan', 'way b@t@s@n', 'w@y b@tasan', 'w@y bat@s@n', 'way b@tasan', 'way bat@s@n', 'w@y bat@s@n',
             'b@stos', '@m@w k@', '@maw k@', 'am@w k@', 'bu@ng k@', '@nim@l k@', '@nimal k@', 'anim@l k@',
             'bil@t k@', 'bur@t k@', 'y@w@ k@', 'y@wa k@', 'yaw@ k@',
-            'gi@t@y k@', 'gi@tay k@', 'giat@y k@', 'piste k@'
+            'gi@t@y k@', 'gi@tay k@', 'giat@y k@', 'piste k@', 'putangina mo', 'fuckyou', 'pakyou', 'pakyo', 'paku'
         ];
         // Create regex that matches any of the words (case insensitive, word boundaries)
         const profanityRegex = new RegExp(`\\b(${inappropriateWords.join('|')})\\b`, 'i');

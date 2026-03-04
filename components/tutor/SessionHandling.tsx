@@ -542,7 +542,7 @@ const SessionHandlingContent: React.FC = () => {
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
       <ToastContainer aria-label="Notification messages" />
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary-600 via-primary-700 to-primary-900 shadow-2xl p-4 sm:p-6 md:p-8 -mx-2 sm:-mx-3 md:mx-0 transition-all duration-300">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary-600 via-primary-700 to-primary-900 shadow-xl p-3 sm:p-4 md:p-5 -mx-2 sm:-mx-3 md:mx-0 transition-all duration-300">
         {/* Modern Abstract Shapes Background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-white rounded-full blur-3xl opacity-60 animate-pulse"></div>
@@ -550,32 +550,16 @@ const SessionHandlingContent: React.FC = () => {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
         </div>
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex-1 space-y-2">
-            {/* <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight flex items-center gap-3 drop-shadow-md">
-              <div className="p-2 sm:p-2.5 bg-white/10 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner">
-                <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
-              </div>
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-primary-100">
-                Session Handling
-              </span>
-            </h1>
-            <p className="text-sm sm:text-base md:text-lg text-blue-50/90 font-medium max-w-2xl leading-relaxed pl-1">
-              Seamlessly manage your tutoring requests, track sessions, and monitor payments.
-            </p>
-          </div> */}
             <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5 bg-white/10 p-2 sm:p-2.5 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
               <div className="p-1 sm:p-1.5 bg-white/20 rounded-md shadow-sm shrink-0">
-                <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white drop-shadow-md" />
+                <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
               </div>
-              <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+              <p className="text-xs sm:text-sm text-white font-medium leading-snug tracking-wide text-shadow-sm">
                 Seamlessly manage your tutoring requests, track sessions, and monitor payments.
               </p>
             </div>
-
-            {/* <div className="hidden md:block p-3 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
-             <span className="text-xs font-bold text-white/80 uppercase tracking-widest">Active System</span>
-          </div> */}
           </div>
         </div>
       </div>
