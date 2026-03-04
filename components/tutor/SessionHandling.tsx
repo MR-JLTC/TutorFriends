@@ -556,7 +556,7 @@ const SessionHandlingContent: React.FC = () => {
               <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
                 <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
               </div>
-              <p className="text-xs sm:text-sm text-white font-medium leading-snug tracking-wide text-shadow-sm">
+              <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
                 Seamlessly manage your tutoring requests, track sessions, and monitor payments.
               </p>
             </div>
