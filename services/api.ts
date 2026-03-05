@@ -68,37 +68,37 @@ apiClient.interceptors.request.use(
 // Add logging for the request payload and response
 apiClient.interceptors.request.use(
   (config) => {
-    console.log('API Request:', {
-      method: config.method,
-      url: config.url,
-      data: config.data,
-      headers: config.headers
-    });
+    // console.log('API Request:', {
+    //   method: config.method,
+    //   url: config.url,
+    //   data: config.data,
+    //   headers: config.headers
+    // });
     return config;
   },
   (error) => {
-    console.error('API Request Error:', error);
+    // console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
 
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('API Response:', {
-      method: response.config.method,
-      url: response.config.url,
-      status: response.status,
-      data: response.data
-    });
+    // console.log('API Response:', {
+    //   method: response.config.method,
+    //   url: response.config.url,
+    //   status: response.status,
+    //   data: response.data
+    // });
     return response;
   },
   (error) => {
-    console.error('API Response Error:', {
-      method: error.config?.method,
-      url: error.config?.url,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    // console.error('API Response Error:', {
+    //   method: error.config?.method,
+    //   url: error.config?.url,
+    //   status: error.response?.status,
+    //   data: error.response?.data
+    // });
     return Promise.reject(error);
   }
 );
@@ -106,17 +106,19 @@ apiClient.interceptors.response.use(
 // Response interceptor to handle errors and network issues
 apiClient.interceptors.response.use(
   (response) => {
-    // Log successful responses for debugging
-    console.log(`API Response [${response.config.method?.toUpperCase()}] ${response.config.url}:`, {
-      status: response.status,
-      data: response.data
-    });
+    // Log successful responses for debugging (Optional: can comment out to reduce noise)
+    // console.log(`API Response [${response.config.method?.toUpperCase()}] ${response.config.url}:`, {
+    //   status: response.status,
+    //   data: response.data
+    // });
     return response;
   },
   (error) => {
     // Network error (no response from server)
     if (!error.response) {
-      console.error('Network Error:', error.message, 'Code:', error.code);
+      // Temporarily silenced to prevent console spam when viewing frontend locally without a backend
+      // console.error('Network Error:', error.message, 'Code:', error.code);
+
       // Preserve the original error code (like ERR_CONNECTION_TIMED_OUT)
       const errorCode = error.code || error.message?.match(/ERR_\w+/)?.[0];
       return Promise.reject({
@@ -132,12 +134,12 @@ apiClient.interceptors.response.use(
       });
     }
 
-    // Log error responses for debugging
-    console.error(`API Error [${error.config?.method?.toUpperCase()}] ${error.config?.url}:`, {
-      status: error.response?.status,
-      data: error.response?.data,
-      error: error.message
-    });
+    // Temporarily silenced API Error logs to prevent console spam
+    // console.error(`API Error [${error.config?.method?.toUpperCase()}] ${error.config?.url}:`, {
+    //   status: error.response?.status,
+    //   data: error.response?.data,
+    //   error: error.message
+    // });
 
     const status = error?.response?.status;
     const rawMessage: any = error?.response?.data?.message;

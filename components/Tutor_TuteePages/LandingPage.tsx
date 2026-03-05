@@ -34,39 +34,37 @@ const LiveStats: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
+    let intervalId: NodeJS.Timeout | null = null;
+    let hasFailed = false;
 
-    // Function to fetch stats
-    // Function to fetch stats
     const fetchStats = async () => {
+      if (hasFailed) return;
       try {
-        // Use apiClient which correctly handles the base URL from environment variables
-        // whether it's a full URL (https://...) or just an IP
         const res = await apiClient.get(`/landing/stats?_t=${Date.now()}`);
 
         if (mounted) {
           setStats(res.data);
-          setError(null); // Clear any previous errors
+          setError(null);
         }
       } catch (e: any) {
         if (mounted) {
-          // On initial load, show error. on subsequent polls, maybe stay silent or log
-          // But here we rely on state. If we already have stats, maybe just keep them.
-          if (!stats) setError(e.message || 'Failed to load stats');
+          if (!stats) setError('Failed to load stats (backend offline)');
+        }
+        if (e.isNetworkError || e.message === 'Network Error') {
+          hasFailed = true;
+          if (intervalId) clearInterval(intervalId);
         }
       }
     };
 
-    // Initial fetch
     fetchStats();
-
-    // Poll every 1 second for "lively" updates
-    const intervalId = setInterval(fetchStats, 1000);
+    intervalId = setInterval(fetchStats, 5000); // Polling reduced
 
     return () => {
       mounted = false;
-      clearInterval(intervalId);
+      if (intervalId) clearInterval(intervalId);
     };
-  }, []); // Remove dependency on 'stats' to avoid resetting interval constantly, or just leave empty deps
+  }, []);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-24">
@@ -468,25 +466,23 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
+    let intervalId: NodeJS.Timeout | null = null;
+    let hasFailed = false;
 
     const fetchUniversities = async () => {
+      if (hasFailed) return;
       try {
-        // We use apiClient here since it might handle some base URL stuff, 
-        // though typically for polling we might want to avoid interceptor overhead if it fails often.
-        // But for consistency:
-        // Add timestamp to query to prevent caching
         const res = await apiClient.get(`/universities?_t=${Date.now()}`);
 
         if (mounted) {
           const rows = Array.isArray(res.data) ? res.data : [];
           const active = rows.filter((u: any) => (u.status || 'active') === 'active');
-          // Only update if data changed (optional optimization, but React handles diffing well enough for small lists)
           setPartnerUniversities(active);
         }
-      } catch (err) {
-        // Silent failure on polling
-        if (mounted) {
-          // console.error('Failed to fetch universities:', err);
+      } catch (err: any) {
+        if (err.isNetworkError || err.message === 'Network Error') {
+          hasFailed = true;
+          if (intervalId) clearInterval(intervalId);
         }
       } finally {
         if (mounted) {
@@ -496,11 +492,11 @@ const LandingPage: React.FC = () => {
     };
 
     fetchUniversities();
-    const intervalId = setInterval(fetchUniversities, 1000); // Poll every 1 second
+    intervalId = setInterval(fetchUniversities, 5000); // Polling reduced for local view
 
     return () => {
       mounted = false;
-      clearInterval(intervalId);
+      if (intervalId) clearInterval(intervalId);
     };
   }, []);
 

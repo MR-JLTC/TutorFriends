@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../context/AuthContext';
-import { MessageSquare, Clock, CheckCircle, X, Eye, AlertCircle, Calendar, User, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, X, Info, AlertCircle, Calendar, User, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -554,7 +554,7 @@ const SessionHandlingContent: React.FC = () => {
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
               <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
-                <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+                <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
               </div>
               <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
                 Seamlessly manage your tutoring requests, track sessions, and monitor payments.
