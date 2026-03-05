@@ -215,25 +215,25 @@ const TuteeMyBookings: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-3 sm:space-y-4 md:space-y-6">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Bell className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">My Bookings</h1>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 -mx-2 sm:-mx-3 md:mx-0">
-          <div className="animate-pulse space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="space-y-3 sm:space-y-4 md:space-y-6">
+  //       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
+  //         <div className="flex items-center gap-2 sm:gap-3">
+  //           <Bell className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
+  //           <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">My Bookings</h1>
+  //         </div>
+  //       </div>
+  //       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 -mx-2 sm:-mx-3 md:mx-0">
+  //         <div className="animate-pulse space-y-4">
+  //           {[1, 2, 3].map((i) => (
+  //             <div key={i} className="h-32 bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl" />
+  //           ))}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (error) {
     return (
