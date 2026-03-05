@@ -255,230 +255,215 @@ const TuteeMyBookings: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-4 md:space-y-6">
+    <>
       <ToastContainer aria-label="Notification messages" />
-      {/* Header */}
-      {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3 md:gap-0">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Bell className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
-            <div>
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">My Bookings</h1>
-              <p className="text-xs sm:text-sm md:text-base text-blue-100/90 mt-0.5 sm:mt-1">
+      <div className="space-y-4 sm:space-y-4 md:space-y-6">
+        {/* Enhanced Header */}
+        <div className="bg-sky-600 from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+              <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
+                <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+              </div>
+              <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
                 View and manage your tutoring session bookings
               </p>
             </div>
           </div>
-          <button
-            onClick={() => {
-              toast.info('Refreshing bookings...');
-              fetchBookingRequests();
-            }}
-            className="mt-2 sm:mt-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 active:text-blue-800 bg-white hover:bg-blue-50 active:bg-blue-100 rounded-lg sm:rounded-xl transition-all shadow-md hover:shadow-lg w-full sm:w-auto touch-manipulation flex items-center justify-center gap-2"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Refresh</span>
-          </button>
         </div>
-      </div> */}
 
-      <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
-        <div className="flex items-center justify-center shrink-0">
-          <Info className="h-8 w-8 text-white" />
-        </div>
-        <p className="text-lg md:text-xl font-bold text-white tracking-tight">
-          View and manage your tutoring session bookings
-        </p>
-      </div>
-
-      <div className="space-y-4 md:space-y-6">
-        {bookings.length === 0 ? (
-          <div className="text-center py-12 sm:py-16 px-4 bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 -mx-2 sm:-mx-3 md:mx-0">
-            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 rounded-full mb-4 sm:mb-6 border border-slate-100">
-              <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
+        <div className="space-y-4 md:space-y-6">
+          {bookings.length === 0 ? (
+            <div className="text-center py-12 sm:py-16 px-4 bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 -mx-2 sm:-mx-3 md:mx-0">
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 rounded-full mb-4 sm:mb-6 border border-slate-100">
+                <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">No bookings yet</h3>
+              <p className="text-sm sm:text-base text-slate-600 max-w-md mx-auto">
+                When you book a session with a tutor, it will appear here.
+              </p>
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">No bookings yet</h3>
-            <p className="text-sm sm:text-base text-slate-600 max-w-md mx-auto">
-              When you book a session with a tutor, it will appear here.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:gap-6">
-            {bookings.map((booking) => {
-              const statusDisplay = getStatusDisplay(booking.status);
-              const bookingDate = new Date(booking.date);
+          ) : (
+            <div className="grid gap-4 sm:gap-6">
+              {bookings.map((booking) => {
+                const statusDisplay = getStatusDisplay(booking.status);
+                const bookingDate = new Date(booking.date);
 
-              return (
-                <div
-                  key={booking.id}
-                  className="group relative bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden"
-                >
-                  {/* Status Indicator Bar */}
-                  <div className={`absolute left-0 top-6 bottom-6 w-1 rounded-r-full ${booking.status.toLowerCase() === 'completed' ? 'bg-gradient-to-b from-green-500 to-emerald-500' :
-                    booking.status.toLowerCase() === 'cancelled' ? 'bg-gradient-to-b from-red-500 to-rose-500' :
-                      booking.status.toLowerCase() === 'pending' ? 'bg-gradient-to-b from-yellow-500 to-amber-500' :
-                        'bg-gradient-to-b from-blue-500 to-indigo-500'
-                    }`} />
+                return (
+                  <div
+                    key={booking.id}
+                    className="group relative bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden"
+                  >
+                    {/* Status Indicator Bar */}
+                    <div className={`absolute left-0 top-6 bottom-6 w-1 rounded-r-full ${booking.status.toLowerCase() === 'completed' ? 'bg-gradient-to-b from-green-500 to-emerald-500' :
+                      booking.status.toLowerCase() === 'cancelled' ? 'bg-gradient-to-b from-red-500 to-rose-500' :
+                        booking.status.toLowerCase() === 'pending' ? 'bg-gradient-to-b from-yellow-500 to-amber-500' :
+                          'bg-gradient-to-b from-blue-500 to-indigo-500'
+                      }`} />
 
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6 pl-3">
-                    <div className="flex-1 space-y-3">
-                      {/* Header & Status */}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                          <BookOpen className="h-5 w-5" />
-                        </div>
-                        <h3 className="text-lg sm:text-xl font-bold text-slate-900">{booking.subject}</h3>
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6 pl-3">
+                      <div className="flex-1 space-y-3">
+                        {/* Header & Status */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                            <BookOpen className="h-5 w-5" />
+                          </div>
+                          <h3 className="text-lg sm:text-xl font-bold text-slate-900">{booking.subject}</h3>
 
-                        {/* Status Badges */}
-                        <div className="flex items-center gap-2">
-                          {(booking.status.toLowerCase() === 'completed' || booking.status.toLowerCase() === 'admin_payment_pending') && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                              Completed
-                            </span>
-                          )}
-                          {booking.status.toLowerCase() === 'upcoming' && hasSessionDurationCompleted(booking) && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-200">
-                              <Clock className="h-3.5 w-3.5" />
-                              Pending Completion
-                            </span>
-                          )}
-                          {booking.status.toLowerCase() === 'upcoming' && hasSessionStarted(booking) && !hasSessionDurationCompleted(booking) && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
-                              <Clock className="h-3.5 w-3.5" />
-                              Session Started
-                            </span>
-                          )}
-                          {booking.status.toLowerCase() !== 'completed' &&
-                            booking.status.toLowerCase() !== 'admin_payment_pending' &&
-                            booking.status.toLowerCase() !== 'upcoming' && (
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusDisplay.color.replace('bg-', 'bg-opacity-50 bg-').replace('border-', 'border-opacity-50 border-')}`}>
-                                {statusDisplay.icon}
-                                {statusDisplay.text}
+                          {/* Status Badges */}
+                          <div className="flex items-center gap-2">
+                            {(booking.status.toLowerCase() === 'completed' || booking.status.toLowerCase() === 'admin_payment_pending') && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                Completed
                               </span>
                             )}
+                            {booking.status.toLowerCase() === 'upcoming' && hasSessionDurationCompleted(booking) && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                <Clock className="h-3.5 w-3.5" />
+                                Pending Completion
+                              </span>
+                            )}
+                            {booking.status.toLowerCase() === 'upcoming' && hasSessionStarted(booking) && !hasSessionDurationCompleted(booking) && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                                <Clock className="h-3.5 w-3.5" />
+                                Session Started
+                              </span>
+                            )}
+                            {booking.status.toLowerCase() !== 'completed' &&
+                              booking.status.toLowerCase() !== 'admin_payment_pending' &&
+                              booking.status.toLowerCase() !== 'upcoming' && (
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusDisplay.color.replace('bg-', 'bg-opacity-50 bg-').replace('border-', 'border-opacity-50 border-')}`}>
+                                  {statusDisplay.icon}
+                                  {statusDisplay.text}
+                                </span>
+                              )}
+                          </div>
                         </div>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-2 gap-x-6 text-sm text-slate-600">
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 flex justify-center"><User className="h-4 w-4 text-indigo-500" /></div>
+                            <span className="font-medium text-slate-900">with {booking.tutor?.user?.name || 'Unknown Tutor'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 flex justify-center"><Calendar className="h-4 w-4 text-blue-500" /></div>
+                            <span>{bookingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 flex justify-center"><Clock className="h-4 w-4 text-emerald-500" /></div>
+                            <span>{booking.time} ({booking.duration}h)</span>
+                          </div>
+                        </div>
+
+                        {/* Rating Section */}
+                        {booking.tutee_rating && (
+                          <div className="relative bg-yellow-50/50 rounded-xl p-3 sm:p-4 mt-2 border border-yellow-100">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                              <span className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Your Review</span>
+                            </div>
+                            <div className="flex items-center gap-2 mb-2">
+                              {renderStars(booking.tutee_rating)}
+                            </div>
+                            {booking.tutee_comment && (
+                              <p className="text-sm text-slate-600 italic">"{booking.tutee_comment}"</p>
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      {/* Details Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-2 gap-x-6 text-sm text-slate-600">
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 flex justify-center"><User className="h-4 w-4 text-indigo-500" /></div>
-                          <span className="font-medium text-slate-900">with {booking.tutor?.user?.name || 'Unknown Tutor'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 flex justify-center"><Calendar className="h-4 w-4 text-blue-500" /></div>
-                          <span>{bookingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 flex justify-center"><Clock className="h-4 w-4 text-emerald-500" /></div>
-                          <span>{booking.time} ({booking.duration}h)</span>
-                        </div>
+                      {/* Actions */}
+                      <div className="flex flex-col items-end gap-2 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
+                        {(booking.status.toLowerCase() === 'completed' || booking.status.toLowerCase() === 'admin_payment_pending') && !booking.tutee_rating && (
+                          <Button
+                            onClick={() => { setFeedbackTarget(booking); setFeedbackOpen(true); }}
+                            className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm text-sm"
+                          >
+                            <Star className="h-4 w-4 mr-1.5" />
+                            Rate Session
+                          </Button>
+                        )}
                       </div>
-
-                      {/* Rating Section */}
-                      {booking.tutee_rating && (
-                        <div className="relative bg-yellow-50/50 rounded-xl p-3 sm:p-4 mt-2 border border-yellow-100">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                            <span className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Your Review</span>
-                          </div>
-                          <div className="flex items-center gap-2 mb-2">
-                            {renderStars(booking.tutee_rating)}
-                          </div>
-                          {booking.tutee_comment && (
-                            <p className="text-sm text-slate-600 italic">"{booking.tutee_comment}"</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-col items-end gap-2 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
-                      {(booking.status.toLowerCase() === 'completed' || booking.status.toLowerCase() === 'admin_payment_pending') && !booking.tutee_rating && (
-                        <Button
-                          onClick={() => { setFeedbackTarget(booking); setFeedbackOpen(true); }}
-                          className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm text-sm"
-                        >
-                          <Star className="h-4 w-4 mr-1.5" />
-                          Rate Session
-                        </Button>
-                      )}
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        {/* Feedback Modal */}
+        {feedbackOpen && feedbackTarget && (
+          <Modal
+            isOpen={true}
+            onClose={() => { setFeedbackOpen(false); setFeedbackTarget(null); setRating(5); setComment(''); }}
+            title="Leave feedback"
+            footer={<>
+              <Button
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    await apiClient.post(`/users/bookings/${feedbackTarget.id}/feedback`, { rating, comment });
+                    toast.success('Feedback submitted. Admins have been notified.');
+                    setFeedbackOpen(false);
+                    setFeedbackTarget(null);
+                    setRating(5);
+                    setComment('');
+                    await fetchBookingRequests();
+                  } catch (e: any) {
+                    console.error('Failed to submit feedback', e);
+                    toast.error(e?.response?.data?.message || e?.message || 'Failed to submit feedback');
+                  } finally { setLoading(false); }
+                }}
+                className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+                disabled={loading}
+              >
+                {loading ? 'Submitting...' : 'Submit'}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => { setFeedbackOpen(false); setFeedbackTarget(null); setRating(5); setComment(''); }}
+                className="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 px-6 py-2.5 sm:py-2 border-2 border-slate-300 hover:bg-slate-50 rounded-lg font-semibold text-sm sm:text-base transition-all touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                Cancel
+              </Button>
+            </>}
+          >
+            <div className="space-y-4 sm:space-y-5">
+              <div>
+                <label className="block text-sm sm:text-base font-semibold text-slate-800 mb-2">Rating</label>
+                <select
+                  value={rating}
+                  onChange={(e) => setRating(Number(e.target.value))}
+                  className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white"
+                >
+                  {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} / 5</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm sm:text-base font-semibold text-slate-800 mb-2">
+                  Comment <span className="text-slate-500 font-normal text-xs sm:text-sm">(optional)</span>
+                </label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none min-h-[120px] sm:min-h-[140px]"
+                  rows={4}
+                  placeholder="Share your experience with this session..."
+                />
+              </div>
+            </div>
+          </Modal>
         )}
       </div>
-      {/* Feedback Modal */}
-      {feedbackOpen && feedbackTarget && (
-        <Modal
-          isOpen={true}
-          onClose={() => { setFeedbackOpen(false); setFeedbackTarget(null); setRating(5); setComment(''); }}
-          title="Leave feedback"
-          footer={<>
-            <Button
-              onClick={async () => {
-                try {
-                  setLoading(true);
-                  await apiClient.post(`/users/bookings/${feedbackTarget.id}/feedback`, { rating, comment });
-                  toast.success('Feedback submitted. Admins have been notified.');
-                  setFeedbackOpen(false);
-                  setFeedbackTarget(null);
-                  setRating(5);
-                  setComment('');
-                  await fetchBookingRequests();
-                } catch (e: any) {
-                  console.error('Failed to submit feedback', e);
-                  toast.error(e?.response?.data?.message || e?.message || 'Failed to submit feedback');
-                } finally { setLoading(false); }
-              }}
-              className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all touch-manipulation"
-              style={{ WebkitTapHighlightColor: 'transparent' }}
-              disabled={loading}
-            >
-              {loading ? 'Submitting...' : 'Submit'}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => { setFeedbackOpen(false); setFeedbackTarget(null); setRating(5); setComment(''); }}
-              className="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 px-6 py-2.5 sm:py-2 border-2 border-slate-300 hover:bg-slate-50 rounded-lg font-semibold text-sm sm:text-base transition-all touch-manipulation"
-              style={{ WebkitTapHighlightColor: 'transparent' }}
-            >
-              Cancel
-            </Button>
-          </>}
-        >
-          <div className="space-y-4 sm:space-y-5">
-            <div>
-              <label className="block text-sm sm:text-base font-semibold text-slate-800 mb-2">Rating</label>
-              <select
-                value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-                className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white"
-              >
-                {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} / 5</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm sm:text-base font-semibold text-slate-800 mb-2">
-                Comment <span className="text-slate-500 font-normal text-xs sm:text-sm">(optional)</span>
-              </label>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none min-h-[120px] sm:min-h-[140px]"
-                rows={4}
-                placeholder="Share your experience with this session..."
-              />
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
+    </>
   );
 };
 

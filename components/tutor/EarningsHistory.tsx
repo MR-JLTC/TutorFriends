@@ -415,18 +415,19 @@ const EarningsHistory: React.FC = () => {
 
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-2xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-2xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-2xl"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-2xl"></div>
         </div>
-        <div className="relative flex items-center justify-between">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 drop-shadow-lg flex items-center gap-2 sm:gap-3">
-              <DollarSign className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 flex-shrink-0" />
-              <span className="truncate">Earnings & History</span>
-            </h1>
-            <p className="text-xs sm:text-sm md:text-base text-white/90 leading-tight">Track your completed sessions and earnings</p>
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
+              <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+            </div>
+            <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+              Track your completed sessions and earnings
+            </p >
           </div>
         </div>
       </div>
@@ -646,8 +647,8 @@ const EarningsHistory: React.FC = () => {
                 key={tab.key}
                 onClick={() => setPaymentsFilter(tab.key as any)}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md hover:shadow-lg touch-manipulation ${paymentsFilter === tab.key
-                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
-                    : 'text-slate-600 hover:text-slate-800 bg-white border-2 border-slate-200 hover:border-primary-300'
+                  ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
+                  : 'text-slate-600 hover:text-slate-800 bg-white border-2 border-slate-200 hover:border-primary-300'
                   }`}
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >

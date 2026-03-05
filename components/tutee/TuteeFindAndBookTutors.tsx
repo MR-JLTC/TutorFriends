@@ -1075,25 +1075,23 @@ const TuteeFindAndBookTutors: React.FC = () => {
   return (
     // <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-800 overflow-hidden">
     <div className="space-y-4 max-w-5xl mx-auto pb-10 bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-800 overflow-hidden">
-      {/* <div className="absolute -top-24 -left-10 h-72 w-72 bg-sky-100 blur-3xl opacity-70 pointer-events-none" />
-      <div className="absolute top-32 -right-16 h-80 w-80 bg-indigo-100 blur-[120px] opacity-70 pointer-events-none" /> */}
-      <div className="relative max-w-6xl mx-auto px-2 sm:px-4 lg:px-0 pt-1 sm:pt-1.5 md:pt-2 pb-4 sm:pb-6 md:pb-10 space-y-3 sm:space-y-4 md:space-y-6">
-        {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <Search className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">Find & Book Tutors</h1>
+      <div className="relative max-w-6xl mx-auto px-2 sm:px-4 lg:px-0 pb-4 sm:pb-6 md:pb-10 space-y-3 sm:space-y-4 md:space-y-6">
+        {/* Enhanced Header */}
+        <div className="bg-sky-600 from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
           </div>
-          <p className="text-xs sm:text-sm md:text-base lg:text-lg text-blue-100/90 leading-relaxed">
-            Discover verified tutors, explore profiles, and secure your ideal session.
-          </p>
-        </div> */}
-        <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
-          <div className="flex items-center justify-center shrink-0">
-            <Info className="h-8 w-8 text-white" />
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+              <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
+                <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+              </div>
+              <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+                Discover verified tutors, explore profiles, and secure your ideal session.
+              </p>
+            </div>
           </div>
-          <p className="text-lg md:text-xl font-bold text-white tracking-tight">
-            Discover verified tutors, explore profiles, and secure your ideal session.
-          </p>
         </div>
 
         {/* Search and Filters */}

@@ -790,21 +790,21 @@ const ApplicationVerification: React.FC = () => {
 
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
         </div>
-        <div className="relative flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 lg:gap-6">
-          <div className="min-w-0 flex-1 flex items-center gap-2.5 sm:gap-3 bg-white/10 p-2 sm:p-3 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
-            <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg shadow-sm shrink-0">
-              <Info className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-md" />
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
+              <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
             </div>
             <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
               Manage your tutor application and subject expertise
             </p>
           </div>
-          <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold border-2 flex items-center justify-center space-x-1.5 shadow-inner transition-colors duration-300 w-full lg:w-auto ${getStatusColor(applicationStatus)}`}>
+          <div className={`mt-2 sm:mt-0 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold border-2 flex items-center justify-center space-x-1 shadow-inner transition-colors duration-300 w-full sm:w-auto ${getStatusColor(applicationStatus)}`}>
             <div className="flex items-center space-x-1.5">
               {getStatusIcon(applicationStatus)}
               <span className="whitespace-nowrap tracking-wide">{applicationStatus.charAt(0).toUpperCase() + applicationStatus.slice(1)}</span>

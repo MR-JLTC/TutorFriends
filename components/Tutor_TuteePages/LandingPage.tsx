@@ -7,6 +7,8 @@ import { TutorRegistrationModal } from './TutorRegistrationPage';
 import { TuteeRegistrationModal } from './TuteeRegistrationPage';
 import apiClient, { getFileUrl } from '../../services/api';
 import { useToast } from '../../components/ui/Toast';
+import { ChevronRightIcon } from 'lucide-react';
+
 
 // New icons for "How it works" section
 const MagnifyingGlassIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -860,9 +862,9 @@ const LandingPage: React.FC = () => {
           <div className="max-w-6xl mx-auto relative z-10">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <span className="text-sky-500 font-bold tracking-wider uppercase text-sm mb-2 block">Support</span>
-                <h2 className="text-4xl sm:text-5xl font-black text-white mb-6">Get in Touch</h2>
-                <p className="text-xl text-slate-400 leading-relaxed mb-8">Have questions? We're here to help you succeed in your academic journey. Our support team is available around the clock.</p>
+                <span className="text-sky-500 font-bold tracking-wider uppercase text-xs mb-2 block">Support</span>
+                <h2 className="text-3xl lg:text-4xl font-black text-white mb-4">Get in Touch</h2>
+                <p className="text-base sm:text-lg text-slate-400 leading-relaxed mb-6">Have questions? We're here to help you succeed in your academic journey. Our support team is available around the clock.</p>
 
                 <div className="space-y-6">
                   <div className="flex items-center space-x-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
@@ -899,8 +901,8 @@ const LandingPage: React.FC = () => {
 
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/20 to-purple-500/20 rounded-3xl blur-2xl"></div>
-                <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl">
-                  <h3 className="text-2xl font-bold text-white mb-6">Send us a message</h3>
+                <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-6">Send us a message</h3>
                   <form className="space-y-4" onSubmit={handleSubmitContact}>
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Name</label>
@@ -970,63 +972,105 @@ const LandingPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-sky-900/10 via-transparent to-indigo-900/10 pointer-events-none"></div>
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-500/30 to-transparent"></div>
         <div className="max-w-6xl mx-auto relative">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
-            <div>
-              <div className="flex items-center mb-4 space-x-3">
-                <Logo className="h-14 w-14 object-contain" style={{ aspectRatio: '1/1' }} />
-                <div className="flex flex-col">
-                  <h3 className="text-xl font-bold text-white mb-1">TutorFriends</h3>
-                  <p className="text-sm text-sky-300 font-medium">Connecting Minds, Building Futures</p>
+          {/* Footer Top Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 pb-4">
+
+            {/* Brand Column */}
+            <div className="lg:col-span-5 flex flex-col gap-5 pr-0 lg:pr-12">
+              <div className="flex items-center">
+                <Logo className="flex-shrink-0 h-16 w-16 object-contain" style={{ aspectRatio: '1/1' }} />
+                <div>
+                  <h3 className="text-3xl font-bold tracking-tight text-white mb-0.5">TutorFriends</h3>
+                  <p className="text-[12px] font-semibold tracking-widest uppercase text-sky-400">Connecting Minds, Building Futures</p>
                 </div>
               </div>
-              <p className="text-slate-400 leading-relaxed text-base mb-6">Connecting students with qualified tutors for academic success. Empowering learners and educators to achieve their goals together through personalized learning experiences.</p>
+              <p className="text-slate-400 text-[16px] leading-relaxed max-w-sm">
+                Empowering university students through a peer-to-peer learning platform. Find qualified tutors, book sessions, and achieve academic success together.
+              </p>
             </div>
 
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">For Students</h4>
-              <ul className="space-y-2">
-                <li><span className="text-slate-400 hover:text-sky-400 transition-colors cursor-default">Find Tutors</span></li>
-                <li><span className="text-slate-400 hover:text-sky-400 transition-colors cursor-default">Book Sessions</span></li>
-                <li><span className="text-slate-400 hover:text-sky-400 transition-colors cursor-default">Payment Guide</span></li>
-                <li><span className="text-slate-400 hover:text-sky-400 transition-colors cursor-default">Help Center</span></li>
-              </ul>
-            </div>
+            {/* Links Columns */}
+            <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-12 pt-4 lg:pt-0">
 
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">For Tutors</h4>
-              <ul className="space-y-2">
-                <li><span className="text-slate-400 hover:text-sky-400 transition-colors cursor-default">Apply to Teach</span></li>
-                <li><span className="text-slate-400 hover:text-sky-400 transition-colors cursor-default">Tutor Resources</span></li>
-                <li><span className="text-slate-400 hover:text-sky-400 transition-colors cursor-default">Earnings</span></li>
-                <li><span className="text-slate-400 hover:text-sky-400 transition-colors cursor-default">Support</span></li>
-              </ul>
-            </div>
+              {/* For Students */}
+              <div className="flex flex-col">
+                <h4 className="text-white text-[16px] font-bold tracking-widest uppercase mb-6 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]"></span>
+                  Students
+                </h4>
+                <ul className="flex flex-col space-y-2.5 flex-grow">
+                  {['Find Tutors', 'Book Sessions', 'Payment Guide', 'Help Center'].map((item) => (
+                    <li key={item}>
+                      <span className="group flex items-center text-slate-400 hover:text-white cursor-pointer transition-colors duration-300 w-fit">
+                        <span className="text-[15px] font-medium">{item}</span>
+                        <ChevronRightIcon className="w-3 h-3 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-sky-400" />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2">
-                <li className="w-max">
-                  <button type="button" onClick={() => setAboutOpen(true)} className="text-left text-slate-400 hover:text-sky-400 transition-colors">About Us</button>
-                </li>
-                <li className="w-max">
-                  <button type="button" onClick={() => setDevelopersOpen(true)} className="text-left text-slate-400 hover:text-sky-400 transition-colors">Meet the Developers</button>
-                </li>
-                <li className="w-max">
-                  <button type="button" onClick={() => setPrivacyOpen(true)} className="text-left text-slate-400 hover:text-sky-400 transition-colors">Privacy Policy</button>
-                </li>
-                <li className="w-max">
-                  <button type="button" onClick={() => setTermsOpen(true)} className="text-left text-slate-400 hover:text-sky-400 transition-colors">Terms of Service</button>
-                </li>
-                <li className="relative group w-max">
-                  <button
-                    type="button"
-                    onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="text-left text-slate-400 hover:text-sky-400 transition-colors"
-                  >
-                    Contact
-                  </button>
-                </li>
-              </ul>
+              {/* For Tutors */}
+              <div className="flex flex-col">
+                <h4 className="text-white text-[16px] font-bold tracking-widest uppercase mb-6 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></span>
+                  Tutors
+                </h4>
+                <ul className="flex flex-col space-y-2.5 flex-grow">
+                  {['Apply to Teach', 'Tutor Resources', 'Earnings', 'Support'].map((item) => (
+                    <li key={item}>
+                      <span className="group flex items-center text-slate-400 hover:text-white cursor-pointer transition-colors duration-300 w-fit">
+                        <span className="text-[15px] font-medium">{item}</span>
+                        <ChevronRightIcon className="w-3 h-3 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-indigo-400" />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Company */}
+              <div className="flex flex-col col-span-2 sm:col-span-1">
+                <h4 className="text-white text-[16px] font-bold tracking-widest uppercase mb-6 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"></span>
+                  Company
+                </h4>
+                <ul className="flex flex-col space-y-2.5 flex-grow">
+                  <li>
+                    <button type="button" onClick={() => setAboutOpen(true)} className="group flex items-center text-slate-400 hover:text-white transition-colors duration-300 focus:outline-none w-fit">
+                      <span className="text-[15px] font-medium">About Us</span>
+                      <ChevronRightIcon className="w-3 h-3 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-400" />
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" onClick={() => setDevelopersOpen(true)} className="group flex items-center text-slate-400 hover:text-white transition-colors duration-300 focus:outline-none w-fit">
+                      <span className="text-[15px] font-medium">Developers</span>
+                      <ChevronRightIcon className="w-3 h-3 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-400" />
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" onClick={() => setPrivacyOpen(true)} className="group flex items-center text-slate-400 hover:text-white transition-colors duration-300 focus:outline-none w-fit">
+                      <span className="text-[15px] font-medium">Privacy Policy</span>
+                      <ChevronRightIcon className="w-3 h-3 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-400" />
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" onClick={() => setTermsOpen(true)} className="group flex items-center text-slate-400 hover:text-white transition-colors duration-300 focus:outline-none w-fit">
+                      <span className="text-[15px] font-medium">Terms of Service</span>
+                      <ChevronRightIcon className="w-3 h-3 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-400" />
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="group flex items-center text-slate-400 hover:text-white transition-colors duration-300 focus:outline-none w-fit"
+                    >
+                      <span className="text-[15px] font-medium">Contact</span>
+                      <ChevronRightIcon className="w-3 h-3 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-400" />
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -1201,41 +1245,41 @@ const LandingPage: React.FC = () => {
             </div>
           </Modal>
 
-          <div className="border-t border-slate-700/50 pt-8 mt-12 flex flex-col items-center justify-center gap-4">
-            <p className="text-slate-500 text-sm text-center">&copy; {new Date().getFullYear()} TutorFriends. All rights reserved.</p>
+          <div className="border-t border-slate-800 pt-8 mt-10 flex flex-col items-center justify-center gap-8">
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-1">
               <button
                 type="button"
-                className="flex items-center gap-3 group cursor-pointer px-2 py-1 rounded-xl transition-all duration-300 focus:outline-none"
+                className="flex items-center gap-2 sm:gap-3 group cursor-pointer px-2 py-1 rounded-xl transition-all duration-300 focus:outline-none"
                 onClick={() => setDevelopersOpen(true)}
               >
-                <span className="text-xs text-slate-500 group-hover:text-slate-300 transition-colors font-medium">Developed by</span>
-                <div className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/50 group-hover:border-sky-500/30 px-3 py-1.5 rounded-lg backdrop-blur-sm transition-all duration-300 shadow-sm group-hover:shadow-[0_0_15px_-3px_rgba(56,189,248,0.2)]">
-                  <img src="/assets/images/bahandisoft.png" alt="BahandiSoft" className="w-5 h-5 object-contain" />
-                  <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 group-hover:from-sky-300 group-hover:to-indigo-300 transition-all">
+                <span className="text-[11px] sm:text-[13px] text-slate-500 group-hover:text-slate-300 transition-colors font-medium">Developed by</span>
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/50 group-hover:border-sky-500/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg backdrop-blur-sm transition-all duration-300 shadow-sm group-hover:shadow-[0_0_15px_-3px_rgba(56,189,248,0.2)]">
+                  <img src="/assets/images/bahandisoft.png" alt="BahandiSoft" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
+                  <span className="text-[11px] sm:text-[13px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 group-hover:from-sky-300 group-hover:to-indigo-300 transition-all">
                     BahandiSoft
                   </span>
                 </div>
               </button>
 
               {/* Version Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700 shadow-inner group transition-all duration-300 hover:bg-slate-800 hover:border-slate-600">
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-800/50 border border-slate-700 shadow-inner group transition-all duration-300 hover:bg-slate-800 hover:border-slate-600">
                 <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="relative flex h-2 w-2">
+                  <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500"></span>
                   </span>
-                  <span className="text-[11px] font-medium text-slate-300 tracking-wide">
-                    v3.2.1
+                  <span className="text-[11px] sm:text-[13px] font-medium text-slate-300 tracking-wide">
+                    v3.2.2
                   </span>
                 </div>
-                <div className="w-px h-3 bg-slate-700"></div>
-                <span className="text-[10px] font-semibold text-sky-400/90 tracking-widest uppercase group-hover:text-sky-400 transition-colors duration-300">
+                <div className="w-px h-2 sm:h-3 bg-slate-700"></div>
+                <span className="text-[10px] sm:text-[13px] font-semibold text-sky-400/90 tracking-widest uppercase group-hover:text-sky-400 transition-colors duration-300">
                   Production
                 </span>
               </div>
             </div>
+            <p className="text-slate-500 text-[12px] sm:text-[14px] text-center px-4">&copy; {new Date().getFullYear()} TutorFriends. All rights reserved.</p>
           </div>
         </div>
       </footer>

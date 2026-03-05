@@ -664,13 +664,13 @@ const AvailabilityScheduling: React.FC = () => {
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-4 sm:pb-6 md:pb-8">
       {/* Enhanced Header */}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 text-white shadow-lg relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-lg sm:rounded-xl p-2.5 sm:p-3.5 text-white shadow-lg relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -mr-16 -mt-16 blur-xl"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full -ml-12 -mb-12 blur-xl"></div>
         </div>
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3">
-          <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5 bg-white/10 p-2 sm:p-2.5 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
             <div className="p-1 sm:p-1.5 bg-white/20 rounded-md shadow-sm shrink-0">
               <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white drop-shadow-md" />
             </div>
