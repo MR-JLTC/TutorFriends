@@ -5,7 +5,7 @@ import TuteeBecomeTutor from '../tutee/TuteeBecomeTutor';
 import TuteeFindAndBookTutors from '../tutee/TuteeFindAndBookTutors';
 import TuteePayment from '../tutee/TuteePayment';
 import TuteeAfterSession from '../tutee/TuteeAfterSession';
-import UpcomingSessionsPage from '../shared/UpcomingSessionsPage';
+import UpcomingSessionsPage from '../tutee/UpcomingSessionsPage';
 // import BookingsPage from '../shared/BookingsPage'; // Removed
 import { useAuth } from '../../hooks/useAuth';
 import { User } from '../../types/index';

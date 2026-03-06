@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { GraduationCap, Lock, Mail, User, BookOpen, GraduationCap as YearLevelIcon, Info, Image as ImageIcon, QrCode, FileText, Upload, Plus, Trash2, CheckCircle, Info as InfoIcon, X, Calendar } from 'lucide-react';
+import { AlertCircle, GraduationCap, Lock, Mail, User, BookOpen, GraduationCap as YearLevelIcon, Info, Image as ImageIcon, QrCode, FileText, Upload, Plus, Trash2, CheckCircle, Info as InfoIcon, X, Calendar } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import apiClient from '../../services/api';
 import { mapRoleToStorageKey, setRoleAuth } from '../../utils/authRole';
@@ -607,6 +607,7 @@ const TuteeBecomeTutor: React.FC = () => {
     // Start verification process
     handleSendVerificationCode();
   };
+
   const inputStyles = "w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-[3px] focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all duration-300 font-medium text-slate-900 placeholder:text-slate-400 text-sm shadow-sm";
   return (
     <div className="space-y-4 sm:space-y-5 md:space-y-6 max-w-5xl mx-auto pb-5">

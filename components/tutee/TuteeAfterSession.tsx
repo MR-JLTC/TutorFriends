@@ -266,21 +266,46 @@ const TuteeAfterSession: React.FC = () => {
     );
   };
 
+
   if (loading) {
     return (
-      <div className="space-y-3 sm:space-y-4 md:space-y-6">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Star className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-yellow-300 flex-shrink-0" />
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">After Session</h1>
+      <div className="space-y-4 sm:space-y-4 md:space-y-6 pb-6 md:pb-10">
+        <div className="bg-sky-600 from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+              <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0 animate-pulse">
+                <div className="h-3 w-3 sm:h-3.5 sm:w-3.5 bg-white/50 rounded-full" />
+              </div>
+              <div className="h-4 w-48 bg-white/30 rounded animate-pulse"></div>
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 -mx-2 sm:-mx-3 md:mx-0">
-          <div className="animate-pulse space-y-4">
-            {[1, 2].map((i) => (
-              <div key={i} className="h-28 bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl" />
-            ))}
-          </div>
+
+        <div className="space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-8">
+          {[1, 2].map((i) => (
+            <div key={i} className="bg-gradient-to-br from-white via-primary-50/20 to-primary-100/10 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-lg md:shadow-xl border-2 border-slate-200/80 p-4 sm:p-5 md:p-7 lg:p-8 -mx-2 sm:-mx-3 md:mx-0 overflow-hidden relative">
+              <div className="absolute top-0 left-0 right-0 h-1 md:h-1.5 bg-slate-200 animate-pulse" />
+              <div className="animate-pulse space-y-6">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="flex-1 space-y-4">
+                    <div className="h-6 sm:h-8 bg-slate-200 rounded-lg w-3/4"></div>
+                    <div className="h-4 sm:h-5 bg-slate-200 rounded-lg w-1/2"></div>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="h-8 sm:h-10 bg-slate-200 rounded-xl w-24"></div>
+                      <div className="h-8 sm:h-10 bg-slate-200 rounded-xl w-20"></div>
+                      <div className="h-8 sm:h-10 bg-slate-200 rounded-xl w-24"></div>
+                    </div>
+                  </div>
+                  <div className="h-10 sm:h-12 bg-slate-200 rounded-2xl w-32 shrink-0"></div>
+                </div>
+                <div className="h-24 sm:h-32 bg-slate-100 rounded-xl md:rounded-2xl border-2 border-slate-100"></div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -288,23 +313,21 @@ const TuteeAfterSession: React.FC = () => {
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto pb-5">
-      <ToastContainer />
-      {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-white shadow-lg -mx-2 sm:-mx-3 md:mx-0">
-        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-          <Star className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-yellow-300 flex-shrink-0" />
-          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">After Session</h1>
+      <div className="bg-sky-600 from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
         </div>
-        <p className="text-xs sm:text-sm md:text-base lg:text-lg text-blue-100/90 leading-relaxed">
-          Leave feedback for your completed sessions.
-        </p>
-      </div> */}
-      <div className="bg-sky-600 rounded-2xl md:rounded-3xl px-4 py-3 md:px-5 md:py-4 shadow-sm border border-sky-500 flex items-center gap-4">
-        <div className="flex items-center justify-center shrink-0">
-          <Info className="h-8 w-8 text-white" />
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
+              <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+            </div>
+            <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+              Leave feedback for your completed sessions.
+            </p>
+          </div>
         </div>
-        <p className="text-lg md:text-xl font-bold text-white tracking-tight">
-          Leave feedback for your completed sessions.
-        </p>
       </div>
 
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 overflow-hidden -mx-2 sm:-mx-3 md:mx-0">
