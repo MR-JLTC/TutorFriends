@@ -317,7 +317,6 @@ const TuteeMyBookings: React.FC = () => {
 
   return (
     <>
-      <ToastContainer aria-label="Notification messages" />
       <div className="space-y-4 sm:space-y-4 md:space-y-6">
         {/* Enhanced Header */}
         <div className="bg-sky-600 from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
