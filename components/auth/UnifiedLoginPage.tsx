@@ -19,6 +19,9 @@ const UnifiedLoginPage: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [lockoutCountdown, setLockoutCountdown] = useState(0);
 
   // Online images related to tutoring/learning concepts
   const slideshowImages = [
@@ -70,6 +73,47 @@ const UnifiedLoginPage: React.FC = () => {
       setRememberMe(true);
     }
   }, []);
+
+  // Lockout logic setup
+  useEffect(() => {
+    const savedAttempts = localStorage.getItem('tutorfriends_loginAttempts');
+    const savedLockout = localStorage.getItem('tutorfriends_lockoutUntil');
+
+    if (savedAttempts) setLoginAttempts(parseInt(savedAttempts, 10));
+    if (savedLockout) {
+      const lockoutTime = parseInt(savedLockout, 10);
+      if (lockoutTime > Date.now()) {
+        setLockoutUntil(lockoutTime);
+      } else {
+        localStorage.removeItem('tutorfriends_loginAttempts');
+        localStorage.removeItem('tutorfriends_lockoutUntil');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (lockoutUntil) {
+      const updateCountdown = () => {
+        const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+        if (remaining <= 0) {
+          setLockoutUntil(null);
+          setLoginAttempts(0);
+          localStorage.removeItem('tutorfriends_loginAttempts');
+          localStorage.removeItem('tutorfriends_lockoutUntil');
+          setLockoutCountdown(0);
+          if (interval) clearInterval(interval);
+        } else {
+          setLockoutCountdown(remaining);
+        }
+      };
+      updateCountdown();
+      interval = setInterval(updateCountdown, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    }
+  }, [lockoutUntil]);
 
   // Save/remove email based on rememberMe checkbox
   useEffect(() => {
@@ -183,6 +227,10 @@ const UnifiedLoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutUntil) {
+      setError(`Too many login attempts. Please try again in ${lockoutCountdown}s.`);
+      return;
+    }
     setIsLoading(true);
     setError('');
 
@@ -198,7 +246,11 @@ const UnifiedLoginPage: React.FC = () => {
         return;
       }
 
-      // Normal login success
+      // Normal login success - clear attempts
+      setLoginAttempts(0);
+      localStorage.removeItem('tutorfriends_loginAttempts');
+      localStorage.removeItem('tutorfriends_lockoutUntil');
+
       const role = result as string;
       switch (role) {
         case 'tutee':
@@ -211,8 +263,19 @@ const UnifiedLoginPage: React.FC = () => {
           throw new Error('Invalid user role');
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Invalid credentials. Please try again.';
-      setError(errorMessage);
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      localStorage.setItem('tutorfriends_loginAttempts', newAttempts.toString());
+
+      if (newAttempts >= 5) {
+        const lockoutTime = Date.now() + 60000; // 1 minute
+        setLockoutUntil(lockoutTime);
+        localStorage.setItem('tutorfriends_lockoutUntil', lockoutTime.toString());
+        setError(`Too many failed attempts. Account temporarily locked for 60 seconds.`);
+      } else {
+        const errorMessage = err.response?.data?.message || 'Invalid credentials. Please try again.';
+        setError(`${errorMessage} (${5 - newAttempts} attempts remaining)`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -361,10 +424,15 @@ const UnifiedLoginPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !!lockoutUntil}
                   className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm tracking-wide"
                 >
-                  {isLoading ? (
+                  {lockoutUntil ? (
+                    <>
+                      <svg className="h-5 w-5 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                      <span>Locked ({lockoutCountdown}s)</span>
+                    </>
+                  ) : isLoading ? (
                     <>
                       <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                       <span>Checking...</span>
