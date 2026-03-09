@@ -65,7 +65,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer,
           {children}
         </div>
         {footer && (
-          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-2 p-4 sm:p-5 border-t border-slate-200 flex-shrink-0 bg-slate-50 sm:bg-white">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-2 p-4 sm:p-5 border-t border-slate-200 flex-shrink-0 bg-slate-50 sm:bg-white rounded-b-lg sm:rounded-b-xl">
             {footer}
           </div>
         )}

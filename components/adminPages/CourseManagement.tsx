@@ -4,7 +4,7 @@ import { Course, Subject, University } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Info, Pencil, Trash2, BookOpen, Plus } from 'lucide-react';
 import { useToast } from '../ui/Toast';
 
 interface CourseWithDetails extends Course {
@@ -23,7 +23,7 @@ const CourseManagement: React.FC = () => {
     const [form, setForm] = useState<{ course_name: string; university_id: number; acronym?: string; subject_name?: string } | null>(null);
     const [editCourse, setEditCourse] = useState<CourseWithDetails | null>(null);
     const [editSubject, setEditSubject] = useState<Subject | null>(null);
-    
+
     useEffect(() => {
         const fetchCourses = async () => {
             try {
@@ -57,10 +57,10 @@ const CourseManagement: React.FC = () => {
                 // Fetch subjects if not already fetched
                 const response = await apiClient.get(`/courses/${courseId}/subjects`);
                 const subjects = response.data;
-                setCourses(prevCourses => prevCourses.map(c => 
+                setCourses(prevCourses => prevCourses.map(c =>
                     c.course_id === courseId ? { ...c, subjects } : c
                 ));
-            } catch(err) {
+            } catch (err) {
                 console.error("Failed to fetch subjects", err);
             }
         }
@@ -126,66 +126,140 @@ const CourseManagement: React.FC = () => {
 
     return (
         <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-4 sm:mb-6">Course & Subject Management</h1>
-            <Card>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
-                    <h2 className="text-lg sm:text-xl font-semibold">Courses</h2>
-                    <Button onClick={openAddCourse} className="w-full sm:w-auto">Add Course</Button>
+            <div className="-mt-2 sm:-mt-4 lg:-mt-5 mb-4 sm:mb-6 bg-sky-600 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+                <div className="absolute inset-0 opacity-20 pointer-events-none">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
                 </div>
+                <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+                        <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
+                            <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+                        </div>
+                        <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+                            Manage courses, subjects, and their associated universities across the platform.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <Card>
+                {/* Card Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-5">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-primary-100 rounded-lg">
+                            <BookOpen className="h-4 w-4 text-primary-600" />
+                        </div>
+                        <h2 className="text-lg sm:text-xl font-semibold text-slate-800">Courses</h2>
+                        <span className="ml-1 px-2 py-0.5 text-xs font-medium bg-primary-50 text-primary-700 rounded-full border border-primary-200">
+                            {courses.length}
+                        </span>
+                    </div>
+                    <Button onClick={openAddCourse} className="w-full sm:w-auto flex items-center gap-1.5">
+                        <Plus className="h-4 w-4" /> Add Course
+                    </Button>
+                </div>
+
                 {/* Desktop Table View */}
-                <div className="hidden md:block overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"></th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Name</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acronym</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">University</th>
-                                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                    <table className="min-w-full">
+                        <thead>
+                            <tr className="bg-gradient-to-r from-primary-600 to-primary-700">
+                                <th scope="col" className="px-4 py-3 w-10"></th>
+                                <th scope="col" className="px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Course Name</th>
+                                <th scope="col" className="px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Acronym</th>
+                                <th scope="col" className="px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">University</th>
+                                <th scope="col" className="px-5 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white divide-y divide-slate-100">
                             {courses.map((course) => (
                                 <React.Fragment key={course.course_id}>
-                                    <tr className="hover:bg-gray-50 cursor-pointer" onClick={() => toggleSubjects(course.course_id)}>
-                                        <td className="px-6 py-4">
-                                            <button className="text-slate-500 hover:text-slate-800">
-                                                {openCourseId === course.course_id ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                                    <tr
+                                        className={`transition-colors duration-150 cursor-pointer ${openCourseId === course.course_id ? 'bg-primary-50/60' : 'hover:bg-slate-50'}`}
+                                        onClick={() => toggleSubjects(course.course_id)}
+                                    >
+                                        <td className="px-4 py-3.5 text-center">
+                                            <button className={`p-1 rounded-md transition-colors ${openCourseId === course.course_id ? 'text-primary-600 bg-primary-100' : 'text-slate-400 hover:text-primary-600 hover:bg-primary-50'}`}>
+                                                {openCourseId === course.course_id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                                             </button>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{course.course_name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{course.acronym || 'N/A'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{course.university?.name || 'N/A'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm space-x-2">
-                                            <Button variant="secondary" onClick={() => openEditCourse(course)}>Edit</Button>
-                                            <Button variant="danger" onClick={async () => { await apiClient.delete(`/courses/${course.course_id}`); const res = await apiClient.get('/courses'); setCourses(res.data); }}>Delete</Button>
+                                        <td className="px-5 py-3.5 text-sm font-semibold text-slate-800">{course.course_name}</td>
+                                        <td className="px-5 py-3.5">
+                                            {course.acronym
+                                                ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 border border-primary-200">{course.acronym}</span>
+                                                : <span className="text-xs text-slate-400 italic">—</span>
+                                            }
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                                {course.university?.name || 'N/A'}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button
+                                                    onClick={() => openEditCourse(course)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-lg transition-colors duration-150"
+                                                >
+                                                    <Pencil className="h-3 w-3" /> Edit
+                                                </button>
+                                                <button
+                                                    onClick={async () => { await apiClient.delete(`/courses/${course.course_id}`); const res = await apiClient.get('/courses'); setCourses(res.data); }}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors duration-150"
+                                                >
+                                                    <Trash2 className="h-3 w-3" /> Delete
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     {openCourseId === course.course_id && (
                                         <tr>
                                             <td colSpan={5} className="p-0">
-                                                <div className="px-6 py-4 bg-gray-50">
-                                                    <h4 className="text-sm font-semibold mb-2 ml-12">Subjects:</h4>
-                                                    <div className="ml-0 sm:ml-12 mb-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 items-center">
-                                                        <input className="border border-slate-300 rounded px-2 py-1" placeholder="New subject name" value={form?.subject_name || ''} onChange={(e) => setForm(prev => ({ ...(prev ?? { course_name: '', university_id: 0, acronym: '' }), subject_name: e.target.value }))} />
-                                                        <Button variant="secondary" onClick={() => addSubject(course.course_id)}>Add Subject</Button>
+                                                <div className="px-6 py-4 bg-primary-50/40 border-t border-primary-100">
+                                                    <p className="text-xs font-semibold text-primary-700 uppercase tracking-wider mb-3">Subjects</p>
+                                                    {/* Add subject input row */}
+                                                    <div className="flex gap-2 mb-4 max-w-lg">
+                                                        <input
+                                                            className="flex-1 border border-slate-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 rounded-lg px-3 py-1.5 text-sm outline-none transition"
+                                                            placeholder="New subject name…"
+                                                            value={form?.subject_name || ''}
+                                                            onChange={(e) => setForm(prev => ({ ...(prev ?? { course_name: '', university_id: 0, acronym: '' }), subject_name: e.target.value }))}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        />
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); addSubject(course.course_id); }}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors duration-150 shadow-sm"
+                                                        >
+                                                            <Plus className="h-3.5 w-3.5" /> Add
+                                                        </button>
                                                     </div>
+                                                    {/* Subject list */}
                                                     {course.subjects && course.subjects.length > 0 ? (
-                                                        <ul className="list-disc pl-16 space-y-1">
+                                                        <ul className="space-y-1.5">
                                                             {[...(course.subjects || [])]
                                                                 .sort((a, b) => a.subject_name.localeCompare(b.subject_name))
                                                                 .map(subject => (
-                                                                <li key={subject.subject_id} className="text-sm text-gray-700 flex items-center justify-between">
-                                                                    <span>{subject.subject_name}</span>
-                                                                    <div className="space-x-2">
-                                                                        <Button variant="secondary" onClick={() => openEditSubject(subject)}>Edit</Button>
-                                                                        <Button variant="danger" onClick={async () => { await apiClient.delete(`/courses/${course.course_id}/subjects/${subject.subject_id}`); const res = await apiClient.get(`/courses/${course.course_id}/subjects`); setCourses(prev => prev.map(c => c.course_id === course.course_id ? { ...c, subjects: res.data } as CourseWithDetails : c)); }}>Delete</Button>
-                                                                    </div>
-                                                                </li>
-                                                            ))}
+                                                                    <li key={subject.subject_id} className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-4 py-2 hover:border-primary-200 hover:bg-primary-50/30 transition-colors duration-150">
+                                                                        <span className="text-sm text-slate-700 font-medium">{subject.subject_name}</span>
+                                                                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                                                            <button
+                                                                                onClick={() => openEditSubject(subject)}
+                                                                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-md transition-colors"
+                                                                            >
+                                                                                <Pencil className="h-3 w-3" /> Edit
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={async () => { await apiClient.delete(`/courses/${course.course_id}/subjects/${subject.subject_id}`); const res = await apiClient.get(`/courses/${course.course_id}/subjects`); setCourses(prev => prev.map(c => c.course_id === course.course_id ? { ...c, subjects: res.data } as CourseWithDetails : c)); }}
+                                                                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-colors"
+                                                                            >
+                                                                                <Trash2 className="h-3 w-3" /> Delete
+                                                                            </button>
+                                                                        </div>
+                                                                    </li>
+                                                                ))}
                                                         </ul>
                                                     ) : (
-                                                        <p className="text-sm text-gray-500 ml-12">No subjects found for this course.</p>
+                                                        <p className="text-sm text-slate-400 italic">No subjects yet. Add one above.</p>
                                                     )}
                                                 </div>
                                             </td>
@@ -200,57 +274,90 @@ const CourseManagement: React.FC = () => {
                 {/* Mobile Card View */}
                 <div className="md:hidden space-y-3">
                     {courses.map((course) => (
-                        <Card key={course.course_id} className="p-4">
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-semibold text-slate-900 truncate">{course.course_name}</h3>
-                                        <p className="text-sm text-slate-500 truncate">{course.acronym ? `(${course.acronym})` : ''} {course.university?.name || 'N/A'}</p>
+                        <div key={course.course_id} className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                            {/* Card Header Row */}
+                            <div className="flex items-center justify-between px-4 py-3 bg-white">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-slate-900 truncate text-sm">{course.course_name}</h3>
+                                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                        {course.acronym && (
+                                            <span className="px-2 py-0.5 text-xs font-semibold bg-primary-100 text-primary-700 rounded-full border border-primary-200">{course.acronym}</span>
+                                        )}
+                                        <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-500 rounded-md border border-slate-200 truncate max-w-[160px]">
+                                            {course.university?.name || 'N/A'}
+                                        </span>
                                     </div>
-                                    <button 
-                                        onClick={() => toggleSubjects(course.course_id)}
-                                        className="p-2 text-slate-500 hover:text-slate-800 flex-shrink-0"
-                                    >
-                                        {openCourseId === course.course_id ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-                                    </button>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button variant="secondary" onClick={() => openEditCourse(course)} className="flex-1 text-sm">Edit</Button>
-                                    <Button variant="danger" onClick={async () => { await apiClient.delete(`/courses/${course.course_id}`); const res = await apiClient.get('/courses'); setCourses(res.data); }} className="flex-1 text-sm">Delete</Button>
-                                </div>
-                                {openCourseId === course.course_id && (
-                                    <div className="pt-3 border-t border-slate-200 space-y-3">
-                                        <h4 className="text-sm font-semibold">Subjects:</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            <input 
-                                                className="border border-slate-300 rounded px-2 py-1 text-sm flex-1" 
-                                                placeholder="New subject name" 
-                                                value={form?.subject_name || ''} 
-                                                onChange={(e) => setForm(prev => ({ ...(prev ?? { course_name: '', university_id: 0, acronym: '' }), subject_name: e.target.value }))} 
-                                            />
-                                            <Button variant="secondary" onClick={() => addSubject(course.course_id)} className="text-sm">Add Subject</Button>
-                                        </div>
-                                        {course.subjects && course.subjects.length > 0 ? (
-                                            <ul className="space-y-2">
-                                                {[...(course.subjects || [])]
-                                                    .sort((a, b) => a.subject_name.localeCompare(b.subject_name))
-                                                    .map(subject => (
-                                                    <li key={subject.subject_id} className="text-sm text-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-2 bg-slate-50 rounded">
-                                                        <span className="flex-1">{subject.subject_name}</span>
-                                                        <div className="flex gap-2 w-full sm:w-auto">
-                                                            <Button variant="secondary" onClick={() => openEditSubject(subject)} className="flex-1 sm:flex-none text-xs">Edit</Button>
-                                                            <Button variant="danger" onClick={async () => { await apiClient.delete(`/courses/${course.course_id}/subjects/${subject.subject_id}`); const res = await apiClient.get(`/courses/${course.course_id}/subjects`); setCourses(prev => prev.map(c => c.course_id === course.course_id ? { ...c, subjects: res.data } as CourseWithDetails : c)); }} className="flex-1 sm:flex-none text-xs">Delete</Button>
+                                <button
+                                    onClick={() => toggleSubjects(course.course_id)}
+                                    className={`ml-2 p-1.5 rounded-lg flex-shrink-0 transition-colors ${openCourseId === course.course_id ? 'text-primary-600 bg-primary-100' : 'text-slate-400 hover:text-primary-600 hover:bg-primary-50'}`}
+                                >
+                                    {openCourseId === course.course_id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                                </button>
+                            </div>
+                            {/* Action row */}
+                            <div className="flex gap-2 px-4 pb-3 bg-white">
+                                <button
+                                    onClick={() => openEditCourse(course)}
+                                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-lg transition-colors"
+                                >
+                                    <Pencil className="h-3 w-3" /> Edit
+                                </button>
+                                <button
+                                    onClick={async () => { await apiClient.delete(`/courses/${course.course_id}`); const res = await apiClient.get('/courses'); setCourses(res.data); }}
+                                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors"
+                                >
+                                    <Trash2 className="h-3 w-3" /> Delete
+                                </button>
+                            </div>
+                            {/* Expanded subjects panel */}
+                            {openCourseId === course.course_id && (
+                                <div className="border-t border-primary-100 bg-primary-50/40 px-4 py-3 space-y-3">
+                                    <p className="text-xs font-semibold text-primary-700 uppercase tracking-wider">Subjects</p>
+                                    <div className="flex gap-2">
+                                        <input
+                                            className="flex-1 border border-slate-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 rounded-lg px-3 py-1.5 text-sm outline-none transition"
+                                            placeholder="New subject name…"
+                                            value={form?.subject_name || ''}
+                                            onChange={(e) => setForm(prev => ({ ...(prev ?? { course_name: '', university_id: 0, acronym: '' }), subject_name: e.target.value }))}
+                                        />
+                                        <button
+                                            onClick={() => addSubject(course.course_id)}
+                                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" /> Add
+                                        </button>
+                                    </div>
+                                    {course.subjects && course.subjects.length > 0 ? (
+                                        <ul className="space-y-1.5">
+                                            {[...(course.subjects || [])]
+                                                .sort((a, b) => a.subject_name.localeCompare(b.subject_name))
+                                                .map(subject => (
+                                                    <li key={subject.subject_id} className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                                        <span className="text-sm text-slate-700 font-medium flex-1 truncate">{subject.subject_name}</span>
+                                                        <div className="flex gap-1.5 ml-2 shrink-0">
+                                                            <button
+                                                                onClick={() => openEditSubject(subject)}
+                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-md transition-colors"
+                                                            >
+                                                                <Pencil className="h-3 w-3" />
+                                                            </button>
+                                                            <button
+                                                                onClick={async () => { await apiClient.delete(`/courses/${course.course_id}/subjects/${subject.subject_id}`); const res = await apiClient.get(`/courses/${course.course_id}/subjects`); setCourses(prev => prev.map(c => c.course_id === course.course_id ? { ...c, subjects: res.data } as CourseWithDetails : c)); }}
+                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-colors"
+                                                            >
+                                                                <Trash2 className="h-3 w-3" />
+                                                            </button>
                                                         </div>
                                                     </li>
                                                 ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-sm text-gray-500">No subjects found for this course.</p>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </Card>
+                                        </ul>
+                                    ) : (
+                                        <p className="text-sm text-slate-400 italic">No subjects yet.</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     ))}
                 </div>
             </Card>

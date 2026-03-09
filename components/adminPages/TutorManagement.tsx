@@ -4,7 +4,7 @@ import { Tutor, TutorSubject } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
-import { Check, X, FileText, User, Mail, School, Book, Clock, CreditCard } from 'lucide-react';
+import { Check, X, FileText, User, Mail, School, Book, Clock, CreditCard, Info } from 'lucide-react';
 import { getFileUrl } from '../../services/api';
 
 const TutorManagement: React.FC = () => {
@@ -229,8 +229,22 @@ const TutorManagement: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-4 sm:mb-6">Tutor Application Management</h1>
-
+      <div className="-mt-2 sm:-mt-4 lg:-mt-5 mb-4 sm:mb-6 bg-sky-600 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
+        </div>
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+            <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
+              <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+            </div>
+            <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+              Review, approve, or reject pending tutor applications and credentials
+            </p>
+          </div>
+        </div>
+      </div>
       <Card>
         <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Pending Applications ({tutors.length})</h2>
         {/* Desktop Table View */}

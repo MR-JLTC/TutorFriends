@@ -4,7 +4,7 @@ import { Payment } from '../../types';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import Card from '../ui/Card';
-import { Upload, Eye, DollarSign, Star, CheckCircle2 } from 'lucide-react';
+import { Upload, Eye, DollarSign, Star, CheckCircle2, Info } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -338,20 +338,36 @@ const PaymentManagement: React.FC = () => {
     return (
         <div>
             <ToastContainer aria-label="Notification messages" />
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">Payment Management</h1>
-                {pendingCount > 0 && (
-                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                        {pendingCount} pending
+            <div className="-mt-2 sm:-mt-4 lg:-mt-5 mb-2 sm:mb-3 bg-sky-600 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 text-white shadow-xl relative overflow-hidden -mx-2 sm:-mx-3 md:mx-0 border border-primary-500/30">
+                <div className="absolute inset-0 opacity-20 pointer-events-none">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full -ml-16 -mb-16 blur-3xl"></div>
+                </div>
+                <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1 flex items-center gap-2 bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-md border border-white/20 shadow-inner">
+                        <div className="p-1 bg-white/20 rounded-md shadow-sm shrink-0">
+                            <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white drop-shadow-md" />
+                        </div>
+                        <p className="text-xs sm:text-sm md:text-base text-white font-medium leading-snug tracking-wide text-shadow-sm">
+                            Review and verify tutee payments, process tutor payouts, and manage payment disputes.
+                        </p>
                     </div>
-                )}
-                {completedBookings.length > 0 && (
-                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                        {completedBookings.length} waiting for payment
-                    </div>
-                )}
+                </div>
             </div>
-
+            {(pendingCount > 0 || completedBookings.length > 0) && (
+                <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
+                    {pendingCount > 0 && (
+                        <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                            {pendingCount} pending
+                        </div>
+                    )}
+                    {completedBookings.length > 0 && (
+                        <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                            {completedBookings.length} waiting for payment
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Completed Bookings Waiting for Payment */}
             {completedBookings.length > 0 && (
@@ -933,9 +949,9 @@ const PaymentManagement: React.FC = () => {
                                         <div>
                                             <p className="text-sm sm:text-base text-slate-500 font-bold mb-1 uppercase tracking-wide">Status</p>
                                             <span className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base font-extrabold rounded-lg border-2 ${statusColors[selectedProofModalPayment.status]} ${selectedProofModalPayment.status === 'confirmed' ? 'border-green-400' :
-                                                    selectedProofModalPayment.status === 'pending' ? 'border-yellow-400' :
-                                                        selectedProofModalPayment.status === 'rejected' ? 'border-red-400' :
-                                                            'border-blue-400'
+                                                selectedProofModalPayment.status === 'pending' ? 'border-yellow-400' :
+                                                    selectedProofModalPayment.status === 'rejected' ? 'border-red-400' :
+                                                        'border-blue-400'
                                                 }`}>
                                                 {selectedProofModalPayment.status.charAt(0).toUpperCase() + selectedProofModalPayment.status.slice(1)}
                                             </span>
@@ -1109,8 +1125,8 @@ const PaymentManagement: React.FC = () => {
                                                 <Star
                                                     key={i}
                                                     className={`h-5 w-5 ${i < Math.floor(viewProofBooking.tutee_rating!)
-                                                            ? 'text-yellow-400 fill-current'
-                                                            : 'text-slate-300'
+                                                        ? 'text-yellow-400 fill-current'
+                                                        : 'text-slate-300'
                                                         }`}
                                                 />
                                             ))}

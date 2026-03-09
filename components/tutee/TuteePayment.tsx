@@ -752,26 +752,30 @@ const TuteePayment: React.FC = () => {
 
                   {/* Only show payment instructions for statuses that allow payment submission */}
                   {allowsPaymentSubmission(booking) && (
-                    <div className="relative overflow-hidden bg-gradient-to-br from-primary-50/80 via-primary-100/60 to-primary-50/80 rounded-xl md:rounded-2xl border-2 border-primary-200/80 p-4 sm:p-5 md:p-7 lg:p-8 mb-4 md:mb-6 shadow-lg md:shadow-xl">
-                      <div className="absolute top-0 right-0 w-40 h-40 bg-primary-200/20 rounded-full -mr-20 -mt-20 blur-3xl hidden md:block"></div>
-                      <div className="relative">
-                        <h4 className="font-extrabold text-base sm:text-lg md:text-2xl lg:text-3xl text-slate-900 mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 md:gap-3">
-                          <div className="p-2 md:p-3 bg-primary-100 rounded-xl md:rounded-2xl shadow-md border-2 border-primary-200">
-                            <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-primary-700" />
+                    <div className="relative overflow-hidden bg-gradient-to-br from-white via-primary-50/30 to-white rounded-xl md:rounded-3xl border border-slate-200/60 p-5 sm:p-6 md:p-8 lg:p-10 mb-6 md:mb-8 shadow-sm hover:shadow-md transition-shadow duration-300">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-primary-100/40 rounded-full -mr-20 -mt-20 blur-3xl hidden md:block pointer-events-none"></div>
+                      <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-50/50 rounded-full -ml-20 -mb-20 blur-3xl hidden md:block pointer-events-none"></div>
+
+                      <div className="relative z-10">
+                        <h4 className="font-extrabold text-xl sm:text-2xl md:text-3xl text-slate-800 mb-6 sm:mb-8 flex items-center gap-3 md:gap-4 tracking-tight">
+                          <div className="p-2.5 md:p-3 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl shadow-sm border border-primary-100/50">
+                            <CreditCard className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary-600" />
                           </div>
                           Payment Instructions
                         </h4>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
                           {/* Admin QR Code Section */}
-                          <div className="flex flex-col items-center justify-center p-4 sm:p-5 md:p-6 lg:p-8 bg-white rounded-xl md:rounded-2xl border-2 border-primary-200 shadow-md md:shadow-lg">
+                          <div className="flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 bg-white/60 backdrop-blur-sm rounded-2xl md:rounded-3xl border border-slate-200/50 shadow-sm transition-all duration-300 hover:bg-white/80">
                             {admins.length > 0 ? (
                               <>
-                                <p className="text-sm sm:text-base md:text-lg text-slate-700 font-bold mb-3 sm:mb-4 md:mb-5 text-center">Scan this QR code to pay:</p>
-                                <div className="relative">
+                                <p className="text-sm md:text-base text-slate-600 font-bold mb-5 sm:mb-6 text-center uppercase tracking-wider">Scan this QR code to pay</p>
+                                <div className="relative group/qr">
+                                  <div className="absolute -inset-2 bg-gradient-to-r from-primary-200 to-indigo-200 rounded-3xl blur opacity-30 group-hover/qr:opacity-50 transition duration-500"></div>
                                   <img
                                     src={getFileUrl(admins[0].qr_code_url)}
                                     alt={`${admins[0].name} QR`}
-                                    className="h-48 w-48 sm:h-56 sm:w-56 md:h-64 md:w-64 lg:h-72 lg:w-72 object-contain bg-white rounded-xl md:rounded-2xl shadow-lg border-2 border-primary-100 p-2"
+                                    className="relative h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 object-contain bg-white rounded-2xl shadow-sm border border-white p-3 transition-transform duration-300 group-hover/qr:scale-[1.02]"
                                   />
                                   <button
                                     onClick={() => {
@@ -779,95 +783,95 @@ const TuteePayment: React.FC = () => {
                                       setQrModalTitle(admins[0].name);
                                       setQrModalOpen(true);
                                     }}
-                                    className="absolute top-2 right-2 p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+                                    className="absolute -top-3 -right-3 p-3 bg-white text-slate-500 hover:text-primary-600 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 hover:border-primary-100 transition-all opacity-0 group-hover/qr:opacity-100 scale-95 group-hover/qr:scale-100"
                                     title="View larger"
                                     style={{ WebkitTapHighlightColor: 'transparent' }}
                                   >
-                                    <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                                     </svg>
                                   </button>
                                 </div>
-                                <p className="mt-4 sm:mt-5 md:mt-6 text-base sm:text-lg md:text-xl font-bold text-slate-900">{admins[0].name}</p>
-                                <p className="mt-2 text-xs sm:text-sm text-slate-600 text-center">Click the icon on the QR code to view larger</p>
+                                <p className="mt-6 sm:mt-8 text-lg sm:text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight">{admins[0].name}</p>
+                                <p className="mt-2 text-xs sm:text-sm text-slate-500 text-center font-medium">Click the icon on the QR code to view larger</p>
                               </>
                             ) : (
-                              <div className="text-center py-8">
-                                <CreditCard className="h-12 w-12 sm:h-16 sm:w-16 text-slate-400 mx-auto mb-3" />
-                                <p className="text-sm sm:text-base text-slate-500">Admin QR code not available</p>
+                              <div className="text-center py-12">
+                                <CreditCard className="h-16 w-16 sm:h-20 sm:w-20 text-slate-200 mx-auto mb-4" />
+                                <p className="text-sm sm:text-base text-slate-500 font-medium">Admin QR code not available</p>
                               </div>
                             )}
                           </div>
 
                           {/* Payment Form Section */}
-                          <div className="bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 border-2 border-slate-200/80 shadow-md md:shadow-lg space-y-4 sm:space-y-5 md:space-y-6">
-                            <div>
-                              <label className="block text-sm sm:text-base md:text-lg font-extrabold text-slate-900 mb-2 sm:mb-3 flex items-center gap-2">
-                                <svg className="h-4 w-4 md:h-5 md:w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                          <div className="bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-10 border border-slate-200/60 shadow-sm space-y-6 sm:space-y-8 flex flex-col justify-center transition-all duration-300 hover:bg-white">
+                            <div className="group">
+                              <label className="text-sm sm:text-base md:text-lg font-bold text-slate-700 mb-3 flex items-center gap-2.5">
+                                <span className="bg-slate-100 p-1.5 rounded-lg text-slate-500 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors"><svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
                                 Amount to Pay
                               </label>
                               {calculatedAmount > 0 ? (
-                                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl md:rounded-2xl px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 border-2 border-primary-200 shadow-lg">
+                                <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
                                   ₱{calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
                               ) : (
-                                <div className="text-sm sm:text-base text-slate-600 bg-slate-50 rounded-xl md:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 border-2 border-slate-200 font-semibold">
+                                <div className="text-sm sm:text-base text-slate-500 py-2 font-medium bg-slate-50 rounded-xl px-4 border border-slate-100 w-max">
                                   Session rate not set
                                 </div>
                               )}
                             </div>
 
-                            <div>
-                              <label className="block text-sm sm:text-base md:text-lg font-extrabold text-slate-900 mb-2 sm:mb-3 flex items-center gap-2">
-                                <svg className="h-4 w-4 md:h-5 md:w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
+                            <div className="group">
+                              <label className="text-sm sm:text-base md:text-lg font-bold text-slate-700 mb-3 flex items-center gap-2.5">
+                                <span className="bg-slate-100 p-1.5 rounded-lg text-slate-500 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors"><svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg></span>
                                 Amount Paid
                               </label>
-                              <input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={amountByBooking[booking.id] || (calculatedAmount > 0 && !isRejectedStatus(booking) ? calculatedAmount.toFixed(2) : '')}
-                                onChange={(e) => setAmountByBooking(prev => ({ ...prev, [booking.id]: e.target.value }))}
-                                className="w-full border-2 border-slate-300 rounded-xl md:rounded-2xl px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 md:py-4 text-sm sm:text-base md:text-lg font-semibold focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
-                                placeholder="0.00"
-                              />
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                  <span className="text-slate-400 font-bold sm:text-xl">₱</span>
+                                </div>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={amountByBooking[booking.id] || (calculatedAmount > 0 && !isRejectedStatus(booking) ? calculatedAmount.toFixed(2) : '')}
+                                  onChange={(e) => setAmountByBooking(prev => ({ ...prev, [booking.id]: e.target.value }))}
+                                  className="w-full pl-11 pr-5 py-3.5 sm:py-4 bg-slate-50/50 border border-slate-200 rounded-xl md:rounded-2xl text-slate-800 text-lg sm:text-xl font-bold placeholder-slate-300 focus:bg-white focus:ring-4 focus:ring-primary-400/10 focus:border-primary-400 transition-all hover:bg-slate-50"
+                                  placeholder="0.00"
+                                />
+                              </div>
                               {calculatedAmount > 0 && !isRejectedStatus(booking) && (
-                                <p className="text-[10px] sm:text-xs text-slate-500 mt-1.5">Amount auto-filled based on session rate. You can enter a higher amount if needed.</p>
+                                <p className="text-[11px] sm:text-xs text-slate-400 mt-2 font-medium ml-1">Auto-filled based on session rate. You can edit if needed.</p>
                               )}
                               {isRejectedStatus(booking) && (
-                                <p className="text-[10px] sm:text-xs text-amber-600 mt-1.5 font-medium">Please enter the amount you paid</p>
+                                <p className="text-[11px] sm:text-xs text-rose-500 mt-2 font-medium ml-1">Please verify and enter the correct amount paid</p>
                               )}
                             </div>
 
-                            {/* Upload section - always show for statuses that allow payment submission */}
-                            <div className="space-y-2 sm:space-y-3">
-                              <label className="block text-xs sm:text-sm md:text-base font-semibold text-slate-800">Upload Payment Proof</label>
-                              <div className="relative">
+                            {/* Upload section */}
+                            <div className="space-y-4">
+                              <label className="text-sm sm:text-base md:text-lg font-bold text-slate-700 mb-1 flex items-center gap-2.5">
+                                <span className="bg-slate-100 p-1.5 rounded-lg text-slate-500"><Upload className="h-4 w-4 md:h-5 md:w-5" /></span>
+                                Upload Payment Proof
+                              </label>
+
+                              <div className="relative w-full">
                                 <input
                                   type="file"
                                   accept="image/*"
                                   onChange={(e) => handlePaymentFileChange(e, booking.id)}
-                                  className="w-full text-xs sm:text-sm md:text-base file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors"
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                   id={`file-input-${booking.id}`}
                                 />
-                              </div>
-                              {selectedPaymentFiles[booking.id] && (
-                                <div className="flex items-center gap-2 p-2 sm:p-2.5 bg-green-50 border border-green-200 rounded-lg">
-                                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
-                                  <span className="text-[10px] sm:text-xs md:text-sm text-green-700 truncate flex-1">{selectedPaymentFiles[booking.id]?.name}</span>
-                                  <button
-                                    onClick={() => setSelectedPaymentFiles(prev => { const p = { ...prev }; delete p[booking.id]; return p; })}
-                                    className="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium flex-shrink-0"
-                                    aria-label="Remove file"
-                                  >
-                                    Remove
-                                  </button>
+                                <div className={`w-full flex items-center justify-between px-5 py-4 border ${selectedPaymentFiles[booking.id] ? 'border-primary-400 bg-primary-50/20 shadow-[0_0_0_4px_rgba(6,81,237,0.05)]' : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'} rounded-xl md:rounded-2xl transition-all duration-200`}>
+                                  <span className={`text-sm sm:text-base tracking-wide truncate pr-4 font-semibold ${selectedPaymentFiles[booking.id] ? 'text-primary-700' : 'text-slate-400'}`}>
+                                    {selectedPaymentFiles[booking.id] ? selectedPaymentFiles[booking.id]?.name : 'Browse for an image file...'}
+                                  </span>
+                                  <div className={`p-2 rounded-xl shrink-0 ${selectedPaymentFiles[booking.id] ? 'bg-primary-100/50 text-primary-600' : 'bg-slate-200/50 text-slate-400'}`}>
+                                    <Upload className="h-5 w-5" />
+                                  </div>
                                 </div>
-                              )}
+                              </div>
 
                               {/* Amount validation helper */}
                               {amountByBooking[booking.id] && calculatedAmount > 0 && (() => {
@@ -875,18 +879,9 @@ const TuteePayment: React.FC = () => {
                                 const isValidAmount = !isNaN(amountPaid) && amountPaid >= calculatedAmount;
                                 if (!isValidAmount) {
                                   return (
-                                    <div className="p-2 sm:p-2.5 bg-amber-50 border border-amber-300 rounded-lg">
-                                      <p className="text-[10px] sm:text-xs text-amber-800 font-medium">
-                                        ⚠️ Amount paid (₱{amountPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) must be at least ₱{calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (amount to pay). You can pay more if needed.
-                                      </p>
-                                    </div>
-                                  );
-                                }
-                                if (amountPaid > calculatedAmount) {
-                                  return (
-                                    <div className="p-2 sm:p-2.5 bg-blue-50 border border-blue-300 rounded-lg">
-                                      <p className="text-[10px] sm:text-xs text-blue-800 font-medium">
-                                        ✓ Amount paid (₱{amountPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) is greater than the required amount. This is acceptable.
+                                    <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl">
+                                      <p className="text-xs sm:text-sm text-rose-600 font-medium">
+                                        ⚠️ Paid amount (₱{amountPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) is less than required (₱{calculatedAmount}).
                                       </p>
                                     </div>
                                   );
@@ -908,24 +903,23 @@ const TuteePayment: React.FC = () => {
                                     !amountByBooking[booking.id] ||
                                     !hasValidAmount;
                                 })()}
-                                className="w-full flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 md:py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl md:rounded-2xl hover:from-primary-700 hover:to-primary-800 active:from-primary-800 active:to-primary-900 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-lg md:shadow-xl hover:shadow-2xl disabled:shadow-none text-sm sm:text-base md:text-lg font-extrabold touch-manipulation transform hover:scale-[1.02] disabled:transform-none"
+                                className="w-full mt-2 flex items-center justify-center gap-2 sm:gap-3 px-6 py-4 bg-slate-800 text-white rounded-xl md:rounded-2xl hover:bg-slate-900 active:bg-black disabled:bg-slate-100 disabled:text-slate-400 disabled:border disabled:border-slate-200 disabled:cursor-not-allowed transition-all text-base sm:text-lg font-bold tracking-wide group/btn"
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
                               >
                                 {uploadingPayment ? (
                                   <>
-                                    <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <span>Submitting...</span>
+                                    <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    <span>Processing...</span>
                                   </>
                                 ) : (
                                   <>
-                                    <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
-                                    <span>{isRejectedStatus(booking) ? 'Resubmit Payment Proof' : 'Submit Payment Proof'}</span>
+                                    <span>{isRejectedStatus(booking) ? 'Resubmit Proof' : 'Submit Proof'}</span>
+                                    <svg className="h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                                   </>
                                 )}
                               </button>
+
+                              {/* Error Reporting array */}
                               {(() => {
                                 const amountPaid = amountByBooking[booking.id] ? Number(amountByBooking[booking.id]) : 0;
                                 const hasValidAmount = calculatedAmount > 0
@@ -934,25 +928,22 @@ const TuteePayment: React.FC = () => {
                                 const missingRequirements = [];
 
                                 if (admins.length === 0) missingRequirements.push('Admin QR code not available');
-                                if (!selectedPaymentFiles[booking.id]) missingRequirements.push('Please select a payment proof image');
-                                if (!amountByBooking[booking.id]) missingRequirements.push('Please enter the amount paid');
+                                if (!selectedPaymentFiles[booking.id]) missingRequirements.push('Select a payment proof image');
+                                if (!amountByBooking[booking.id]) missingRequirements.push('Enter the amount paid');
                                 else if (calculatedAmount > 0 && (isNaN(amountPaid) || amountPaid < calculatedAmount)) {
                                   missingRequirements.push(`Amount paid must be at least ₱${calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
                                 } else if (calculatedAmount === 0 && (isNaN(amountPaid) || amountPaid <= 0)) {
-                                  missingRequirements.push('Please enter a valid amount');
+                                  missingRequirements.push('Enter a valid amount');
                                 }
 
                                 return missingRequirements.length > 0 ? (
-                                  <div className="text-[10px] sm:text-xs text-slate-500 space-y-0.5">
+                                  <div className="pt-2 flex flex-wrap gap-2 text-[11px] sm:text-xs">
                                     {missingRequirements.map((req, idx) => (
-                                      <p key={idx}>• {req}</p>
+                                      <span key={idx} className="bg-slate-100 text-slate-500 px-2.5 py-1.5 rounded-lg font-medium">{req}</span>
                                     ))}
                                   </div>
                                 ) : null;
                               })()}
-                              <p className="text-[10px] sm:text-xs text-slate-500 leading-relaxed">
-                                Upload a screenshot of your payment to the admin QR code above (max 5MB, JPG/PNG).
-                              </p>
                             </div>
                           </div>
                         </div>

@@ -89,7 +89,7 @@ export interface Payment {
   student_id: number;
   tutor_id: number;
   amount: number;
-  status: 'pending' | 'confirmed' | 'rejected' | 'refunded';
+  status: 'pending' | 'confirmed' | 'rejected' | 'refunded' | 'paid';
   created_at: string;
   dispute_status?: 'none' | 'open' | 'under_review' | 'resolved' | 'rejected';
   dispute_proof_url?: string;

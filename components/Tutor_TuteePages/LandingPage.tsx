@@ -1270,7 +1270,7 @@ const LandingPage: React.FC = () => {
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500"></span>
                   </span>
                   <span className="text-[11px] sm:text-[13px] font-medium text-slate-300 tracking-wide">
-                    v3.3.0
+                    v3.3.1
                   </span>
                 </div>
                 <div className="w-px h-2 sm:h-3 bg-slate-700"></div>
