@@ -626,7 +626,7 @@ const DashboardContent: React.FC = () => {
                   </div>
                   <div className="flex flex-col sm:items-center">
                     <p className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-800 tracking-tight group-hover:text-amber-600 transition-colors tabular-nums">{stats.pendingApplications.toLocaleString('en-US')}</p>
-                    <p className="text-[10px] sm:text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-[0.1em] mt-0.5 sm:mt-1 sm:text-center">Pending Apps</p>
+                    <p className="text-[10px] sm:text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-[0.1em] mt-0.5 sm:mt-1 sm:text-center">Pending Applications</p>
                   </div>
                 </div>
 
