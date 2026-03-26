@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import Logo from '../../components/Logo';
@@ -33,62 +33,90 @@ const LightbulbIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 const LiveStats: React.FC = () => {
   const [stats, setStats] = useState<{ students: number; tutors: number; universities: number; courses: number; sessions: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchStats = async (signal?: AbortSignal) => {
+    try {
+      const res = await apiClient.get(`/landing/stats?_t=${Date.now()}`, { signal });
+      setStats(res.data);
+      setError(null);
+    } catch (e: any) {
+      if (e.name === 'CanceledError' || e.name === 'AbortError') return;
+      setError('Unable to load statistics');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let mounted = true;
-    let intervalId: NodeJS.Timeout | null = null;
-    let hasFailed = false;
+    const controller = new AbortController();
+    fetchStats(controller.signal);
 
-    const fetchStats = async () => {
-      if (hasFailed) return;
-      try {
-        const res = await apiClient.get(`/landing/stats?_t=${Date.now()}`);
-
-        if (mounted) {
-          setStats(res.data);
-          setError(null);
-        }
-      } catch (e: any) {
-        if (mounted) {
-          if (!stats) setError('Failed to load stats (backend offline)');
-        }
-        if (e.isNetworkError || e.message === 'Network Error') {
-          hasFailed = true;
-          if (intervalId) clearInterval(intervalId);
-        }
-      }
-    };
-
-    fetchStats();
-    intervalId = setInterval(fetchStats, 5000); // Polling reduced
+    const intervalId = setInterval(() => fetchStats(), 10000);
 
     return () => {
-      mounted = false;
-      if (intervalId) clearInterval(intervalId);
+      controller.abort();
+      clearInterval(intervalId);
     };
   }, []);
 
+  const statLabels = ['Students', 'Tutors', 'Universities', 'Courses', 'Sessions'] as const;
+
+  // ── Loading state: shimmer skeletons ──
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-24">
+        {statLabels.map((label) => (
+          <div key={label} className="bg-white/40 backdrop-blur-md rounded-2xl border border-white/30 p-6 text-center">
+            <div className="h-4 w-20 mx-auto bg-slate-200/60 rounded-md mb-4 animate-pulse"></div>
+            <div className="h-9 w-16 mx-auto bg-slate-200/60 rounded-lg animate-pulse"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // ── Error state (no data loaded): polished empty state ──
+  if (error && !stats) {
+    return (
+      <div className="mb-24">
+        <div className="flex flex-col items-center justify-center py-12 px-6 bg-white/40 backdrop-blur-md rounded-2xl border border-slate-100/60">
+          <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+            <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+            </svg>
+          </div>
+          <p className="text-slate-500 text-sm font-medium mb-1">Statistics currently unavailable</p>
+          <p className="text-slate-400 text-xs mb-5">Could not connect to the server</p>
+          <button
+            onClick={() => { setIsLoading(true); setError(null); fetchStats(); }}
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors duration-200"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Success state: show actual numbers ──
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-24">
-      {['Students', 'Tutors', 'Universities', 'Courses', 'Sessions'].map((label, idx) => {
+      {statLabels.map((label) => {
         const key = label.toLowerCase() as 'students' | 'tutors' | 'universities' | 'courses' | 'sessions';
-        const value = stats ? stats[key] : undefined;
+        const value = stats ? stats[key] : 0;
         return (
           <div key={label} className="bg-white/60 backdrop-blur-md rounded-2xl border border-white/50 p-6 text-center shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 group">
             <p className="text-slate-500 text-sm font-medium uppercase tracking-wider mb-2 group-hover:text-sky-600 transition-colors">{label}</p>
-            {value !== undefined ? (
-              <p className="text-3xl lg:text-4xl font-black text-slate-800 mt-1 bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-transparent transform transition-all duration-500 animate-in fade-in slide-in-from-bottom-2">
-                {value.toLocaleString()}
-              </p>
-            ) : (
-              <div className="h-8 w-24 mx-auto mt-2 bg-slate-200/80 rounded-lg animate-pulse"></div>
-            )}
+            <p className="text-3xl lg:text-4xl font-black text-slate-800 mt-1 bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-transparent transform transition-all duration-500 animate-in fade-in slide-in-from-bottom-2">
+              {value.toLocaleString()}
+            </p>
           </div>
         );
       })}
-      {error && (
-        <div className="col-span-2 md:col-span-5 text-center text-slate-500 text-sm">Stats unavailable</div>
-      )}
     </div>
   );
 };
@@ -274,63 +302,112 @@ const RoleSelectionModal: React.FC<{ isOpen: boolean; onClose: () => void; onNav
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { notify } = useToast();
+  const networkStatusRef = useRef<string>('init');
 
+  // ── Real-time network connectivity monitor ──
   useEffect(() => {
-    const checkNetworkQuality = () => {
-      if (!navigator.onLine) {
-        notify('You are currently offline', 'error');
-        return;
-      }
+    let pingInterval: ReturnType<typeof setInterval> | null = null;
+    let destroyed = false;
 
-      const connection = (navigator as any).connection;
-      if (connection) {
-        // criteria for "Excellent": 4g and low latency
-        if (connection.effectiveType === '4g' && connection.rtt < 100 && connection.downlink > 10) {
-          notify('Excellent internet connection 🚀', 'success');
-        } else if (connection.effectiveType === '4g') {
-          notify('Good internet connection', 'info');
-        } else if (['3g', '2g', 'slow-2g'].includes(connection.effectiveType)) {
-          notify('Internet connection is slow', 'error');
+    // Always-live notifier via the global escape hatch
+    const fire = (msg: string, type: 'success' | 'error' | 'info') => {
+      if (typeof (window as any).__notify === 'function') {
+        (window as any).__notify(msg, type);
+      }
+    };
+
+    // ── Core: set status and show toast only when it actually changes ──
+    const statusMessages: Record<string, { msg: string; initMsg?: string; type: 'success' | 'error' | 'info'; initType?: 'success' | 'error' | 'info' }> = {
+      offline: { msg: 'No internet connection. You are currently offline.', type: 'error' },
+      online: { msg: 'Internet connection restored.', initMsg: 'Internet connection available.', type: 'success', initType: 'info' },
+      good: { msg: 'Internet connection restored.', initMsg: 'Internet connection available.', type: 'success', initType: 'info' },
+      stable: { msg: 'Internet connection restored.', initMsg: 'Internet connection available.', type: 'success', initType: 'info' },
+      excellent: { msg: 'Excellent internet connection 🚀', type: 'success' },
+      slow: { msg: 'Internet connection is slow. Please check your network.', type: 'error' },
+    };
+
+    const setStatus = (newStatus: string) => {
+      const prev = networkStatusRef.current;
+      if (prev === newStatus) return;
+      networkStatusRef.current = newStatus;
+
+      const config = statusMessages[newStatus];
+      if (!config) return;
+
+      const isFirstCheck = prev === 'init';
+      fire(isFirstCheck && config.initMsg ? config.initMsg : config.msg, isFirstCheck && config.initType ? config.initType : config.type);
+    };
+
+    // ── Heartbeat ping: actually test if we can reach the internet ──
+    // Uses a tiny HEAD request to a public origin. If it fails → offline.
+    const ping = async () => {
+      if (destroyed) return;
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        await fetch('https://www.google.com/generate_204', {
+          method: 'HEAD',
+          mode: 'no-cors',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        // Fetch succeeded → we are online.  Determine quality.
+        const conn = (navigator as any).connection;
+        if (conn) {
+          if (conn.effectiveType === '4g' && conn.rtt < 100 && conn.downlink > 10) {
+            setStatus('excellent');
+          } else if (conn.effectiveType === '4g') {
+            setStatus('good');
+          } else if (['3g', '2g', 'slow-2g'].includes(conn.effectiveType)) {
+            setStatus('slow');
+          } else {
+            setStatus('stable');
+          }
         } else {
-          notify('Internet connection stable', 'info');
+          setStatus('online');
         }
-      } else {
-        // Fallback if connection API is not available
-        notify('Internet connection available', 'info');
+      } catch {
+        // Fetch failed → truly offline
+        setStatus('offline');
       }
     };
 
-    // Check on mount
-    const timer = setTimeout(checkNetworkQuality, 1000);
+    // ── Browser events for instant interface-level detection ──
+    const handleOffline = () => setStatus('offline');
+    const handleOnline = () => { ping(); }; // verify with a real ping
 
-    // Check when browser history navigation occurs (back/forward cache)
-    const handlePageShow = (event: PageTransitionEvent) => {
-      // event.persisted is true if the page was restored from the bfcache
-      if (event.persisted) {
-        setTimeout(checkNetworkQuality, 500);
-      }
+    // ── Network Information API for quality shifts ──
+    const handleConnectionChange = () => {
+      if (!navigator.onLine) return;
+      ping(); // re-verify quality with actual connectivity check
     };
 
-    // Standard visibility change (tab switching)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        checkNetworkQuality();
-      }
-    };
+    // Wire up everything
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
-    window.addEventListener('pageshow', handlePageShow);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('online', checkNetworkQuality);
-    window.addEventListener('offline', checkNetworkQuality);
+    const connection = (navigator as any).connection;
+    if (connection) {
+      connection.addEventListener('change', handleConnectionChange);
+    }
+
+    // Initial ping (silent on first load due to 'init' guard)
+    ping();
+
+    // Heartbeat: check every 3 seconds for real-time accuracy
+    pingInterval = setInterval(ping, 3000);
 
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener('pageshow', handlePageShow);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('online', checkNetworkQuality);
-      window.removeEventListener('offline', checkNetworkQuality);
+      destroyed = true;
+      if (pingInterval) clearInterval(pingInterval);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      if (connection) {
+        connection.removeEventListener('change', handleConnectionChange);
+      }
     };
-  }, [notify]);
+  }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -346,6 +423,7 @@ const LandingPage: React.FC = () => {
   const [tuteeModalKey, setTuteeModalKey] = useState(0);
   const [partnerUniversities, setPartnerUniversities] = useState<Array<{ university_id: number; name: string; logo_url?: string; status?: string }>>([]);
   const [isLoadingUniversities, setIsLoadingUniversities] = useState(true);
+  const [universitiesError, setUniversitiesError] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -466,39 +544,30 @@ const LandingPage: React.FC = () => {
     };
   }, []);
 
+  const fetchUniversities = async (signal?: AbortSignal) => {
+    try {
+      const res = await apiClient.get(`/universities?_t=${Date.now()}`, { signal });
+      const rows = Array.isArray(res.data) ? res.data : [];
+      const active = rows.filter((u: any) => (u.status || 'active') === 'active');
+      setPartnerUniversities(active);
+      setUniversitiesError(false);
+    } catch (err: any) {
+      if (err.name === 'CanceledError' || err.name === 'AbortError') return;
+      setUniversitiesError(true);
+    } finally {
+      setIsLoadingUniversities(false);
+    }
+  };
+
   useEffect(() => {
-    let mounted = true;
-    let intervalId: NodeJS.Timeout | null = null;
-    let hasFailed = false;
+    const controller = new AbortController();
+    fetchUniversities(controller.signal);
 
-    const fetchUniversities = async () => {
-      if (hasFailed) return;
-      try {
-        const res = await apiClient.get(`/universities?_t=${Date.now()}`);
-
-        if (mounted) {
-          const rows = Array.isArray(res.data) ? res.data : [];
-          const active = rows.filter((u: any) => (u.status || 'active') === 'active');
-          setPartnerUniversities(active);
-        }
-      } catch (err: any) {
-        if (err.isNetworkError || err.message === 'Network Error') {
-          hasFailed = true;
-          if (intervalId) clearInterval(intervalId);
-        }
-      } finally {
-        if (mounted) {
-          setIsLoadingUniversities(false);
-        }
-      }
-    };
-
-    fetchUniversities();
-    intervalId = setInterval(fetchUniversities, 5000); // Polling reduced for local view
+    const intervalId = setInterval(() => fetchUniversities(), 10000);
 
     return () => {
-      mounted = false;
-      if (intervalId) clearInterval(intervalId);
+      controller.abort();
+      clearInterval(intervalId);
     };
   }, []);
 
@@ -698,6 +767,25 @@ const LandingPage: React.FC = () => {
                   </div>
                 ))}
               </div>
+            ) : universitiesError && partnerUniversities.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 px-6 bg-white/40 backdrop-blur-md rounded-2xl border border-slate-100/60">
+                <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                  <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                  </svg>
+                </div>
+                <p className="text-slate-500 text-sm font-medium mb-1">Unable to load partnered institutions</p>
+                <p className="text-slate-400 text-xs mb-5">Could not connect to the server</p>
+                <button
+                  onClick={() => { setIsLoadingUniversities(true); setUniversitiesError(false); fetchUniversities(); }}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors duration-200"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Retry
+                </button>
+              </div>
             ) : partnerUniversities.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 sm:gap-8">
                 {partnerUniversities.map((u) => (
@@ -714,7 +802,15 @@ const LandingPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-slate-500">No partners yet.</p>
+              <div className="flex flex-col items-center justify-center py-12 px-6 bg-white/40 backdrop-blur-md rounded-2xl border border-slate-100/60">
+                <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                  <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21" />
+                  </svg>
+                </div>
+                <p className="text-slate-500 text-sm font-medium mb-1">No partnered institutions yet</p>
+                <p className="text-slate-400 text-xs">Partner universities will appear here once added</p>
+              </div>
             )}
           </div>
         </section>
@@ -1270,7 +1366,7 @@ const LandingPage: React.FC = () => {
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500"></span>
                   </span>
                   <span className="text-[11px] sm:text-[13px] font-medium text-slate-300 tracking-wide">
-                    v3.3.1
+                    v3.3.3
                   </span>
                 </div>
                 <div className="w-px h-2 sm:h-3 bg-slate-700"></div>
