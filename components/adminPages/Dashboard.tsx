@@ -401,7 +401,8 @@ const DashboardContent: React.FC = () => {
     if (!payouts || payouts.length === 0 || !payments || payments.length === 0) {
       const lastNMonths = Array.from({ length: monthsFilter }, (_, i) => {
         const date = new Date();
-        date.setMonth(date.getMonth() - (monthsFilter - 1 - i));
+        date.setDate(1); // Set to the 1st of the month to prevent day-of-month overflow
+        date.setMonth(new Date().getMonth() - (monthsFilter - 1 - i));
         return {
           month: date.toLocaleDateString('en-US', { month: 'short' }),
           'Platform Revenue': 0
@@ -421,7 +422,8 @@ const DashboardContent: React.FC = () => {
 
     const lastNMonths = Array.from({ length: monthsFilter }, (_, i) => {
       const date = new Date();
-      date.setMonth(date.getMonth() - (monthsFilter - 1 - i));
+      date.setDate(1); // Set to the 1st of the month to prevent day-of-month overflow
+      date.setMonth(new Date().getMonth() - (monthsFilter - 1 - i));
       return {
         month: date.toLocaleDateString('en-US', { month: 'short' }),
         monthIndex: date.getMonth(),
@@ -791,7 +793,7 @@ const DashboardContent: React.FC = () => {
                 stroke="#e2e8f0"
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => value >= 1000 ? `₱${(value / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}k` : `₱${value}`}
               />
               <Tooltip
                 cursor={{ fill: 'rgba(16, 185, 129, 0.06)', radius: 6 }}

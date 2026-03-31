@@ -126,14 +126,21 @@ interface Slide {
   alt: string;
 }
 
-const slides: Slide[] = [
-  {
+/** 
+ * I removed this part 
+ * {
     src: '/assets/images/dev_slideMainc.jpg',
     alt: 'The CEO & Developer of the companys'
   },
   {
     src: '/assets/images/dev_slide1c.jpg',
     alt: 'The Project Manager of the company'
+  },
+ * **/
+const slides: Slide[] = [
+  {
+    src: '/assets/images/bgp4.jpg',
+    alt: 'Online tutoring session in progress'
   },
   {
     src: '/assets/images/bgp1.jpg',
@@ -148,7 +155,27 @@ const slides: Slide[] = [
     alt: 'Students in a university lecture hall, focused on learning'
   },
   {
-    src: '/assets/images/bgp4.jpg',
+    src: '/assets/images/bg5.png',
+    alt: 'Online tutoring session in progress'
+  },
+  {
+    src: '/assets/images/bg6.png',
+    alt: 'Online tutoring session in progress'
+  },
+  {
+    src: '/assets/images/bg7.png',
+    alt: 'Online tutoring session in progress'
+  },
+  {
+    src: '/assets/images/bg8.jpeg',
+    alt: 'Online tutoring session in progress'
+  },
+  {
+    src: '/assets/images/bg9.jpeg',
+    alt: 'Online tutoring session in progress'
+  },
+  {
+    src: '/assets/images/bg10.jpeg',
     alt: 'Online tutoring session in progress'
   }
 ];
@@ -1366,7 +1393,7 @@ const LandingPage: React.FC = () => {
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500"></span>
                   </span>
                   <span className="text-[11px] sm:text-[13px] font-medium text-slate-300 tracking-wide">
-                    v3.3.3
+                    v3.3.4
                   </span>
                 </div>
                 <div className="w-px h-2 sm:h-3 bg-slate-700"></div>

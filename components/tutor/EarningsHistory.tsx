@@ -279,7 +279,8 @@ const EarningsHistory: React.FC = () => {
   const chartData = useMemo(() => {
     const lastNMonths = Array.from({ length: monthsFilter }, (_, i) => {
       const date = new Date();
-      date.setMonth(date.getMonth() - (monthsFilter - 1 - i));
+      date.setDate(1); // Set to the 1st of the month to prevent day-of-month overflow
+      date.setMonth(new Date().getMonth() - (monthsFilter - 1 - i));
       return {
         month: date.toLocaleDateString('en-US', { month: 'short' }),
         monthIndex: date.getMonth(),
@@ -609,10 +610,11 @@ const EarningsHistory: React.FC = () => {
               <YAxis
                 tick={{ fontSize: 11, fill: '#64748b' }}
                 stroke="#cbd5e1"
-                tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => value >= 1000 ? `₱${(value / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}k` : `₱${value}`}
               />
               <Tooltip
-                formatter={(value: number) => [`₱${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, '']}
+                formatter={(value: number, name: string) => [`₱${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, name]}
+                labelStyle={{ display: 'none' }}
                 contentStyle={{
                   backgroundColor: 'white',
                   border: '1px solid #e2e8f0',
