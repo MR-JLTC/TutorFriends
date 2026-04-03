@@ -851,7 +851,6 @@ const LandingPage: React.FC = () => {
               <h2 className="text-4xl sm:text-5xl font-black text-slate-900 mb-6 tracking-tight">Powerful Features for Everyone</h2>
               <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">Whether you're a student seeking help or a tutor sharing knowledge, TutorFriends provides all the tools you need.</p>
             </div>
-
             {/* Live Stats from DB */}
             <div className="overflow-x-auto mb-20"><LiveStats /></div>
 
@@ -1393,7 +1392,7 @@ const LandingPage: React.FC = () => {
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500"></span>
                   </span>
                   <span className="text-[11px] sm:text-[13px] font-medium text-slate-300 tracking-wide">
-                    v3.3.4
+                    v3.3.5
                   </span>
                 </div>
                 <div className="w-px h-2 sm:h-3 bg-slate-700"></div>

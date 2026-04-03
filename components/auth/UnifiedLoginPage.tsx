@@ -102,6 +102,7 @@ const UnifiedLoginPage: React.FC = () => {
           localStorage.removeItem('tutorfriends_loginAttempts');
           localStorage.removeItem('tutorfriends_lockoutUntil');
           setLockoutCountdown(0);
+          setError('');
           if (interval) clearInterval(interval);
         } else {
           setLockoutCountdown(remaining);
@@ -271,7 +272,7 @@ const UnifiedLoginPage: React.FC = () => {
         const lockoutTime = Date.now() + 60000; // 1 minute
         setLockoutUntil(lockoutTime);
         localStorage.setItem('tutorfriends_lockoutUntil', lockoutTime.toString());
-        setError(`Too many failed attempts. Account temporarily locked for 60 seconds.`);
+        setError(`Too many failed login attempts. Please try again in 60 seconds.`);
       } else {
         const errorMessage = err.response?.data?.message || 'Invalid credentials. Please try again.';
         setError(`${errorMessage} (${5 - newAttempts} attempts remaining)`);
@@ -331,7 +332,7 @@ const UnifiedLoginPage: React.FC = () => {
           {/* Decorative background blur for right side content */}
           <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-gradient-to-br from-sky-100/40 to-indigo-100/40 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div className="relative lg:absolute lg:inset-0 overflow-y-auto flex flex-col justify-center p-6 sm:p-10 custom-scrollbar">
+          <div className={`relative lg:absolute lg:inset-0 flex flex-col justify-center p-6 sm:p-10 ${lockoutUntil ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
 
             <div className="relative z-10 w-full max-w-md mx-auto">
               {/* Header Section */}

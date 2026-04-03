@@ -159,6 +159,14 @@ const TuteePayment: React.FC = () => {
 
   // Get the effective payment status for a booking (prefer payment.status over booking.status)
   const getEffectivePaymentStatus = (booking: BookingRequest): string => {
+    // If a payment explicitly exists and was refunded/rejected by admin, override the booking status which may be stuck on payment_pending
+    if (booking.payment?.status) {
+      const pStatus = booking.payment.status.toLowerCase();
+      if (pStatus === 'rejected' || pStatus === 'refunded') {
+        return pStatus;
+      }
+    }
+
     // Check booking status first - if it's payment_pending, always return that to show "Awaiting Payment Confirmation"
     const bookingStatus = (booking.status || '').toLowerCase();
     if (bookingStatus === 'payment_pending') {
@@ -191,7 +199,7 @@ const TuteePayment: React.FC = () => {
   const isRejectedStatus = (booking: BookingRequest): boolean => {
     const effectiveStatus = getEffectivePaymentStatus(booking);
     const normalized = (effectiveStatus || '').toLowerCase();
-    return normalized === 'payment_rejected' || normalized === 'rejected';
+    return normalized === 'payment_rejected' || normalized === 'rejected' || normalized === 'refunded';
   };
 
   // Helper function to check if status allows payment submission (case-insensitive) - checks payment status
@@ -201,7 +209,8 @@ const TuteePayment: React.FC = () => {
     return normalized === 'awaiting_payment' ||
       normalized === 'pending' ||
       normalized === 'payment_rejected' ||
-      normalized === 'rejected';
+      normalized === 'rejected' ||
+      normalized === 'refunded';
   };
 
   // Auto-fill amounts based on session rates (but not for rejected payments - user needs to re-enter)
@@ -278,8 +287,8 @@ const TuteePayment: React.FC = () => {
             if (!user?.user_id) return false;
 
             const sender = (p as any).sender;
-            // ONLY include payments with sender='tutee'
-            if (sender !== 'tutee') return false;
+            // ONLY include payments with sender='tutee' (or unspecified)
+            if (sender && sender !== 'tutee') return false;
 
             // Get payment's student_id
             const paymentStudentId = (p as any).student_id;
@@ -304,10 +313,10 @@ const TuteePayment: React.FC = () => {
             )[0]
             : null;
 
-          // Also check if the legacy payment field has sender='tutee' (only use if it's tutee)
+          // Also check if the legacy payment field has sender='tutee' (or unspecified)
           const legacyPayment = booking.payment;
           const shouldUseLegacyPayment = legacyPayment &&
-            (legacyPayment as any).sender === 'tutee';
+            (!(legacyPayment as any).sender || (legacyPayment as any).sender === 'tutee');
 
           return {
             ...booking,
@@ -321,11 +330,11 @@ const TuteePayment: React.FC = () => {
           // BUT exclude payments with sender='admin'
           const bookingStatus = (booking.status || '').toLowerCase();
 
-          // Check if payment exists and ONLY include if sender is 'tutee'
+          // Check if payment exists and ONLY include if sender is 'tutee' (if the field exists)
           if (booking.payment) {
             const paymentSender = (booking.payment as any).sender;
-            // ONLY include payments with sender='tutee' (exclude all others)
-            if (paymentSender !== 'tutee') {
+            // ONLY exclude payments if sender is explicitly something other than 'tutee'
+            if (paymentSender && paymentSender !== 'tutee') {
               return false;
             }
           }

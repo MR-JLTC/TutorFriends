@@ -691,10 +691,10 @@ const ChatPage: React.FC = () => {
                                     <button
                                         key="send-btn"
                                         type="button"
-                                        className="bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition-colors"
+                                        className="bg-indigo-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-indigo-700 transition-colors"
                                         onClick={handleSendMessage}
                                     >
-                                        <svg className="w-5 h-5 translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                                     </button>
                                 ]}
                                 maxHeight={100}

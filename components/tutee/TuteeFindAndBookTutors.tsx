@@ -1282,12 +1282,8 @@ const TuteeFindAndBookTutors: React.FC = () => {
               {filteredTutors.map(t => {
                 const profileSubjects: string[] = (t as any).profile?.subjects || (t as any).tutor_profile?.subjects || [];
                 return (
-                  <div key={t.user_id} className="group relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-4 shadow-sm hover:shadow-xl hover:border-transparent transition-all duration-200 flex flex-col h-full overflow-hidden z-0">
-                    {/* The curved background header */}
-                    <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-sky-400 via-indigo-400 to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10 bg-top" />
-                    {/* A masking div to blend the rest of the card back to white */}
-                    <div className="absolute inset-x-0 bottom-0 top-32 bg-white pointer-events-none -z-10 transition-colors" />
-
+                  <div key={t.user_id} className="group relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-4 shadow-sm hover:shadow-xl hover:border-sky-500 hover:ring-2 hover:ring-sky-500/20 transition-all duration-200 flex flex-col h-full z-0">
+                    
                     {/* Mobile: Centered Layout */}
                     <div className="flex flex-col items-center text-center sm:hidden flex-1">
                       {/* Profile Picture */}
@@ -1313,7 +1309,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                         <svg className="w-3.5 h-3.5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0v-5.5a2.5 2.5 0 015 0V21m-5 0h5m-5 0v-5.5a2.5 2.5 0 015 0V21" />
                         </svg>
-                        <span className="text-xs text-slate-600">
+                        <span className="text-xs text-slate-600 group-hover:text-sky-500 transition-colors duration-200">
                           {t.university_name || 'N/A'}
                         </span>
                       </div>
@@ -1393,7 +1389,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-xs sm:text-sm md:text-base text-slate-800 truncate">{t.name}</div>
-                        <div className="text-[10px] sm:text-xs md:text-sm text-slate-500 group-hover:text-white transition-colors duration-300">
+                        <div className="text-[10px] sm:text-xs md:text-sm text-slate-500 group-hover:text-sky-500 transition-colors duration-200">
                           {t.university_name || 'N/A'}
                         </div>
                         <div className="mt-2 space-y-2">

@@ -843,7 +843,7 @@ const PaymentManagement: React.FC = () => {
                                         setSelectedProofModalPayment(null);
                                     }}
                                 >
-                                    Reject
+                                    Rejects
                                 </Button>
                             </div>
                         ) : (
