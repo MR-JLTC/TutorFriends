@@ -68,7 +68,8 @@ const TuteePayment: React.FC = () => {
   // per-booking UI state to avoid cross-booking interference
   const [selectedPaymentFiles, setSelectedPaymentFiles] = useState<Record<number, File | undefined>>({});
   const [uploadingPayment, setUploadingPayment] = useState(false);
-  const [admins, setAdmins] = useState<Array<{ user_id: number; name: string; qr_code_url: string }>>([]);
+  const [admins, setAdmins] = useState<Array<{ user_id: number; name: string; qr_code_url: string; gcash_number?: string }>>([]);
+  const [gcashCopied, setGcashCopied] = useState(false);
   const [amountByBooking, setAmountByBooking] = useState<Record<number, string>>({});
   const [initialized, setInitialized] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
@@ -786,6 +787,7 @@ const TuteePayment: React.FC = () => {
                                     alt={`${admins[0].name} QR`}
                                     className="relative h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 object-contain bg-white rounded-2xl shadow-sm border border-white p-3 transition-transform duration-300 group-hover/qr:scale-[1.02]"
                                   />
+                                  {/* View larger button */}
                                   <button
                                     onClick={() => {
                                       setQrModalUrl(getFileUrl(admins[0].qr_code_url));
@@ -800,8 +802,65 @@ const TuteePayment: React.FC = () => {
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                                     </svg>
                                   </button>
+                                  {/* Download QR button */}
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        const url = getFileUrl(admins[0].qr_code_url);
+                                        const response = await fetch(url);
+                                        const blob = await response.blob();
+                                        const blobUrl = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = blobUrl;
+                                        a.download = `${admins[0].name.replace(/\s+/g, '_')}_GCash_QR.png`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(blobUrl);
+                                      } catch {
+                                        toast.error('Failed to download QR code');
+                                      }
+                                    }}
+                                    className="absolute -top-3 -left-3 p-3 bg-white text-slate-500 hover:text-emerald-600 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 hover:border-emerald-200 transition-all opacity-0 group-hover/qr:opacity-100 scale-95 group-hover/qr:scale-100"
+                                    title="Download QR code"
+                                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                                  >
+                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                  </button>
                                 </div>
-                                <p className="mt-6 sm:mt-8 text-lg sm:text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight">{admins[0].name}</p>
+                                {/* GCash Number with copy button */}
+                                {admins[0].gcash_number && (
+                                  <div className="mt-5 sm:mt-6 flex items-center gap-2 bg-green-50 border-2 border-green-200 rounded-xl px-4 py-2.5 shadow-sm">
+                                    <svg className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                    <span className="text-sm sm:text-base font-bold text-green-800 tracking-wide">{admins[0].gcash_number}</span>
+                                    <button
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(admins[0].gcash_number!);
+                                        setGcashCopied(true);
+                                        setTimeout(() => setGcashCopied(false), 2000);
+                                      }}
+                                      className="ml-1 p-1.5 rounded-lg bg-green-100 hover:bg-green-200 text-green-700 hover:text-green-900 transition-colors"
+                                      title="Copy GCash number"
+                                      style={{ WebkitTapHighlightColor: 'transparent' }}
+                                    >
+                                      {gcashCopied ? (
+                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      ) : (
+                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                      )}
+                                    </button>
+                                    {gcashCopied && <span className="text-xs text-green-600 font-semibold">Copied!</span>}
+                                  </div>
+                                )}
+                                <p className="mt-4 sm:mt-5 text-lg sm:text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight">{admins[0].name}</p>
                                 <p className="mt-2 text-xs sm:text-sm text-slate-500 text-center font-medium">Click the icon on the QR code to view larger</p>
                               </>
                             ) : (

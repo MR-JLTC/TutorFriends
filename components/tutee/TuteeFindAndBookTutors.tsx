@@ -673,6 +673,14 @@ const TuteeFindAndBookTutors: React.FC = () => {
     const target = names.indexOf(String(weekdayName).toLowerCase());
     if (target === -1) return '';
 
+    // Use local date parts to avoid UTC offset shifting the date
+    const toLocalDateStr = (d: Date): string => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
     const baseDate = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
     const todayIndex = baseDate.getDay();
 
@@ -684,14 +692,17 @@ const TuteeFindAndBookTutors: React.FC = () => {
         return slotStartMinutes > nowMinutes;
       });
       if (hasUpcomingSlot) {
-        return baseDate.toISOString().split('T')[0];
+        // return baseDate.toISOString().split('T')[0]
+        return toLocalDateStr(baseDate);
       }
     }
 
     let delta = target - todayIndex;
     if (delta <= 0) delta += 7;
-    const result = new Date(baseDate.getTime() + delta * 24 * 60 * 60 * 1000);
-    return result.toISOString().split('T')[0];
+    /* const result = new Date(baseDate.getTime() + delta * 24 * 60 * 60 * 1000);
+    return result.toISOString().split('T')[0]; */
+    const result = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + delta);
+    return toLocalDateStr(result);
   };
 
   // Calculate average rating per subject for the selected tutor
@@ -1283,7 +1294,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                 const profileSubjects: string[] = (t as any).profile?.subjects || (t as any).tutor_profile?.subjects || [];
                 return (
                   <div key={t.user_id} className="group relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-4 shadow-sm hover:shadow-xl hover:border-sky-500 hover:ring-2 hover:ring-sky-500/20 transition-all duration-200 flex flex-col h-full z-0">
-                    
+
                     {/* Mobile: Centered Layout */}
                     <div className="flex flex-col items-center text-center sm:hidden flex-1">
                       {/* Profile Picture */}
