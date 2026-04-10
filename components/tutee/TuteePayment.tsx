@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { CreditCard, Upload, AlertCircle, CheckCircle2, Ban, History, FileText, Info } from 'lucide-react';
+import { CreditCard, Upload, AlertCircle, CheckCircle2, Ban, History, FileText, Info, RefreshCw } from 'lucide-react';
 import apiClient, { getFileUrl } from '../../services/api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../hooks/useAuth';
+import QRCode from 'react-qr-code';
+import { decodeQRFromImageUrl, injectAmountIntoPayload } from '../../utils/qrUtils';
 
 interface Payment {
   payment_id: number;
@@ -15,6 +17,7 @@ interface Payment {
   subject?: string;
   created_at: string;
   rejection_reason?: string;
+  payment_proof_url?: string;
 }
 
 interface BookingRequest {
@@ -75,6 +78,15 @@ const TuteePayment: React.FC = () => {
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrModalUrl, setQrModalUrl] = useState<string | null>(null);
   const [qrModalTitle, setQrModalTitle] = useState<string | undefined>(undefined);
+  const [reuploadFiles, setReuploadFiles] = useState<Record<number, File | undefined>>({});
+  const [reuploadAmounts, setReuploadAmounts] = useState<Record<number, string>>({});
+  const [reuploadingPaymentId, setReuploadingPaymentId] = useState<number | null>(null);
+  const [expandedProofBookingId, setExpandedProofBookingId] = useState<number | null>(null);
+  const [expandedProofPaymentId, setExpandedProofPaymentId] = useState<number | null>(null);
+  const [decodedQrPayload, setDecodedQrPayload] = useState<string | null>(null);
+  const [useDynamicQR, setUseDynamicQR] = useState<Record<number, boolean>>({});
+  const [qrModalPayload, setQrModalPayload] = useState<string | null>(null);
+  const [qrCacheBust, setQrCacheBust] = useState<number>(Date.now());
   const { user } = useAuth();
 
   useEffect(() => {
@@ -97,12 +109,27 @@ const TuteePayment: React.FC = () => {
       try {
         const res = await apiClient.get('/users/admins-with-qr');
         setAdmins(res.data?.data || []);
+        setQrCacheBust(Date.now());
       } catch (e) {
         // ignore
       }
     };
     loadAdmins();
   }, []);
+
+  useEffect(() => {
+    if (admins.length > 0 && admins[0].qr_code_url) {
+      const url = `${getFileUrl(admins[0].qr_code_url)}?t=${qrCacheBust}`;
+      decodeQRFromImageUrl(url).then((payload) => {
+        if (payload) {
+          console.log('Decoded admin QR payload:', payload);
+          setDecodedQrPayload(payload);
+        } else {
+          console.warn('Failed to decode admin QR image');
+        }
+      });
+    }
+  }, [admins, qrCacheBust]);
 
   // Fetch payment history (all payments for the user)
   const fetchPaymentHistory = async () => {
@@ -319,9 +346,25 @@ const TuteePayment: React.FC = () => {
           const shouldUseLegacyPayment = legacyPayment &&
             (!(legacyPayment as any).sender || (legacyPayment as any).sender === 'tutee');
 
+          // Cross-reference with allPayments for refunded payments that may not be in booking.payments
+          // Note: we search allPayments (not userPayments) because refunded payments may not have sender='tutee'
+          const refundedFromGlobal = allPayments.find((p: Payment) => {
+            if ((p as any).booking_request_id !== booking.id) return false;
+            if ((p.status || '').toLowerCase() !== 'refunded') return false;
+            // Verify this payment belongs to the current user
+            const pStudentId = (p as any).student_id;
+            const uStudentId = (user as any).student_id;
+            return (pStudentId && uStudentId && pStudentId === uStudentId) ||
+              (p as any).student?.user?.user_id === user?.user_id ||
+              (pStudentId && !uStudentId && pStudentId === (user as any).id);
+          });
+
+          // Refunded payment takes priority since it represents the most recent admin action
+          const resolvedPayment = refundedFromGlobal || latestPayment || (shouldUseLegacyPayment ? legacyPayment : null) || null;
+
           return {
             ...booking,
-            payment: latestPayment || (shouldUseLegacyPayment ? legacyPayment : null) // Use latest from payments array, fallback to legacy payment field (only if sender='tutee')
+            payment: resolvedPayment
           };
         })
         .filter((booking: BookingRequest) => {
@@ -332,10 +375,13 @@ const TuteePayment: React.FC = () => {
           const bookingStatus = (booking.status || '').toLowerCase();
 
           // Check if payment exists and ONLY include if sender is 'tutee' (if the field exists)
+          // Exception: always include refunded payments regardless of sender
           if (booking.payment) {
+            const paymentStatus = (booking.payment.status || '').toLowerCase();
             const paymentSender = (booking.payment as any).sender;
             // ONLY exclude payments if sender is explicitly something other than 'tutee'
-            if (paymentSender && paymentSender !== 'tutee') {
+            // BUT always keep refunded payments (admin may have refunded it)
+            if (paymentSender && paymentSender !== 'tutee' && paymentStatus !== 'refunded') {
               return false;
             }
           }
@@ -456,6 +502,50 @@ const TuteePayment: React.FC = () => {
     }
   };
 
+  const handleReuploadProof = async (paymentId: number, bookingId: number) => {
+    const file = reuploadFiles[paymentId];
+    const adminId = admins.length > 0 ? admins[0].user_id : null;
+    const amt = reuploadAmounts[paymentId] || '';
+    const amountPaid = Number(amt);
+
+    if (!file) {
+      toast.error('Please select a payment proof image first');
+      return;
+    }
+    if (!adminId) {
+      toast.error('Admin QR code not available. Please try again later.');
+      return;
+    }
+    if (!amt || isNaN(amountPaid) || amountPaid <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
+    try {
+      setReuploadingPaymentId(paymentId);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bookingId', String(bookingId));
+      formData.append('adminId', String(adminId));
+      formData.append('amount', amt);
+
+      await apiClient.post('/payments/submit-proof', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      toast.success('Payment proof resubmitted successfully');
+      setReuploadFiles(prev => { const p = { ...prev }; delete p[paymentId]; return p; });
+      setReuploadAmounts(prev => { const p = { ...prev }; delete p[paymentId]; return p; });
+      await fetchBookings(false);
+      await fetchPaymentHistory();
+    } catch (err: any) {
+      console.error('Failed to reupload payment proof:', err);
+      toast.error(err.response?.data?.message || 'Failed to resubmit payment proof');
+    } finally {
+      setReuploadingPaymentId(null);
+    }
+  };
+
   const getStatusDisplay = (status: string) => {
     const normalizedStatus = (status || '').toLowerCase();
     switch (normalizedStatus) {
@@ -496,25 +586,16 @@ const TuteePayment: React.FC = () => {
         };
       case 'rejected':
         return {
-          icon: <Ban className="h-5 w-5 text-red-500" />,
-          text: 'Payment Rejected',
-          color: 'text-red-700 bg-red-50 border-red-200',
-          dotColor: 'bg-red-500'
+          text: 'Awaiting Payment',
+          color: 'text-yellow-700 bg-yellow-50 border-yellow-200',
+          dotColor: 'bg-yellow-500'
         };
       case 'refunded':
         return {
           icon: <Ban className="h-5 w-5 text-orange-500" />,
-          text: 'Refunded',
+          text: 'Payment Rejected',
           color: 'text-orange-700 bg-orange-50 border-orange-200',
           dotColor: 'bg-orange-500'
-        };
-      // Legacy booking status mappings (for backwards compatibility)
-      case 'awaiting_payment':
-        return {
-          icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
-          text: 'Awaiting Payment',
-          color: 'text-yellow-700 bg-yellow-50 border-yellow-200',
-          dotColor: 'bg-yellow-500'
         };
       case 'payment_pending':
         return {
@@ -666,11 +747,13 @@ const TuteePayment: React.FC = () => {
                   {/* Decorative gradient bar based on status */}
                   <div className={`absolute top-0 left-0 right-0 h-1 md:h-1.5 ${effectiveStatus.toLowerCase() === 'confirmed' || effectiveStatus.toLowerCase() === 'admin_confirmed'
                     ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600' :
-                    isRejectedStatus(booking)
-                      ? 'bg-gradient-to-r from-red-500 via-rose-500 to-red-600' :
-                      effectiveStatus.toLowerCase() === 'pending'
-                        ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600' :
-                        'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700'
+                    effectiveStatus.toLowerCase() === 'refunded'
+                      ? 'bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600' :
+                      isRejectedStatus(booking)
+                        ? 'bg-gradient-to-r from-red-500 via-rose-500 to-red-600' :
+                        effectiveStatus.toLowerCase() === 'pending'
+                          ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600' :
+                          'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700'
                     }`} />
 
                   <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 mb-4 sm:mb-5 md:mb-6">
@@ -708,14 +791,21 @@ const TuteePayment: React.FC = () => {
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-shrink-0 w-full md:w-auto">
                         <div className={`px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 rounded-xl md:rounded-2xl text-xs sm:text-sm md:text-base font-bold flex items-center gap-1.5 sm:gap-2 shadow-md md:shadow-lg ${status.color} border-2 ${status.color.includes('yellow') ? 'border-yellow-400' :
                           status.color.includes('red') ? 'border-red-400' :
-                            status.color.includes('green') ? 'border-green-400' :
-                              status.color.includes('indigo') ? 'border-indigo-400' :
-                                'border-primary-400'
+                            status.color.includes('orange') ? 'border-orange-400' :
+                              status.color.includes('green') ? 'border-green-400' :
+                                status.color.includes('indigo') ? 'border-indigo-400' :
+                                  'border-primary-400'
                           }`}>
                           {status.icon}
                           {status.dotColor && <span className={`h-2.5 w-2.5 md:h-3 md:w-3 rounded-full ${status.dotColor}`} />}
                           <span className="whitespace-nowrap">{status.text}</span>
                         </div>
+                        {/* {effectiveStatus.toLowerCase() === 'refunded' && (
+                          <div className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[10px] sm:text-xs md:text-sm font-bold bg-orange-50 text-orange-700 border-2 border-orange-400 shadow-sm md:shadow-md flex items-center gap-1.5">
+                            <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                            <span>Payment Rejected</span>
+                          </div>
+                        )} */}
                         {booking.payment_proof && !isRejectedStatus(booking) && (
                           <div className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[10px] sm:text-xs md:text-sm font-bold bg-green-50 text-green-700 border-2 border-green-400 shadow-sm md:shadow-md flex items-center gap-1.5">
                             <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
@@ -776,59 +866,119 @@ const TuteePayment: React.FC = () => {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
                           {/* Admin QR Code Section */}
-                          <div className="flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 bg-white/60 backdrop-blur-sm rounded-2xl md:rounded-3xl border border-slate-200/50 shadow-sm transition-all duration-300 hover:bg-white/80">
+                          <div className="flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 bg-white/60 backdrop-blur-sm rounded-2xl md:rounded-3xl border border-slate-200/50 shadow-sm transition-all duration-300 hover:bg-white">
                             {admins.length > 0 ? (
                               <>
                                 <p className="text-sm md:text-base text-slate-600 font-bold mb-5 sm:mb-6 text-center uppercase tracking-wider">Scan this QR code to pay</p>
-                                <div className="relative group/qr">
-                                  <div className="absolute -inset-2 bg-gradient-to-r from-primary-200 to-indigo-200 rounded-3xl blur opacity-30 group-hover/qr:opacity-50 transition duration-500"></div>
-                                  <img
-                                    src={getFileUrl(admins[0].qr_code_url)}
-                                    alt={`${admins[0].name} QR`}
-                                    className="relative h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 object-contain bg-white rounded-2xl shadow-sm border border-white p-3 transition-transform duration-300 group-hover/qr:scale-[1.02]"
-                                  />
-                                  {/* View larger button */}
-                                  <button
-                                    onClick={() => {
-                                      setQrModalUrl(getFileUrl(admins[0].qr_code_url));
-                                      setQrModalTitle(admins[0].name);
-                                      setQrModalOpen(true);
-                                    }}
-                                    className="absolute -top-3 -right-3 p-3 bg-white text-slate-500 hover:text-primary-600 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 hover:border-primary-100 transition-all opacity-0 group-hover/qr:opacity-100 scale-95 group-hover/qr:scale-100"
-                                    title="View larger"
-                                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                                  >
-                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                    </svg>
-                                  </button>
-                                  {/* Download QR button */}
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        const url = getFileUrl(admins[0].qr_code_url);
-                                        const response = await fetch(url);
-                                        const blob = await response.blob();
-                                        const blobUrl = URL.createObjectURL(blob);
-                                        const a = document.createElement('a');
-                                        a.href = blobUrl;
-                                        a.download = `${admins[0].name.replace(/\s+/g, '_')}_GCash_QR.png`;
-                                        document.body.appendChild(a);
-                                        a.click();
-                                        document.body.removeChild(a);
-                                        URL.revokeObjectURL(blobUrl);
-                                      } catch {
-                                        toast.error('Failed to download QR code');
-                                      }
-                                    }}
-                                    className="absolute -top-3 -left-3 p-3 bg-white text-slate-500 hover:text-emerald-600 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 hover:border-emerald-200 transition-all opacity-0 group-hover/qr:opacity-100 scale-95 group-hover/qr:scale-100"
-                                    title="Download QR code"
-                                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                                  >
-                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                  </button>
+                                <div className="flex flex-col items-center w-full">
+                                  <div className="relative group/qr mb-4">
+                                    <div className="absolute -inset-2 bg-gradient-to-r from-primary-200 to-indigo-200 rounded-3xl blur opacity-30 group-hover/qr:opacity-50 transition duration-500"></div>
+                                    
+                                    {/* QR Code Container */}
+                                    <div className="relative bg-white rounded-2xl shadow-sm border border-white p-4 transition-transform duration-300 group-hover/qr:scale-[1.02]">
+                                      {useDynamicQR[booking.id] && decodedQrPayload ? (
+                                        <div className="h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 flex items-center justify-center bg-white p-2">
+                                          <QRCode
+                                            value={injectAmountIntoPayload(
+                                              decodedQrPayload,
+                                              amountByBooking[booking.id] || calculatedAmount
+                                            )}
+                                            size={256}
+                                            style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                                            viewBox={`0 0 256 256`}
+                                            level="M"
+                                          />
+                                        </div>
+                                      ) : admins[0].qr_code_url ? (
+                                        <img
+                                          src={`${getFileUrl(admins[0].qr_code_url)}?t=${qrCacheBust}`}
+                                          alt={`${admins[0].name} QR`}
+                                          className="h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 object-contain"
+                                        />
+                                      ) : (
+                                        <div className="h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 flex items-center justify-center bg-slate-50 rounded-xl">
+                                          <p className="text-sm text-slate-400 text-center px-4">No QR code uploaded yet. Please send payment manually using the GCash number below.</p>
+                                        </div>
+                                      )}
+
+                                      {/* View larger button */}
+                                      <button
+                                        onClick={() => {
+                                          if (useDynamicQR[booking.id] && decodedQrPayload) {
+                                            setQrModalUrl(null);
+                                            setQrModalPayload(injectAmountIntoPayload(
+                                              decodedQrPayload,
+                                              amountByBooking[booking.id] || calculatedAmount
+                                            ));
+                                          } else {
+                                            setQrModalUrl(admins[0].qr_code_url ? `${getFileUrl(admins[0].qr_code_url)}?t=${qrCacheBust}` : null);
+                                            setQrModalPayload(null);
+                                          }
+                                          setQrModalTitle(admins[0].name);
+                                          setQrModalOpen(true);
+                                        }}
+                                        className="absolute -top-3 -right-3 p-3 bg-white text-slate-500 hover:text-primary-600 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 hover:border-primary-100 transition-all opacity-0 group-hover/qr:opacity-100 scale-95 group-hover/qr:scale-100"
+                                        title="View larger"
+                                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                                      >
+                                        <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                        </svg>
+                                      </button>
+                                      
+                                      {/* Download QR button (Static only) */}
+                                      {!useDynamicQR[booking.id] && admins[0].qr_code_url && (
+                                        <button
+                                          onClick={async () => {
+                                            try {
+                                              const url = `${getFileUrl(admins[0].qr_code_url)}?t=${qrCacheBust}`;
+                                              const response = await fetch(url);
+                                              const blob = await response.blob();
+                                              const blobUrl = URL.createObjectURL(blob);
+                                              const a = document.createElement('a');
+                                              a.href = blobUrl;
+                                              a.download = `${admins[0].name.replace(/\s+/g, '_')}_GCash_QR.png`;
+                                              document.body.appendChild(a);
+                                              a.click();
+                                              document.body.removeChild(a);
+                                              URL.revokeObjectURL(blobUrl);
+                                            } catch {
+                                              toast.error('Failed to download QR code');
+                                            }
+                                          }}
+                                          className="absolute -top-3 -left-3 p-3 bg-white text-slate-500 hover:text-emerald-600 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 hover:border-emerald-200 transition-all opacity-0 group-hover/qr:opacity-100 scale-95 group-hover/qr:scale-100"
+                                          title="Download QR code"
+                                          style={{ WebkitTapHighlightColor: 'transparent' }}
+                                        >
+                                          <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* QR Toggle Button — only show if base payload was decoded */}
+                                  {decodedQrPayload && admins[0].qr_code_url && (
+                                    <button
+                                      onClick={() => setUseDynamicQR(prev => ({ ...prev, [booking.id]: !prev[booking.id] }))}
+                                      className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full text-xs font-bold transition-all border border-slate-200 shadow-sm mb-4"
+                                    >
+                                      <RefreshCw className={`h-3 w-3 ${useDynamicQR[booking.id] ? 'text-primary-600 animate-spin' : ''}`} style={{ animationDuration: '3s' }} />
+                                      <span>{useDynamicQR[booking.id] ? 'Switch to Static QR' : 'Switch to Dynamic QR'}</span>
+                                    </button>
+                                  )}
+
+                                  {/* Dynamic QR Info tag */}
+                                  {useDynamicQR[booking.id] && decodedQrPayload && (
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-primary-200 mb-2">
+                                      <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                                      </span>
+                                      Dynamic QR with Amount
+                                    </div>
+                                  )}
                                 </div>
                                 {/* GCash Number with copy button */}
                                 {admins[0].gcash_number && (
@@ -894,6 +1044,7 @@ const TuteePayment: React.FC = () => {
                                 <span className="bg-slate-100 p-1.5 rounded-lg text-slate-500 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors"><svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg></span>
                                 Amount Paid
                               </label>
+                              {/* value={amountByBooking[booking.id] || (calculatedAmount > 0 && !isRejectedStatus(booking) ? calculatedAmount.toFixed(2) : '111')} */}
                               <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                                   <span className="text-slate-400 font-bold sm:text-xl">₱</span>
@@ -902,7 +1053,10 @@ const TuteePayment: React.FC = () => {
                                   type="number"
                                   min="0"
                                   step="0.01"
-                                  value={amountByBooking[booking.id] || (calculatedAmount > 0 && !isRejectedStatus(booking) ? calculatedAmount.toFixed(2) : '')}
+                                  value={
+                                    amountByBooking[booking.id] ??
+                                    (calculatedAmount > 0 ? calculatedAmount.toFixed(2) : '')
+                                  }
                                   onChange={(e) => setAmountByBooking(prev => ({ ...prev, [booking.id]: e.target.value }))}
                                   className="w-full pl-11 pr-5 py-3.5 sm:py-4 bg-slate-50/50 border border-slate-200 rounded-xl md:rounded-2xl text-slate-800 text-lg sm:text-xl font-bold placeholder-slate-300 focus:bg-white focus:ring-4 focus:ring-primary-400/10 focus:border-primary-400 transition-all hover:bg-slate-50"
                                   placeholder="0.00"
@@ -1027,7 +1181,7 @@ const TuteePayment: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-sm sm:text-base md:text-lg text-red-900 mb-1.5 sm:mb-2">Payment Rejected</h4>
                           <p className="text-xs sm:text-sm md:text-base text-red-700 leading-relaxed mb-2 sm:mb-3">
-                            Your previous payment proof was rejected. Please select an admin QR code, enter the amount paid, and upload a new proof of payment.
+                            Your previous payment proof has been rejected. Kindly upload a new proof of payment.
                           </p>
                           {booking.payment?.rejection_reason && (
                             <div className="mt-2 sm:mt-3 p-2.5 sm:p-3 bg-red-100 border border-red-300 rounded-lg">
@@ -1087,23 +1241,41 @@ const TuteePayment: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Show uploaded indication if a file exists */}
-                  {booking.payment_proof && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 mt-4">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                        <div className="flex items-center text-green-700">
-                          <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
-                          <p className="text-xs sm:text-sm">Your payment proof was uploaded.</p>
+                  {/* Show uploaded indication if a file exists and not rejected */}
+                  {booking.payment_proof && !isRejectedStatus(booking) && (
+                    <div className="w-full mt-4">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedProofBookingId(expandedProofBookingId === booking.id ? null : booking.id)}
+                        className="w-full flex items-center justify-between gap-3 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border-2 border-green-300 rounded-xl p-3 sm:p-4 transition-all duration-200 shadow-sm hover:shadow-md group"
+                      >
+                        <div className="flex items-center gap-2.5 text-green-700">
+                          <div className="p-1.5 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                            <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                          </div>
+                          <p className="text-xs sm:text-sm font-semibold">Your payment proof was uploaded</p>
                         </div>
-                        <a
-                          href={getFileUrl(booking.payment_proof)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs sm:text-sm text-green-700 hover:text-green-800 underline"
-                        >
-                          View upload
-                        </a>
-                      </div>
+                        <div className="flex items-center gap-2 text-green-600 font-medium text-xs sm:text-sm">
+                          <span className="hidden sm:inline">{expandedProofBookingId === booking.id ? 'Hide' : 'View'}</span>
+                          <FileText className="h-4 w-4 sm:h-4 sm:w-4" />
+                        </div>
+                      </button>
+                      {expandedProofBookingId === booking.id && (
+                        <div className="mt-3 w-full bg-white rounded-xl border-2 border-green-200 p-3 sm:p-4 shadow-inner">
+                          <div className="w-full flex justify-center items-center">
+                            <img
+                              src={getFileUrl(booking.payment_proof)}
+                              alt="Payment proof"
+                              className="max-w-full max-h-[60vh] sm:max-h-[70vh] w-auto h-auto object-contain rounded-lg shadow-md"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.alt = 'Failed to load payment proof';
+                                target.className = 'w-full p-8 text-center text-red-500 text-sm';
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1206,9 +1378,10 @@ const TuteePayment: React.FC = () => {
                             <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-3">
                               <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg md:rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-md ${status.color} border-2 ${status.color.includes('yellow') ? 'border-yellow-400 bg-yellow-50' :
                                 status.color.includes('red') ? 'border-red-400 bg-red-50' :
-                                  status.color.includes('green') ? 'border-green-400 bg-green-50' :
-                                    status.color.includes('indigo') ? 'border-indigo-400 bg-indigo-50' :
-                                      'border-primary-400 bg-primary-50'
+                                  status.color.includes('orange') ? 'border-orange-400 bg-orange-50' :
+                                    status.color.includes('green') ? 'border-green-400 bg-green-50' :
+                                      status.color.includes('indigo') ? 'border-indigo-400 bg-indigo-50' :
+                                        'border-primary-400 bg-primary-50'
                                 }`}>
                                 {status.icon}
                                 {status.dotColor && <span className={`h-2.5 w-2.5 rounded-full ${status.dotColor}`} />}
@@ -1351,24 +1524,58 @@ const TuteePayment: React.FC = () => {
                                 </div>
                               </div>
                             )}
+
+                            {/* Recently Refunded/Rejected label for confirmed payments with rejection_reason */}
+                            {payment.rejection_reason && isConfirmed && (
+                              <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border-2 border-orange-300 rounded-xl shadow-sm">
+                                <div className="flex items-center gap-2">
+                                  <div className="p-1 bg-orange-100 rounded-lg flex-shrink-0">
+                                    <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-600" />
+                                  </div>
+                                  <p className="text-xs sm:text-sm font-bold text-orange-800 uppercase tracking-wide">Recently Refunded/Rejected</p>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
+                        {/* Reupload Proof for Refunded Payments */}
+                        {isRefunded && bookingRequest && (
+                          <div className="mt-4 p-4 sm:p-5 bg-gradient-to-br from-orange-50 via-amber-50/50 to-orange-50 border-2 border-orange-200 rounded-xl shadow-sm">
+                            <div className="flex items-center gap-2.5 mb-4">
+                              <div className="p-2 bg-orange-100 rounded-lg">
+                                <RefreshCw className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+                              </div>
+                              <div>
+                                <h4 className="text-sm sm:text-base font-bold text-orange-900">Reupload Payment Proof</h4>
+                                <p className="text-[10px] sm:text-xs text-orange-700">This payment was refunded. You can submit a new proof of payment.</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Compact Action Buttons */}
-                        <div className="flex flex-col sm:flex-row items-stretch gap-2.5 sm:gap-3 pt-3 md:pt-4 border-t-2 border-slate-300/80">
-                          {payment.payment_proof && (
-                            <a
-                              href={getFileUrl(payment.payment_proof)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="group/btn flex items-center justify-center gap-2 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-600 hover:from-primary-700 hover:via-primary-800 hover:to-primary-700 text-white rounded-lg md:rounded-xl font-bold text-xs sm:text-sm md:text-base shadow-lg md:shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                            >
-                              <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
-                              <span>View Proof</span>
-                              <svg className="h-4 w-4 sm:h-5 sm:w-5 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
-                            </a>
+                        <div className="flex flex-col items-stretch gap-2.5 sm:gap-3 pt-3 md:pt-4 border-t-2 border-slate-300/80">
+                          {payment.payment_proof_url && (
+                            <div className="w-full">
+                              <button
+                                type="button"
+                                onClick={() => setExpandedProofPaymentId(expandedProofPaymentId === payment.payment_id ? null : payment.payment_id)}
+                                className="group/btn w-full flex items-center justify-center gap-2 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-600 hover:from-primary-700 hover:via-primary-800 hover:to-primary-700 text-white rounded-lg md:rounded-xl font-bold text-xs sm:text-sm md:text-base shadow-lg md:shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                              >
+                                <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <span>{expandedProofPaymentId === payment.payment_id ? 'Hide Proof' : 'View Proof'}</span>
+                              </button>
+                              {expandedProofPaymentId === payment.payment_id && (
+                                <div className="mt-3 flex justify-center bg-white rounded-xl border-2 border-slate-200 p-2 sm:p-3 shadow-inner">
+                                  <img
+                                    src={getFileUrl(payment.payment_proof_url)}
+                                    alt="Payment proof"
+                                    className="max-h-[50vh] w-auto object-contain rounded-lg shadow-sm"
+                                    onError={(e) => { (e.target as HTMLImageElement).alt = 'Failed to load image'; }}
+                                  />
+                                </div>
+                              )}
+                            </div>
                           )}
                           {payment.admin_proof && (
                             <a
@@ -1397,13 +1604,41 @@ const TuteePayment: React.FC = () => {
 
       {/* QR Modal (reusable site Modal) - outside the bookings loop */}
       <Modal isOpen={qrModalOpen} onClose={() => setQrModalOpen(false)} title={qrModalTitle || 'QR'}>
-        {qrModalUrl ? (
-          <div className="w-full flex justify-center">
-            <img src={qrModalUrl} alt={qrModalTitle || 'QR Image'} className="max-h-[70vh] object-contain" />
-          </div>
-        ) : (
-          <div className="text-slate-600">No image available</div>
-        )}
+        <div className="w-full flex flex-col items-center gap-6 p-4">
+          {qrModalPayload ? (
+            <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100">
+              <QRCode
+                value={qrModalPayload}
+                size={400}
+                style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                viewBox={`0 0 400 400`}
+                level="M"
+              />
+            </div>
+          ) : qrModalUrl ? (
+            <div className="bg-white p-2 rounded-2xl shadow-lg border border-slate-100">
+              <img
+                src={qrModalUrl}
+                alt={qrModalTitle || 'QR Image'}
+                className="max-h-[70vh] object-contain rounded-xl"
+              />
+            </div>
+          ) : (
+            <div className="text-slate-600 py-12 flex flex-col items-center gap-4">
+              <Ban className="h-12 w-12 text-slate-300" />
+              <p className="font-medium text-lg">No image available</p>
+            </div>
+          )}
+
+          {admins.length > 0 && (
+            <div className="text-center space-y-2">
+              <p className="text-2xl font-black text-slate-900">{admins[0].name}</p>
+              {admins[0].gcash_number && (
+                <p className="text-lg font-bold text-green-700 bg-green-50 px-4 py-1 rounded-full border border-green-200">{admins[0].gcash_number}</p>
+              )}
+            </div>
+          )}
+        </div>
       </Modal>
     </div >
   );

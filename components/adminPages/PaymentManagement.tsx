@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import apiClient, { getFileUrl } from '../../services/api';
 import { Payment } from '../../types';
 import Button from '../ui/Button';
@@ -36,6 +36,9 @@ interface CompletedBooking {
     release_proof_url?: string | null;
 }
 
+const PLACEHOLDER_NO_IMAGE = getFileUrl('/payment_proofs/placeholder_no_image.svg');
+const PLACEHOLDER_QR_NA = getFileUrl('/payment_proofs/placeholder_qr_na.svg');
+
 const PaymentManagement: React.FC = () => {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [completedBookings, setCompletedBookings] = useState<CompletedBooking[]>([]);
@@ -62,25 +65,37 @@ const PaymentManagement: React.FC = () => {
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [adminPaymentReceipt, setAdminPaymentReceipt] = useState<File | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const [paymentsRes, bookingsRes] = await Promise.all([
-                    apiClient.get('/payments'),
-                    apiClient.get('/payments/waiting-for-payment')
-                ]);
-                setPayments(paymentsRes.data);
-                setCompletedBookings(bookingsRes.data || []);
-            } catch (e) {
-                setError('Failed to fetch data.');
-                console.error(e);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
+    const isInitialLoad = useRef(true);
+
+    const fetchData = useCallback(async (silent = false) => {
+        try {
+            if (!silent) setLoading(true);
+            const [paymentsRes, bookingsRes] = await Promise.all([
+                apiClient.get('/payments'),
+                apiClient.get('/payments/waiting-for-payment')
+            ]);
+            setPayments(paymentsRes.data);
+            setCompletedBookings(bookingsRes.data || []);
+            setError(null);
+        } catch (e) {
+            if (!silent) setError('Failed to fetch data.');
+            console.error(e);
+        } finally {
+            if (!silent) setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchData(false);
+        isInitialLoad.current = false;
+
+        // Poll every 15 seconds for real-time updates
+        const interval = setInterval(() => {
+            fetchData(true);
+        }, 15000);
+
+        return () => clearInterval(interval);
+    }, [fetchData]);
 
     const handlePayButtonClick = async (booking: CompletedBooking) => {
         try {
@@ -329,6 +344,9 @@ const PaymentManagement: React.FC = () => {
     };
 
     const pendingCount = payments.filter(p => p.status === 'pending').length;
+    const paidCount = payments.filter(p => p.status === 'paid').length;
+    const confirmedCount = payments.filter(p => p.status === 'confirmed').length;
+    const awaitingPayoutCount = completedBookings.filter(b => b.payout_status !== 'released' && b.payment_status !== 'paid').length;
 
     // Separate payments: tutee payments (have booking_request_id) with status 'pending', 'paid', or 'confirmed'
     const tuteePayments = payments.filter(p =>
@@ -354,16 +372,30 @@ const PaymentManagement: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {(pendingCount > 0 || completedBookings.length > 0) && (
-                <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
+            {(pendingCount > 0 || paidCount > 0 || confirmedCount > 0 || awaitingPayoutCount > 0) && (
+                <div className="flex flex-wrap items-center gap-2.5 mb-5 sm:mb-7">
                     {pendingCount > 0 && (
-                        <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                            {pendingCount} pending
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/80 shadow-sm">
+                            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                            {pendingCount} pending review
                         </div>
                     )}
-                    {completedBookings.length > 0 && (
-                        <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                            {completedBookings.length} waiting for payment
+                    {paidCount > 0 && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/80 shadow-sm">
+                            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                            {paidCount} awaiting confirmation
+                        </div>
+                    )}
+                    {confirmedCount > 0 && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200/80 shadow-sm">
+                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                            {confirmedCount} confirmed
+                        </div>
+                    )}
+                    {awaitingPayoutCount > 0 && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary-50 text-primary-700 border border-primary-200/80 shadow-sm">
+                            <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
+                            {awaitingPayoutCount} awaiting tutor payout
                         </div>
                     )}
                 </div>
@@ -371,40 +403,56 @@ const PaymentManagement: React.FC = () => {
 
             {/* Completed Bookings Waiting for Payment */}
             {completedBookings.length > 0 && (
-                <Card className="mb-6">
-                    <h2 className="text-xl font-bold text-slate-800 mb-4">Completed Sessions Waiting for Payment</h2>
+                <div className="mb-6 sm:mb-8">
+                    <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                        <div className="p-2 sm:p-2.5 bg-gradient-to-br from-primary-100 to-primary-200/60 rounded-xl shadow-sm">
+                            <DollarSign className="h-5 w-5 text-primary-700" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Completed Sessions Waiting for Payment</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">{completedBookings.length} session{completedBookings.length !== 1 ? 's' : ''} awaiting payout</p>
+                        </div>
+                    </div>
+
                     {/* Desktop Table View */}
-                    <div className="hidden md:block overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tutor</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <div className="hidden md:block rounded-xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
+                        <table className="min-w-full">
+                            <thead>
+                                <tr className="bg-gradient-to-r from-slate-50 to-primary-50/30">
+                                    <th scope="col" className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Tutor</th>
+                                    <th scope="col" className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Student</th>
+                                    <th scope="col" className="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" className="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-slate-100">
                                 {completedBookings.map((booking) => (
-                                    <tr key={booking.booking_id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.tutor.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.student.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                    <tr key={booking.booking_id} className="hover:bg-primary-50/20 transition-colors duration-150">
+                                        <td className="px-5 py-4 whitespace-nowrap">
+                                            <p className="text-sm font-semibold text-slate-900">{booking.tutor.name}</p>
+                                        </td>
+                                        <td className="px-5 py-4 whitespace-nowrap">
+                                            <p className="text-sm font-semibold text-slate-900">{booking.student.name}</p>
+                                        </td>
+                                        <td className="px-5 py-4 whitespace-nowrap text-center">
                                             {booking.payout_status === 'released' ? (
-                                                <span className="px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 whitespace-nowrap">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                                     Released
                                                 </span>
                                             ) : booking.payment_status === 'paid' ? (
-                                                <span className="px-3 py-1.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 whitespace-nowrap">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg bg-green-50 text-green-700 border border-green-200/80">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                                     Paid
                                                 </span>
                                             ) : (
-                                                <span className="px-3 py-1.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 whitespace-nowrap">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
                                                     Pending Payment
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <td className="px-5 py-4 whitespace-nowrap text-center">
                                             <div className="inline-flex items-center justify-center gap-2">
                                                 <Button
                                                     onClick={() => setViewProofBooking(booking)}
@@ -445,37 +493,37 @@ const PaymentManagement: React.FC = () => {
                     {/* Mobile Card View */}
                     <div className="md:hidden space-y-3">
                         {completedBookings.map((booking) => (
-                            <Card key={booking.booking_id} className="p-4">
-                                <div className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div key={booking.booking_id} className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
+                                <div className="border-l-4 border-primary-500 p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        {booking.payout_status === 'released' ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Released
+                                            </span>
+                                        ) : booking.payment_status === 'paid' ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-green-50 text-green-700 border border-green-200/80">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                                Paid
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                                Pending
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 text-sm mb-3">
                                         <div>
-                                            <p className="text-slate-500 text-xs mb-1">Tutor</p>
-                                            <p className="font-medium text-slate-900 truncate">{booking.tutor.name}</p>
+                                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Tutor</p>
+                                            <p className="font-semibold text-slate-900 truncate">{booking.tutor.name}</p>
                                         </div>
                                         <div>
-                                            <p className="text-slate-500 text-xs mb-1">Student</p>
-                                            <p className="font-medium text-slate-900 truncate">{booking.student.name}</p>
+                                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Student</p>
+                                            <p className="font-semibold text-slate-900 truncate">{booking.student.name}</p>
                                         </div>
                                     </div>
-                                    <div className="text-sm">
-                                        <p className="text-slate-500 text-xs mb-1">Status</p>
-                                        <div className="flex items-center">
-                                            {booking.payout_status === 'released' ? (
-                                                <span className="px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 whitespace-nowrap">
-                                                    Released
-                                                </span>
-                                            ) : booking.payment_status === 'paid' ? (
-                                                <span className="px-3 py-1.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 whitespace-nowrap">
-                                                    Paid
-                                                </span>
-                                            ) : (
-                                                <span className="px-3 py-1.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 whitespace-nowrap">
-                                                    Pending Payment
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
+                                    <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100">
                                         <Button
                                             onClick={() => {
                                                 console.log('View Proof clicked. Booking data:', booking);
@@ -510,50 +558,85 @@ const PaymentManagement: React.FC = () => {
                                         )}
                                     </div>
                                 </div>
-                            </Card>
+                            </div>
                         ))}
                     </div>
-                </Card>
+                </div>
             )}
 
             {/* Tutee Payments Table - Pending and Paid Payments */}
-            <Card className="mb-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">Tutee Payments (Pending/Paid/Confirmed)</h2>
+            <div className="mb-6 sm:mb-8">
+                <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                    <div className="p-2 sm:p-2.5 bg-gradient-to-br from-primary-100 to-primary-200/60 rounded-xl shadow-sm">
+                        <CheckCircle2 className="h-5 w-5 text-primary-700" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Tutee Payments</h2>
+                        <p className="text-xs text-slate-500 mt-0.5">Pending, Paid & Confirmed payments</p>
+                    </div>
+                </div>
+
                 {/* Desktop Table View */}
-                <div className="hidden md:block overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th> */}
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tutor</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <div className="hidden md:block rounded-xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
+                    <table className="min-w-full">
+                        <thead>
+                            <tr className="bg-gradient-to-r from-slate-50 to-primary-50/30">
+                                {/* <th scope="col" className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Payment ID</th> */}
+                                <th scope="col" className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Student</th>
+                                <th scope="col" className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Tutor</th>
+                                <th scope="col" className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
+                                <th scope="col" className="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                                <th scope="col" className="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" className="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="divide-y divide-slate-100">
                             {tuteePayments.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-slate-500">
-                                        No tutee payments found
+                                    <td colSpan={6} className="px-6 py-14 text-center">
+                                        <div className="flex flex-col items-center gap-2.5">
+                                            <div className="p-3 bg-slate-100 rounded-full">
+                                                <DollarSign className="h-6 w-6 text-slate-400" />
+                                            </div>
+                                            <p className="text-sm font-medium text-slate-400">No tutee payments found</p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
                                 tuteePayments.map((payment) => (
-                                    <tr key={payment.payment_id}>
-                                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{payment.payment_id}</td> */}
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{payment.student?.user?.name || 'N/A'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{payment.tutor?.user?.name || 'N/A'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₱{Number(payment.amount).toFixed(2)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{new Date(payment.created_at).toLocaleDateString()}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[payment.status]}`}>
+                                    <tr key={payment.payment_id} className="hover:bg-primary-50/20 transition-colors duration-150">
+                                        {/* <td className="px-5 py-4 whitespace-nowrap text-sm text-slate-500">#{payment.payment_id}</td> */}
+                                        <td className="px-5 py-4 whitespace-nowrap">
+                                            <p className="text-sm font-semibold text-slate-900">{payment.student?.user?.name || 'N/A'}</p>
+                                        </td>
+                                        <td className="px-5 py-4 whitespace-nowrap">
+                                            <p className="text-sm font-semibold text-slate-900">{payment.tutor?.user?.name || 'N/A'}</p>
+                                        </td>
+                                        <td className="px-5 py-4 whitespace-nowrap">
+                                            <p className="text-sm font-bold text-slate-800">₱{Number(payment.amount).toFixed(2)}</p>
+                                        </td>
+                                        <td className="px-5 py-4 whitespace-nowrap text-center">
+                                            <p className="text-sm text-slate-500">{new Date(payment.created_at).toLocaleDateString()}</p>
+                                        </td>
+                                        <td className="px-5 py-4 whitespace-nowrap text-center">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg border ${
+                                                payment.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200/80' :
+                                                payment.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200/80' :
+                                                payment.status === 'paid' ? 'bg-blue-50 text-blue-700 border-blue-200/80' :
+                                                payment.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200/80' :
+                                                'bg-slate-50 text-slate-700 border-slate-200/80'
+                                            }`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${
+                                                    payment.status === 'confirmed' ? 'bg-green-500' :
+                                                    payment.status === 'pending' ? 'bg-amber-400 animate-pulse' :
+                                                    payment.status === 'paid' ? 'bg-blue-500' :
+                                                    payment.status === 'rejected' ? 'bg-red-500' :
+                                                    'bg-slate-400'
+                                                }`}></span>
                                                 {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <td className="px-5 py-4 whitespace-nowrap text-center">
                                             <div className="inline-flex items-center justify-center gap-2">
                                                 {(payment.status === 'pending' || payment.status === 'paid') && (
                                                     <Button
@@ -593,43 +676,61 @@ const PaymentManagement: React.FC = () => {
                 {/* Mobile Card View */}
                 <div className="md:hidden space-y-3">
                     {tuteePayments.length === 0 ? (
-                        <div className="text-center py-8 text-sm text-slate-500">
-                            No tutee payments found
+                        <div className="flex flex-col items-center gap-2.5 py-14">
+                            <div className="p-3 bg-slate-100 rounded-full">
+                                <DollarSign className="h-6 w-6 text-slate-400" />
+                            </div>
+                            <p className="text-sm font-medium text-slate-400">No tutee payments found</p>
                         </div>
                     ) : (
                         tuteePayments.map((payment) => (
-                            <Card key={payment.payment_id} className="p-4">
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        {/* <div>
-                                        <p className="text-xs text-slate-500">Payment ID</p>
-                                        <p className="font-semibold text-slate-900">#{payment.payment_id}</p>
-                                    </div> */}
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[payment.status]}`}>
+                            <div key={payment.payment_id} className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
+                                <div className={`border-l-4 p-4 ${
+                                    payment.status === 'confirmed' ? 'border-green-500' :
+                                    payment.status === 'pending' ? 'border-amber-400' :
+                                    payment.status === 'paid' ? 'border-blue-500' :
+                                    payment.status === 'rejected' ? 'border-red-500' :
+                                    'border-slate-300'
+                                }`}>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg border ${
+                                            payment.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200/80' :
+                                            payment.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200/80' :
+                                            payment.status === 'paid' ? 'bg-blue-50 text-blue-700 border-blue-200/80' :
+                                            payment.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200/80' :
+                                            'bg-slate-50 text-slate-700 border-slate-200/80'
+                                        }`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${
+                                                payment.status === 'confirmed' ? 'bg-green-500' :
+                                                payment.status === 'pending' ? 'bg-amber-400 animate-pulse' :
+                                                payment.status === 'paid' ? 'bg-blue-500' :
+                                                payment.status === 'rejected' ? 'bg-red-500' :
+                                                'bg-slate-400'
+                                            }`}></span>
                                             {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                                         </span>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div className="grid grid-cols-2 gap-3 text-sm mb-3">
                                         <div>
-                                            <p className="text-slate-500 text-xs mb-1">Student</p>
-                                            <p className="font-medium text-slate-900 truncate">{payment.student?.user?.name || 'N/A'}</p>
+                                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Student</p>
+                                            <p className="font-semibold text-slate-900 truncate">{payment.student?.user?.name || 'N/A'}</p>
                                         </div>
                                         <div>
-                                            <p className="text-slate-500 text-xs mb-1">Tutor</p>
-                                            <p className="font-medium text-slate-900 truncate">{payment.tutor?.user?.name || 'N/A'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
-                                        <div>
-                                            <p className="text-slate-500 text-xs mb-1">Amount</p>
-                                            <p className="font-medium text-slate-900">₱{Number(payment.amount).toFixed(2)}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-slate-500 text-xs mb-1">Date</p>
-                                            <p className="font-medium text-slate-900">{new Date(payment.created_at).toLocaleDateString()}</p>
+                                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Tutor</p>
+                                            <p className="font-semibold text-slate-900 truncate">{payment.tutor?.user?.name || 'N/A'}</p>
                                         </div>
                                     </div>
-                                    <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
+                                    <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                                        <div>
+                                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Amount</p>
+                                            <p className="font-bold text-slate-800">₱{Number(payment.amount).toFixed(2)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Date</p>
+                                            <p className="font-medium text-slate-700">{new Date(payment.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100">
                                         {(payment.status === 'pending' || payment.status === 'paid') && (
                                             <Button
                                                 onClick={() => setSelectedProofModalPayment(payment)}
@@ -662,11 +763,11 @@ const PaymentManagement: React.FC = () => {
                                         )}
                                     </div>
                                 </div>
-                            </Card>
+                            </div>
                         ))
                     )}
                 </div>
-            </Card>
+            </div>
 
 
             {selectedPayment && (
@@ -734,7 +835,7 @@ const PaymentManagement: React.FC = () => {
                                     alt="Tutor GCash QR"
                                     className="max-w-full h-auto border border-slate-200 rounded-lg"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=QR+Not+Available';
+                                        (e.target as HTMLImageElement).src = PLACEHOLDER_QR_NA;
                                     }}
                                 />
                             </div>
@@ -821,7 +922,7 @@ const PaymentManagement: React.FC = () => {
                 <Modal
                     isOpen={true}
                     onClose={() => { setSelectedProofModalPayment(null); }}
-                    title={`Payment Proof #${selectedProofModalPayment.payment_id}`}
+                    title={`Payment Proof `}
                     maxWidth="6xl"
                     footer={
                         (selectedProofModalPayment.status === 'pending' || selectedProofModalPayment.status === 'paid') ? (
@@ -970,7 +1071,7 @@ const PaymentManagement: React.FC = () => {
                                     </svg>
                                 </div>
                                 <h3 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900">
-                                    {selectedProofModalPayment.status === 'confirmed' && (selectedProofModalPayment as any).admin_payment_proof_url
+                                    {selectedProofModalPayment.status === 'confirmed' && selectedProofModalPayment.admin_payment_proof_url
                                         ? 'Admin Payment Proof'
                                         : 'Payment Proof'}
                                 </h3>
@@ -978,13 +1079,13 @@ const PaymentManagement: React.FC = () => {
                             <div className="flex justify-center bg-white rounded-lg border-2 border-primary-200 p-3 sm:p-4 md:p-5 shadow-inner">
                                 <img
                                     src={getFileUrl(
-                                        selectedProofModalPayment.status === 'confirmed' && (selectedProofModalPayment as any).admin_payment_proof_url
-                                            ? (selectedProofModalPayment as any).admin_payment_proof_url
-                                            : (selectedProofModalPayment as any).dispute_proof_url || (selectedProofModalPayment as any).payment_proof_url
+                                        selectedProofModalPayment.status === 'confirmed' && selectedProofModalPayment.admin_payment_proof_url
+                                            ? selectedProofModalPayment.admin_payment_proof_url
+                                            : selectedProofModalPayment.dispute_proof_url || selectedProofModalPayment.payment_proof_url
                                     )}
                                     alt="Payment proof"
                                     className="max-h-[60vh] w-auto object-contain rounded-lg shadow-md"
-                                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400?text=No+Image'; }}
+                                    onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_NO_IMAGE; }}
                                 />
                             </div>
                         </div>
@@ -1053,7 +1154,7 @@ const PaymentManagement: React.FC = () => {
                                         src={getFileUrl(viewReleaseProofBooking.release_proof_url)}
                                         alt="Release proof"
                                         className="max-h-[400px] w-auto object-contain rounded-lg shadow-md"
-                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400?text=No+Image'; }}
+                                        onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_NO_IMAGE; }}
                                     />
                                 </div>
                             </div>
@@ -1104,7 +1205,7 @@ const PaymentManagement: React.FC = () => {
                                         src={getFileUrl(viewProofBooking.session_proof_url)}
                                         alt="Session proof"
                                         className="max-h-[400px] w-auto object-contain rounded-lg shadow-md"
-                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400?text=No+Image'; }}
+                                        onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_NO_IMAGE; }}
                                     />
                                 </div>
                             </div>
@@ -1220,7 +1321,7 @@ const PaymentManagement: React.FC = () => {
                                                 src={getFileUrl(payBooking.tutor.gcash_qr_url)}
                                                 alt="GCash QR Code"
                                                 className="max-h-[300px] w-auto object-contain rounded-lg shadow-md"
-                                                onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=QR+Not+Available'; }}
+                                                onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_QR_NA; }}
                                             />
                                         </div>
                                     </div>

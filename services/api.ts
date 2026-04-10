@@ -241,6 +241,12 @@ export const getFileUrl = (path: string | undefined | null): string => {
     return `${API_ORIGIN}${normalized}`;
   }
 
+  // Payment proofs are served directly at /payment_proofs/ without /api prefix
+  if (path.startsWith('/payment_proofs/') || path.startsWith('payment_proofs/')) {
+    const normalized = path.startsWith('/') ? path : `/${path}`;
+    return `${API_ORIGIN}${normalized}`;
+  }
+
   // For other files, use the standard path
   const normalized = path.startsWith('/') ? path : `/${path}`;
   return `${API_ORIGIN}${normalized}`;

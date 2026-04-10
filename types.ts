@@ -92,6 +92,7 @@ export interface Payment {
   status: 'pending' | 'confirmed' | 'rejected' | 'refunded' | 'paid';
   created_at: string;
   dispute_status?: 'none' | 'open' | 'under_review' | 'resolved' | 'rejected';
+  payment_proof_url?: string;
   dispute_proof_url?: string;
   admin_note?: string;
   admin_payment_proof_url?: string;

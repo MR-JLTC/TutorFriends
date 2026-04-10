@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import apiClient, { getFileUrl } from '../../services/api';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useVerification } from '../../context/VerificationContext';
 import { User, Camera, CreditCard, Star, Edit, Save, X, CheckCircle, Clock, Mail, Info } from 'lucide-react';
 import { updateRoleUser } from '../../utils/authRole';
+import GCashQRCropModal from '../Tutor_TuteePages/GCashQRCropModal';
 
 interface TutorProfile {
   bio: string;
@@ -48,6 +49,9 @@ const ProfileSetup: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [gcashQR, setGcashQR] = useState<File | null>(null);
+  const [gcashCropSrc, setGcashCropSrc] = useState<string | null>(null);
+  const [gcashQRPreview, setGcashQRPreview] = useState<string | null>(null);
+  const gcashQrInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
 
@@ -139,7 +143,26 @@ const ProfileSetup: React.FC = () => {
 
   const handleGcashQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
-    if (file) setGcashQR(file);
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        if (gcashCropSrc) URL.revokeObjectURL(gcashCropSrc);
+        setGcashCropSrc(URL.createObjectURL(file));
+      }
+    }
+  };
+
+  const onGcashCropConfirm = (croppedFile: File) => {
+    setGcashQR(croppedFile);
+    if (gcashQRPreview) URL.revokeObjectURL(gcashQRPreview);
+    setGcashQRPreview(URL.createObjectURL(croppedFile));
+    setGcashCropSrc(null);
+    if (gcashQrInputRef.current) gcashQrInputRef.current.value = '';
+  };
+
+  const onGcashCropCancel = () => {
+    if (gcashCropSrc) URL.revokeObjectURL(gcashCropSrc);
+    setGcashCropSrc(null);
+    if (gcashQrInputRef.current) gcashQrInputRef.current.value = '';
   };
 
   const saveProfile = async () => {
@@ -745,6 +768,7 @@ const ProfileSetup: React.FC = () => {
               <div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
                   <input
+                    ref={gcashQrInputRef}
                     type="file"
                     accept="image/*"
                     onChange={handleGcashQRChange}
@@ -752,7 +776,12 @@ const ProfileSetup: React.FC = () => {
                   />
                   {gcashQR && (
                     <button
-                      onClick={() => setGcashQR(null)}
+                      onClick={() => {
+                        setGcashQR(null);
+                        if (gcashQRPreview) URL.revokeObjectURL(gcashQRPreview);
+                        setGcashQRPreview(null);
+                        if (gcashQrInputRef.current) gcashQrInputRef.current.value = '';
+                      }}
                       className="bg-gradient-to-br from-red-600 to-red-700 text-white px-4 py-3 rounded-xl hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                       title="Remove selected QR code"
                     >
@@ -761,18 +790,24 @@ const ProfileSetup: React.FC = () => {
                     </button>
                   )}
                 </div>
-                {gcashQR && (
-                  <p className="text-sm text-slate-600 mt-2 flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    Selected: {gcashQR.name}
-                  </p>
+                {gcashQRPreview && (
+                  <div className="mt-3 flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <img src={gcashQRPreview} alt="Cropped GCash QR" className="w-20 h-20 object-contain rounded-lg border border-slate-300" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-green-700 flex items-center gap-1.5">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        QR Code ready
+                      </p>
+                      <p className="text-xs text-slate-500 truncate">{gcashQR?.name}</p>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (
               <div className="bg-gradient-to-br from-slate-50 via-primary-50/30 to-slate-50 p-5 rounded-xl border-2 border-slate-200/50 shadow-sm flex justify-center">
-                {gcashQR ? (
+                {gcashQRPreview ? (
                   <img
-                    src={URL.createObjectURL(gcashQR)}
+                    src={gcashQRPreview}
                     alt="GCash QR Preview"
                     className="w-32 h-32 sm:w-40 sm:h-40 object-contain border-2 border-primary-200 rounded-xl bg-white shadow-lg"
                   />
@@ -822,6 +857,11 @@ const ProfileSetup: React.FC = () => {
           </div>
         </Card>
       )}
+      <GCashQRCropModal
+        cropSrc={gcashCropSrc}
+        onConfirm={onGcashCropConfirm}
+        onCancel={onGcashCropCancel}
+      />
     </div>
   );
 };

@@ -411,7 +411,7 @@ const ChatPage: React.FC = () => {
         const inappropriateWords = [
             'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'pussy', 'utots',
             'whore', 'slut', 'faggot', 'nigger', 'nigga', 'retard', 'sex', 'sumbagay', 'tits', 'tit',
-            'putangina', 'tanga', 'gago', 'bobo', 'pota', 'puta', 'ulol', 'kantot',
+            'putangina', 'tanga', 'gago', 'bobo', 'pota', 'puta', 'ulol', 'kantot', 'i love you',
             'bogo', 'bugo', 'buang', 'amaw', 'giatay', 'ataya', 'yawa', 'pesteng yawa',
             'piste', 'pisti', 'piskot', 'animal', 'bilat', 'bilatsing', 'burat', 'lubot',
             'kiki', 'kiking', 'titi', 'otin', 'toti', 'bayot', 'tomboy', 'talong', 'itlog',
@@ -599,19 +599,60 @@ const ChatPage: React.FC = () => {
     }, [conversations, availableContacts, activeConversation, user]);
 
     return (
-        <div className="flex flex-col md:flex-row h-[85vh] md:h-[calc(100vh-6rem)] bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative">
-            {/* Sidebar */}
-            <div className={`w-full md:w-80 border-r border-slate-200 flex flex-col absolute md:relative z-10 h-full bg-white transition-transform duration-300 ${activeConversation ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
-                <div className="p-4 border-b border-slate-200 bg-slate-50">
-                    <h2 className="font-bold text-lg text-slate-800">Messages</h2>
+        <div className="flex flex-col md:flex-row h-[85vh] md:h-[calc(100vh-5rem)] bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden relative">
+
+            {/* ── Sidebar ───────────────────────────────────────── */}
+            <div className={`w-full md:w-80 lg:w-96 border-r border-slate-200/80 flex flex-col absolute md:relative z-10 h-full bg-white transition-transform duration-300 ease-in-out ${activeConversation ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
+
+                {/* Sidebar Header */}
+                <div className="px-5 py-4 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 flex items-center justify-between flex-shrink-0">
+                    <div>
+                        <h2 className="font-bold text-lg text-white tracking-tight leading-tight">Messages</h2>
+                        <p className="text-indigo-200 text-xs mt-0.5 font-medium">
+                            {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                        </p>
+                    </div>
+                    <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-inner">
+                        <svg className="w-4.5 h-4.5 text-white w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
                 </div>
+
+                {/* Connection warning strip */}
+                {!isConnected && (
+                    <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 flex items-center gap-2 flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></div>
+                        <span className="text-xs text-amber-700 font-semibold">Reconnecting…</span>
+                    </div>
+                )}
+
+                {/* Conversation / Contact List */}
                 <div className="flex-1 overflow-y-auto">
                     {loading ? (
-                        <div className="p-4 text-center text-slate-500">Loading...</div>
+                        <div className="p-4 space-y-1">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="flex items-center gap-3 p-3 rounded-xl animate-pulse">
+                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex-shrink-0"></div>
+                                    <div className="flex-1 space-y-2 min-w-0">
+                                        <div className="h-3.5 bg-slate-100 rounded-full w-3/5"></div>
+                                        <div className="h-2.5 bg-slate-50 rounded-full w-4/5"></div>
+                                    </div>
+                                    <div className="h-2.5 bg-slate-100 rounded-full w-8 flex-shrink-0"></div>
+                                </div>
+                            ))}
+                        </div>
                     ) : dataSource.length === 0 ? (
-                        <div className="p-8 text-center text-slate-500">
-                            <p>No conversations yet.</p>
-                            <p className="text-sm mt-2">Book a session or find a tutor/tutee to start chatting!</p>
+                        <div className="flex flex-col items-center justify-center h-full px-6 py-16 text-center">
+                            <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-4 shadow-sm">
+                                <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                            </div>
+                            <p className="font-bold text-slate-700 mb-1.5">No conversations yet</p>
+                            <p className="text-xs text-slate-400 leading-relaxed max-w-[200px]">
+                                Book a session or find a tutor to start chatting!
+                            </p>
                         </div>
                     ) : (
                         <ChatList
@@ -625,45 +666,71 @@ const ChatPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Chat Window */}
-            <div className={`w-full md:flex-1 flex flex-col bg-slate-50 absolute md:relative z-20 h-full transition-transform duration-300 ${activeConversation ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+            {/* ── Chat Window ────────────────────────────────────── */}
+            <div
+                className={`w-full md:flex-1 flex flex-col absolute md:relative z-20 h-full transition-transform duration-300 ease-in-out ${activeConversation ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
+                style={{ background: 'radial-gradient(circle at 1px 1px, rgba(99,102,241,0.05) 1px, transparent 0)', backgroundSize: '22px 22px', backgroundColor: '#f8fafc' }}
+            >
                 {activeConversation ? (
                     <>
-                        {/* Header */}
-                        <div className="p-3 md:p-4 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between shadow-sm z-30 sticky top-0">
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => setActiveConversation(null)}
-                                    className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors flex items-center gap-1"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                                    <span className="text-sm font-medium">Back</span>
-                                </button>
-                                <div className="h-10 w-10 rounded-full overflow-hidden">
-                                    <img src={getPartner(activeConversation)?.profile_image_url || `https://ui-avatars.com/api/?name=${getPartner(activeConversation)?.name}`} className="w-full h-full object-cover" />
+                        {/* Chat Header */}
+                        <div className="px-3 sm:px-4 py-3 bg-white/90 backdrop-blur-md border-b border-slate-200/80 flex items-center gap-2 sm:gap-3 shadow-sm z-30 sticky top-0 flex-shrink-0">
+                            {/* Mobile back button */}
+                            <button
+                                onClick={() => setActiveConversation(null)}
+                                className="md:hidden p-2 -ml-1 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors flex items-center gap-0.5 flex-shrink-0"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                <span className="text-sm font-semibold">Back</span>
+                            </button>
+
+                            {/* Avatar with online ring */}
+                            <div className="relative flex-shrink-0">
+                                <div className={`h-10 w-10 rounded-full overflow-hidden ring-2 shadow-sm ${onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) ? 'ring-green-400' : 'ring-slate-200'}`}>
+                                    <img
+                                        src={getPartner(activeConversation)?.profile_image_url || `https://ui-avatars.com/api/?name=${getPartner(activeConversation)?.name}&background=6366f1&color=fff`}
+                                        className="w-full h-full object-cover"
+                                        alt={getPartner(activeConversation)?.name}
+                                    />
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-slate-800">{getPartner(activeConversation)?.name}</h3>
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                        {/* Status of the PARTNER */}
-                                        {onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) ? (
-                                            <>
-                                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                                <span className="text-xs text-green-600 font-bold">Active Now</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                                                <span className="text-xs text-slate-500 font-bold">Offline</span>
-                                            </>
-                                        )}
-                                    </div>
+                                {onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) && (
+                                    <span className="absolute bottom-0 right-0 flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 ring-2 ring-white"></span>
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Name & status */}
+                            <div className="min-w-0 flex-1">
+                                <h3 className="font-bold text-slate-800 truncate text-sm sm:text-base leading-tight">
+                                    {getPartner(activeConversation)?.name}
+                                </h3>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                    {/* Status of the PARTNER */}
+                                    {onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) ? (
+                                        <>
+                                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                            <span className="text-xs text-green-600 font-bold">Active Now</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                                            <span className="text-xs text-slate-500 font-bold">
+                                                {lastSeenMap[Number(getPartner(activeConversation)?.user_id)]
+                                                    ? `Seen ${formatDistanceToNow(lastSeenMap[Number(getPartner(activeConversation)?.user_id)], { addSuffix: true })}`
+                                                    : 'Offline'}
+                                            </span>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
+                        <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-3" ref={scrollRef}>
                             <MessageList
                                 referance={scrollRef}
                                 className="message-list"
@@ -673,11 +740,11 @@ const ChatPage: React.FC = () => {
                             />
                         </div>
 
-                        {/* Input */}
-                        <div className="p-3 bg-white border-t border-slate-200">
+                        {/* Input Bar */}
+                        <div className="px-3 sm:px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-slate-200/80 flex-shrink-0">
                             <Input
                                 referance={inputRef}
-                                placeholder="Type a message..."
+                                placeholder="Type a message…"
                                 multiline={true}
                                 value={inputValue}
                                 onChange={(e: any) => setInputValue(e.target.value)}
@@ -691,20 +758,34 @@ const ChatPage: React.FC = () => {
                                     <button
                                         key="send-btn"
                                         type="button"
-                                        className="bg-indigo-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-indigo-700 transition-colors"
+                                        className="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-200/60 ml-1"
                                         onClick={handleSendMessage}
                                     >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
                                     </button>
                                 ]}
                                 maxHeight={100}
                             />
+                            <p className="hidden sm:block text-[10px] text-slate-400 mt-1.5 ml-1 select-none">
+                                Press <kbd className="px-1 py-px text-[9px] bg-slate-100 rounded border border-slate-200 font-mono">Enter</kbd> to send &nbsp;·&nbsp;
+                                <kbd className="px-1 py-px text-[9px] bg-slate-100 rounded border border-slate-200 font-mono">Shift+Enter</kbd> for new line
+                            </p>
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                        <svg className="w-20 h-20 mb-4 opacity-20" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" /></svg>
-                        <p className="text-lg font-medium">Select a conversation to start chatting</p>
+                    /* Empty state — no conversation selected */
+                    <div className="flex-1 flex flex-col items-center justify-center text-center px-6 select-none">
+                        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-50 to-violet-100 flex items-center justify-center mb-6 shadow-inner border border-indigo-100">
+                            <svg className="w-11 h-11 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-700 mb-2">Your Messages</h3>
+                        <p className="text-sm text-slate-400 max-w-xs leading-relaxed">
+                            Select a conversation from the sidebar to start chatting
+                        </p>
                     </div>
                 )}
             </div>

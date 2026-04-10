@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import apiClient from '../../services/api';
 import { getFileUrl } from '../../services/api';
 import { User, Payment, University } from '../../types';
@@ -26,6 +26,12 @@ const UserManagement: React.FC = () => {
     year_level?: number;
     university_id?: number;
   } | null>(null);
+
+  // Modal States for Alerts & Confirms
+  const [statusConfirmDialog, setStatusConfirmDialog] = useState<{ userId: number, currentStatus: 'active' | 'inactive', nextStatus: 'active' | 'inactive' } | null>(null);
+  const [resetPasswordDialog, setResetPasswordDialog] = useState<{ userId: number, newPassword: string } | null>(null);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<number | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'error' | 'success', text: string } | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -55,26 +61,59 @@ const UserManagement: React.FC = () => {
       setDisputesLoading(false);
     }
   };
-  const handleStatusToggle = async (userId: number, currentStatus: 'active' | 'inactive') => {
-    const next = currentStatus === 'active' ? 'inactive' : 'active';
-    const confirmMsg = next === 'inactive' ? 'Deactivate this user?' : 'Activate this user?';
-    if (!confirm(confirmMsg)) return;
+  const initiateStatusToggle = (userId: number, currentStatus: 'active' | 'inactive') => {
+    const nextStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    setStatusConfirmDialog({ userId, currentStatus, nextStatus });
+  };
+
+  const confirmStatusToggle = async () => {
+    if (!statusConfirmDialog) return;
+    const { userId, nextStatus } = statusConfirmDialog;
+    setStatusConfirmDialog(null);
+
     try {
       setUpdatingUserId(userId);
-      await apiClient.patch(`/users/${userId}/status`, { status: next });
+      await apiClient.patch(`/users/${userId}/status`, { status: nextStatus });
       await fetchUsers();
+      setFeedbackMessage({ type: 'success', text: `User has been effectively ${nextStatus === 'active' ? 'activated' : 'deactivated'}.`});
     } catch (e: any) {
-      alert(e?.response?.data?.message || 'Failed to update user status.');
+      setFeedbackMessage({ type: 'error', text: e?.response?.data?.message || 'Failed to update user status.' });
     } finally {
       setUpdatingUserId(null);
     }
   };
 
-  const handleResetPassword = async (userId: number) => {
-    const newPassword = prompt('Enter a new password (min 7 chars):');
-    if (!newPassword || newPassword.length < 7) return;
-    await apiClient.patch(`/users/${userId}/reset-password`, { newPassword });
-    alert('Password reset successfully');
+  const initiateResetPassword = (userId: number) => {
+    setResetPasswordDialog({ userId, newPassword: '' });
+  };
+
+  const passwordError = useMemo(() => {
+    if (!resetPasswordDialog || !resetPasswordDialog.newPassword) return null;
+    const password = resetPasswordDialog.newPassword;
+    if (password.length < 8) return 'Password must be at least 8 characters long.';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter.';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter.';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number.';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return 'Password must contain at least one special character.';
+    return null;
+  }, [resetPasswordDialog?.newPassword]);
+
+  const confirmResetPassword = async () => {
+    if (!resetPasswordDialog) return;
+    const { userId, newPassword } = resetPasswordDialog;
+    
+    if (passwordError) {
+      setFeedbackMessage({ type: 'error', text: passwordError });
+      return;
+    }
+
+    setResetPasswordDialog(null);
+    try {
+        await apiClient.patch(`/users/${userId}/reset-password`, { newPassword });
+        setFeedbackMessage({ type: 'success', text: 'User password reset successfully.' });
+    } catch (e: any) {
+        setFeedbackMessage({ type: 'error', text: e?.response?.data?.message || 'Failed to reset password.' });
+    }
   };
 
   // const openEdit = (user: User) => {
@@ -135,17 +174,21 @@ const UserManagement: React.FC = () => {
     await fetchUsers();
   };
 
-  const deleteUser = async (userId: number) => {
-    if (!confirm('Delete this user? This cannot be undone.')) return;
+  const initiateDeleteUser = (userId: number) => {
+    setDeleteConfirmDialog(userId);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!deleteConfirmDialog) return;
+    const userId = deleteConfirmDialog;
+    setDeleteConfirmDialog(null);
+
     try {
       await apiClient.delete(`/users/${userId}`);
       fetchUsers();
-      const notify = (window as any).__notify as ((msg: string, type?: 'success' | 'error' | 'info') => void) | undefined;
-      if (notify) notify('User deleted successfully.', 'success');
+      setFeedbackMessage({ type: 'success', text: 'User deleted successfully.'});
     } catch (e: any) {
-      const msg = e?.response?.data?.message || 'Failed to delete user. They may have related records. Consider deactivating instead.';
-      const notify = (window as any).__notify as ((msg: string, type?: 'success' | 'error' | 'info') => void) | undefined;
-      if (notify) notify(msg, 'error');
+      setFeedbackMessage({ type: 'error', text: e?.response?.data?.message || 'Failed to delete user. They may have related records. Consider deactivating instead.' });
     }
   };
 
@@ -211,30 +254,42 @@ const UserManagement: React.FC = () => {
 
       {/* Desktop Table View */}
       <Card className="hidden md:block">
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">University</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Actions</th>
+        {/* Card Header matching CourseManagement */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-5">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-primary-100 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users h-4 w-4 text-primary-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-slate-800">Users</h2>
+            <span className="ml-1 px-2 py-0.5 text-xs font-medium bg-primary-50 text-primary-700 rounded-full border border-primary-200">
+              {users.filter(user => userTypeFilter === 'all' ? true : (user.role === userTypeFilter)).length}
+            </span>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-gradient-to-r from-primary-600 to-primary-700">
+                <th scope="col" className="px-3 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">User</th>
+                <th scope="col" className="px-3 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">Role</th>
+                <th scope="col" className="px-3 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">University</th>
+                <th scope="col" className="px-3 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">Status</th>
+                <th scope="col" className="px-3 py-2.5 text-center text-xs font-semibold text-white uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-slate-100">
               {users
                 .filter(user => userTypeFilter === 'all' ? true : (user.role === userTypeFilter))
                 .map((user) => (
-                  <tr key={user.user_id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={user.user_id} className="transition-colors duration-150 hover:bg-slate-50">
+                    <td className="px-3 py-2.5 border-l-[3px] border-transparent">
                       <div className="flex items-center">
                         {user.profile_image_url ? (
                           <img
                             src={getFileUrl(user.profile_image_url)}
                             alt={user.name}
-                            className="h-10 w-10 rounded-full mr-3 object-cover flex-shrink-0"
+                            className="h-10 w-10 rounded-full mr-3 object-cover flex-shrink-0 shadow-sm ring-1 ring-slate-900/5"
                             style={{ aspectRatio: '1 / 1' }}
                             onError={(e) => {
                               const imgElement = e.target as HTMLImageElement;
@@ -242,52 +297,57 @@ const UserManagement: React.FC = () => {
                             }}
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-full mr-3 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                          <div className="h-10 w-10 rounded-full mr-3 bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-semibold flex-shrink-0 shadow-sm ring-1 ring-slate-900/5 text-sm">
                             {user.name.charAt(0).toUpperCase()}
                           </div>
                         )}
-                        {user.name}
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-sm text-slate-900 leading-tight">{user.name}</span>
+                          <span className="text-[13px] text-slate-500 leading-tight mt-0.5">{user.email}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{user.role}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.university_name || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col space-y-1">
+                    <td className="px-3 py-2.5 text-sm text-slate-500 capitalize">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-sm text-slate-500">
+                      {user.university_name
+                        ? <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200" title={user.university_name}>{user.university_name}</span>
+                        : <span className="text-xs text-slate-400 italic">—</span>
+                      }
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex flex-col gap-1 items-start">
                         {/* User Status */}
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${((user as any).status || 'active') === 'active' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] leading-none font-semibold border ${((user as any).status || 'active') === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
                           {((user as any).status || 'active')}
                         </span>
                         {/* Tutor Application Status (only for tutors) */}
                         {(user.role as any) === 'tutor' && (user as any).tutor_profile && (
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${(user as any).tutor_profile.status === 'approved'
-                            ? 'bg-green-100 text-green-800'
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] leading-none font-semibold border ${(user as any).tutor_profile.status === 'approved'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : (user as any).tutor_profile.status === 'rejected'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
                             }`}>
                             {(user as any).tutor_profile.status || 'pending'}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                      <div className="inline-flex items-center gap-2">
-                        {/* Edit button - green */}
-                        <button className="text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded px-2 py-1 transition-colors" title="Edit" onClick={() => openEdit(user)}>
-                          <Edit className="inline h-4 w-4" />
+                    <td className="px-3 py-2.5 text-center text-sm font-medium">
+                      <div className="flex items-center justify-center gap-1">
+                        <button className="inline-flex items-center justify-center h-7 w-7 text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 border border-transparent hover:border-primary-200 rounded-md transition-colors" title="Edit" onClick={() => openEdit(user)}>
+                          <Edit className="h-3.5 w-3.5" />
                         </button>
-                        {/* Reset password button - blue */}
-                        <button className="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-2 py-1 transition-colors disabled:opacity-50" title="Reset Password" onClick={() => handleResetPassword(user.user_id)} disabled={updatingUserId === user.user_id}>
-                          <RefreshCw className="inline h-4 w-4" />
+                        <button className="inline-flex items-center justify-center h-7 w-7 text-sky-600 hover:text-sky-700 bg-sky-50 hover:bg-sky-100 border border-transparent hover:border-sky-200 rounded-md transition-colors disabled:opacity-50" title="Reset Password" onClick={() => initiateResetPassword(user.user_id)} disabled={updatingUserId === user.user_id}>
+                          <RefreshCw className="h-3.5 w-3.5" />
                         </button>
-                        {/* Deactivate/activate button - red */}
-                        <button className="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 rounded px-2 py-1 transition-colors disabled:opacity-50" title="Toggle Active" onClick={() => handleStatusToggle(user.user_id, ((user as any).status || 'active'))} disabled={updatingUserId === user.user_id}>
-                          <Ban className="inline h-4 w-4" />
+                        <button className="inline-flex items-center justify-center h-7 w-7 text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-transparent hover:border-rose-200 rounded-md transition-colors disabled:opacity-50" title="Toggle Active" onClick={() => initiateStatusToggle(user.user_id, ((user as any).status || 'active'))} disabled={updatingUserId === user.user_id}>
+                          <Ban className="h-3.5 w-3.5" />
                         </button>
-                        {/* <button className="text-red-600 hover:text-red-700" title="Delete" onClick={() => deleteUser(user.user_id)}>
-                        <Trash2 className="inline h-4 w-4" />
-                      </button> */}
                       </div>
                     </td>
                   </tr>
@@ -302,15 +362,15 @@ const UserManagement: React.FC = () => {
         {users
           .filter(user => userTypeFilter === 'all' ? true : (user.role === userTypeFilter))
           .map((user) => (
-            <Card key={user.user_id} className="p-4">
-              <div className="space-y-3">
-                {/* User Header */}
-                <div className="flex items-center gap-3">
+            <div key={user.user_id} className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
+              <div className="space-y-0">
+                {/* User Header Row */}
+                <div className="flex items-center gap-3 px-4 py-3 bg-white">
                   {user.profile_image_url ? (
                     <img
                       src={getFileUrl(user.profile_image_url)}
                       alt={user.name}
-                      className="h-12 w-12 rounded-full object-cover flex-shrink-0"
+                      className="h-10 w-10 rounded-full object-cover flex-shrink-0 ring-1 ring-slate-900/5"
                       style={{ aspectRatio: '1 / 1' }}
                       onError={(e) => {
                         const imgElement = e.target as HTMLImageElement;
@@ -318,76 +378,75 @@ const UserManagement: React.FC = () => {
                       }}
                     />
                   ) : (
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-semibold flex-shrink-0 ring-1 ring-slate-900/5">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 truncate">{user.name}</h3>
-                    <p className="text-sm text-slate-500 truncate">{user.email}</p>
+                    <h3 className="font-semibold text-slate-900 truncate text-sm">{user.name}</h3>
+                    <p className="text-xs text-slate-500 truncate">{user.email}</p>
                   </div>
                 </div>
 
-                {/* User Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="px-4 pb-3 grid grid-cols-2 gap-3 text-xs border-b border-slate-100">
                   <div>
-                    <p className="text-slate-500 text-xs mb-1">Role</p>
-                    <p className="font-medium text-slate-900 capitalize">{user.role}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 text-xs mb-1">University</p>
-                    <p className="font-medium text-slate-900 truncate">{user.university_name || 'N/A'}</p>
-                  </div>
-                </div>
-
-                {/* Status Badges */}
-                <div className="flex flex-wrap gap-2">
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${((user as any).status || 'active') === 'active' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
-                    {((user as any).status || 'active')}
-                  </span>
-                  {(user.role as any) === 'tutor' && (user as any).tutor_profile && (
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${(user as any).tutor_profile.status === 'approved'
-                      ? 'bg-green-100 text-green-800'
-                      : (user as any).tutor_profile.status === 'rejected'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                      {(user as any).tutor_profile.status || 'pending'}
+                    <span className="text-slate-400 block mb-0.5">Role</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-slate-100 text-slate-700 border border-slate-200 capitalize">
+                      {user.role}
                     </span>
-                  )}
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-0.5">University</span>
+                    {user.university_name
+                      ? <span className="font-medium text-slate-700 truncate block">{user.university_name}</span>
+                      : <span className="text-slate-400 italic block">—</span>
+                    }
+                  </div>
+                  <div className="col-span-2 pt-1 flex flex-wrap gap-1.5">
+                    <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full border ${((user as any).status || 'active') === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                      {((user as any).status || 'active')}
+                    </span>
+                    {(user.role as any) === 'tutor' && (user as any).tutor_profile && (
+                      <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full border ${(user as any).tutor_profile.status === 'approved'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : (user as any).tutor_profile.status === 'rejected'
+                          ? 'bg-rose-50 text-rose-700 border-rose-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}>
+                        Tutor: {(user as any).tutor_profile.status || 'pending'}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                <div className="flex bg-slate-50 divide-x divide-slate-100">
                   <button
-                    className="flex-1 text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                    title="Edit"
+                    className="flex-1 inline-flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium text-primary-600 hover:bg-primary-50 transition-colors"
                     onClick={() => openEdit(user)}
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-3.5 w-3.5" />
                     <span>Edit</span>
                   </button>
                   <button
-                    className="flex-1 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                    title="Reset Password"
-                    onClick={() => handleResetPassword(user.user_id)}
+                    className="flex-1 inline-flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium text-sky-600 hover:bg-sky-50 transition-colors disabled:opacity-50"
+                    onClick={() => initiateResetPassword(user.user_id)}
                     disabled={updatingUserId === user.user_id}
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className="h-3.5 w-3.5" />
                     <span>Reset</span>
                   </button>
                   <button
-                    className="flex-1 text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 rounded px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                    title="Toggle Active"
-                    onClick={() => handleStatusToggle(user.user_id, ((user as any).status || 'active'))}
+                    className="flex-1 inline-flex flex-col items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-50"
+                    onClick={() => initiateStatusToggle(user.user_id, ((user as any).status || 'active'))}
                     disabled={updatingUserId === user.user_id}
                   >
-                    <Ban className="h-4 w-4" />
-                    <span>Status</span>
+                    <Ban className="h-3.5 w-3.5" />
+                    <span className="truncate max-w-full">Status</span>
                   </button>
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
       </div>
 
@@ -450,43 +509,158 @@ const UserManagement: React.FC = () => {
             )}
           </div>
         </Modal>
-      )}{/* --- MODIFICATION ENDS (3/3) --- */}
+      )}
 
-      <div className="mt-8" />
-      <h2 className="text-2xl font-semibold text-slate-800 mb-4">Payment Disputes</h2>
-      <Card>
+      {/* --- MODAL RENDERS FOR ACTIONS --- */}
+      {statusConfirmDialog && (
+        <Modal
+          isOpen={true}
+          onClose={() => setStatusConfirmDialog(null)}
+          title={`Confirm Status Change`}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setStatusConfirmDialog(null)}>Cancel</Button>
+              <Button variant="danger" onClick={confirmStatusToggle}>
+                {statusConfirmDialog.nextStatus === 'active' ? 'Activate User' : 'Deactivate User'}
+              </Button>
+            </>
+          }
+        >
+          <div className="p-4 text-slate-700">
+             Are you sure you want to <strong>{statusConfirmDialog.nextStatus === 'active' ? 'activate' : 'deactivate'}</strong> this user? 
+             {statusConfirmDialog.nextStatus === 'inactive' && " They will not be able to log in while deactivated."}
+          </div>
+        </Modal>
+      )}
+
+      {resetPasswordDialog && (
+        <Modal
+          isOpen={true}
+          onClose={() => setResetPasswordDialog(null)}
+          title={`Reset User Password`}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setResetPasswordDialog(null)}>Cancel</Button>
+              <Button onClick={confirmResetPassword} disabled={!resetPasswordDialog.newPassword || passwordError !== null}>Confirm Reset</Button>
+            </>
+          }
+        >
+          <div className="p-4 space-y-4">
+             <p className="text-sm text-slate-600">Enter a new secure password for this user below.</p>
+             <div>
+               <label className="block text-sm font-medium text-slate-700 mb-1">New Password</label>
+               <input 
+                  type="text" 
+                  autoFocus
+                  className={`w-full border rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 ${passwordError && resetPasswordDialog.newPassword.length > 0 ? 'border-rose-300 bg-rose-50' : 'border-slate-300'}`}
+                  value={resetPasswordDialog.newPassword} 
+                  onChange={(e) => setResetPasswordDialog({ ...resetPasswordDialog, newPassword: e.target.value })} 
+                  placeholder="e.g. NewPass123!"
+                />
+                {passwordError && resetPasswordDialog.newPassword.length > 0 && (
+                    <p className="text-xs text-rose-500 mt-1.5">{passwordError}</p>
+                )}
+             </div>
+          </div>
+        </Modal>
+      )}
+
+      {deleteConfirmDialog && (
+        <Modal
+          isOpen={true}
+          onClose={() => setDeleteConfirmDialog(null)}
+          title={`Delete User`}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setDeleteConfirmDialog(null)}>Cancel</Button>
+              <Button variant="danger" onClick={confirmDeleteUser}>Delete Permanently</Button>
+            </>
+          }
+        >
+          <div className="p-4 text-slate-700">
+             Are you extremely sure you want to delete this user? This action cannot be undone and will fail if the user has associated payment or booking records.
+          </div>
+        </Modal>
+      )}
+
+      {feedbackMessage && (
+        <Modal
+          isOpen={true}
+          onClose={() => setFeedbackMessage(null)}
+          title={feedbackMessage.type === 'success' ? 'Success' : 'Error'}
+          footer={
+              <Button variant={feedbackMessage.type === 'success' ? 'primary' : 'danger'} onClick={() => setFeedbackMessage(null)}>Okay</Button>
+          }
+        >
+          <div className="p-5 flex items-start gap-3">
+             {feedbackMessage.type === 'success' 
+               ? <div className="p-1.5 bg-emerald-100 rounded-full shrink-0"><RefreshCw className="h-5 w-5 text-emerald-600" /></div>
+               : <div className="p-1.5 bg-rose-100 rounded-full shrink-0"><Ban className="h-5 w-5 text-rose-600" /></div>
+             }
+             <p className="text-slate-700 text-sm mt-1">{feedbackMessage.text}</p>
+          </div>
+        </Modal>
+      )}
+
+      {/* <div className="mt-8" />
+      <h2 className="text-xl sm:text-2xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
+        <div className="p-1.5 bg-rose-100 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-alert h-5 w-5 text-rose-600"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        </div>
+        Payment Disputes
+      </h2>
+      <Card className="!p-0 overflow-hidden border border-slate-200 shadow-sm">
         {disputesLoading ? (
-          <div>Loading disputes...</div>
+          <div className="p-6 text-center text-slate-500">Loading disputes...</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tutor</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <table className="min-w-full">
+              <thead>
+                <tr className="bg-gradient-to-r from-slate-700 to-slate-800">
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">Payment</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">Student</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">Tutor</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">Status</th>
+                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-slate-100">
                 {disputes.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">No disputes at the moment.</td>
+                    <td colSpan={5} className="px-3 py-6 text-center text-slate-500 italic">No disputes at the moment.</td>
                   </tr>
                 ) : (
                   disputes.map((p) => (
-                    <tr key={p.payment_id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">#{p.payment_id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{p.student?.user?.name || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{p.tutor?.user?.name || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{p.dispute_status}</span>
+                    <tr key={p.payment_id} className="transition-colors hover:bg-slate-50">
+                      <td className="px-3 py-3 text-sm font-medium text-slate-700">#{p.payment_id}</td>
+                      <td className="px-3 py-3 text-sm text-slate-700 font-medium">
+                        {(p.student?.user as any)?.profile_image_url ? (
+                           <div className="flex items-center gap-1.5">
+                             <img src={getFileUrl((p.student?.user as any).profile_image_url)} alt="" className="h-5 w-5 rounded-full object-cover" />
+                             <span>{p.student?.user?.name}</span>
+                           </div>
+                        ) : <span className="block">{p.student?.user?.name || 'N/A'}</span>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <Button variant="secondary" onClick={() => { setSelectedPayment(p); setDisputeStatus((p.dispute_status as any) || 'open'); setAdminNote(p.admin_note || ''); }}>
-                          <FileText className="mr-2 h-4 w-4" /> Review
-                        </Button>
+                      <td className="px-3 py-3 text-sm text-slate-700 font-medium">
+                        {(p.tutor?.user as any)?.profile_image_url ? (
+                           <div className="flex items-center gap-1.5">
+                             <img src={getFileUrl((p.tutor?.user as any).profile_image_url)} alt="" className="h-5 w-5 rounded-full object-cover" />
+                             <span>{p.tutor?.user?.name}</span>
+                           </div>
+                        ) : <span className="block">{p.tutor?.user?.name || 'N/A'}</span>}
+                      </td>
+                      <td className="px-3 py-3 text-sm">
+                        <span className="px-2 py-0.5 inline-flex text-[11px] leading-none font-semibold rounded-full border bg-amber-50 text-amber-700 border-amber-200 capitalize">
+                            {p.dispute_status?.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-right text-sm">
+                        <button 
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors"
+                            onClick={() => { setSelectedPayment(p); setDisputeStatus((p.dispute_status as any) || 'open'); setAdminNote(p.admin_note || ''); }}
+                        >
+                          <FileText className="h-3 w-3 text-slate-500" /> Review
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -495,7 +669,7 @@ const UserManagement: React.FC = () => {
             </table>
           </div>
         )}
-      </Card>
+      </Card> */}
 
       {selectedPayment && (
         <Modal

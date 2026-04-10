@@ -10,6 +10,7 @@ import { useToast } from '../../components/ui/Toast';
 import * as nsfwjs from 'nsfwjs';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
 import imageCompression from 'browser-image-compression';
+import GCashQRCropModal from './GCashQRCropModal';
 
 interface TimeSlot {
   startTime: string;
@@ -81,6 +82,9 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [gcashQRImage, setGcashQRImage] = useState<File | null>(null);
+  const [gcashQRPreview, setGcashQRPreview] = useState<string | null>(null);
+  const [gcashCropSrc, setGcashCropSrc] = useState<string | null>(null);
+  const gcashQrInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [bio, setBio] = useState('');
   const [yearLevel, setYearLevel] = useState(prefilledYearLevel);
@@ -1047,30 +1051,33 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
   const handleGcashQRImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
-      // Check if it's an image file
       if (file.type.startsWith('image/')) {
-        // Only validate if it's a GCash QR code (no NSFWJS analysis needed)
-        const isGCashQRCode = await validateGCashQRCode(file);
-        if (isGCashQRCode) {
-          setGcashQRImage(file);
-          setWarningModal({
-            show: true,
-            message: 'GCash QR code uploaded successfully!',
-            type: 'success'
-          });
-        } else {
-          setWarningModal({
-            show: true,
-            message: 'Please upload a valid GCash QR code image. This doesn\'t appear to be a GCash QR code.',
-            type: 'warning'
-          });
-          e.target.value = '';
-        }
+        if (gcashCropSrc) URL.revokeObjectURL(gcashCropSrc);
+        setGcashCropSrc(URL.createObjectURL(file));
       } else {
         notify('Please select a valid image file.', 'error');
         e.target.value = '';
       }
     }
+  };
+
+  const onGcashCropConfirm = (croppedFile: File) => {
+    setGcashQRImage(croppedFile);
+    if (gcashQRPreview) URL.revokeObjectURL(gcashQRPreview);
+    setGcashQRPreview(URL.createObjectURL(croppedFile));
+    setGcashCropSrc(null);
+    if (gcashQrInputRef.current) gcashQrInputRef.current.value = '';
+    setWarningModal({
+      show: true,
+      message: 'GCash QR code uploaded successfully!',
+      type: 'success'
+    });
+  };
+
+  const onGcashCropCancel = () => {
+    if (gcashCropSrc) URL.revokeObjectURL(gcashCropSrc);
+    setGcashCropSrc(null);
+    if (gcashQrInputRef.current) gcashQrInputRef.current.value = '';
   };
 
   // Availability is now managed via addDay / removeDay / addTimeSlot / removeTimeSlot / updateSlotTime
@@ -2091,6 +2098,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                       <div className="w-full sm:col-span-2 lg:col-span-12">
                         <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">Course</label>
                         <select
+                          required
                           className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base border rounded-lg ${!universityId ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-300'}`}
                           value={courseId}
                           onChange={(e) => {
@@ -2159,6 +2167,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                       <div className="relative w-full">
                         <span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm sm:text-base">₱</span>
                         <input
+                          required
                           type="text"
                           inputMode="numeric"
                           value={sessionRate}
@@ -2196,6 +2205,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                         setBio(filtered);
                       }}
                       rows={4}
+                      required
                       className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500"
                       placeholder="Share your peer-to-peer tutoring style, subjects you can help with, relevant study experience, and how you support fellow students."
                     />
@@ -2568,6 +2578,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                     <div className="mb-4 sm:mb-6">
                       <label className="block text-sm sm:text-base text-slate-700 font-semibold mb-1">GCash QR Code (optional)</label>
                       <input type="file"
+                        ref={gcashQrInputRef}
                         accept="image/*"
                         onChange={handleGcashQRImageChange}
                         disabled={isAnalyzingImage || isLoadingModel}
@@ -2582,8 +2593,28 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                           <span className="text-xs sm:text-sm">{isLoadingModel ? 'Loading image analyzer...' : 'Analyzing image content...'}</span>
                         </div>
                       )}
-                      {gcashQRImage && <p className="text-xs text-slate-500 mt-1 truncate">Selected: {gcashQRImage.name}</p>}
-                      <p className="text-xs text-slate-500 mt-1">Upload your GCash QR code for payment processing</p>
+                      {gcashQRPreview && (
+                        <div className="mt-3 flex items-center gap-3 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                          <img src={gcashQRPreview} alt="Cropped GCash QR" className="w-20 h-20 object-contain rounded border border-slate-300" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-green-700">QR Code ready</p>
+                            <p className="text-xs text-slate-500 truncate">{gcashQRImage?.name}</p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setGcashQRImage(null);
+                                if (gcashQRPreview) URL.revokeObjectURL(gcashQRPreview);
+                                setGcashQRPreview(null);
+                                if (gcashQrInputRef.current) gcashQrInputRef.current.value = '';
+                              }}
+                              className="mt-1 text-xs text-red-600 hover:text-red-700 hover:underline"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {!gcashQRPreview && <p className="text-xs text-slate-500 mt-1">Upload your GCash QR code for payment processing</p>}
                     </div>
                     {/* Supporting Documents Upload Section */}
                     <div
@@ -3144,6 +3175,12 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
           </div>
         </div>
       )}
+
+      <GCashQRCropModal
+        cropSrc={gcashCropSrc}
+        onConfirm={onGcashCropConfirm}
+        onCancel={onGcashCropCancel}
+      />
     </>
   );
 };

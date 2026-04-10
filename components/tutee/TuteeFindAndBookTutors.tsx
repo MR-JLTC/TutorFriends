@@ -4,6 +4,7 @@ import { Search, FileText, X, Info, ExternalLink } from 'lucide-react';
 import apiClient, { getFileUrl } from '../../services/api';
 import Modal from '../ui/Modal';
 import { toast } from 'react-toastify';
+import { useSocket } from '../../context/SocketContext';
 // import 'react-toastify/dist/ReactToastify.css'; // Moves to App.tsx
 
 interface BookingFormData {
@@ -169,115 +170,142 @@ const TuteeFindAndBookTutors: React.FC = () => {
     }
   }, [universityFilter]);
 
-  useEffect(() => {
-    const fetchTutors = async () => {
-      try {
-        setLoading(true);
-        const res = await apiClient.get('/users');
-        // backend maps tutor role to 'tutor' and student to 'student'
-        const all: TutorListItem[] = res.data || [];
-        // Only show users that are tutors and have been approved
-        const tutorsOnly = all.filter(u => u.tutor_profile && (u.tutor_profile.status || '').toLowerCase() === 'approved');
-        // Sort by creation date first (will be re-sorted after ratings are calculated)
-        const sortedTutors = tutorsOnly.sort((a, b) => {
-          const dateA = new Date(a.created_at || 0).getTime();
-          const dateB = new Date(b.created_at || 0).getTime();
-          return dateA - dateB;
-        });
-        // Enrich each tutor with their public profile (which contains subjects) and fetch ratings
+  // Tracks whether the initial full load has completed
+  const isInitialLoad = React.useRef(true);
+  // Tracks the last set of eligible tutor user_ids so we only re-enrich when the set changes
+  const lastTutorIdsRef = React.useRef<string>('');
+
+  // Full enrichment: fetch each tutor's profile + ratings.
+  // Called on first load and whenever the eligible tutor set changes.
+  const enrichAndSetTutors = React.useCallback(async (base: TutorListItem[]) => {
+    try {
+      const enriched = await Promise.all(base.map(async (u) => {
+        const tutorId = (u as any).tutor_profile?.tutor_id;
+        if (!tutorId) return u;
         try {
-          const enriched = await Promise.all(sortedTutors.map(async (u) => {
-            const tutorId = (u as any).tutor_profile?.tutor_id;
-            if (!tutorId) return u;
-            try {
-              const [profileRes, bookingsRes] = await Promise.all([
-                apiClient.get(`/tutors/${tutorId}/profile`),
-                apiClient.get(`/tutors/${tutorId}/booking-requests`).catch(() => ({ data: [] })),
-              ]);
+          const [profileRes, bookingsRes] = await Promise.all([
+            apiClient.get(`/tutors/${tutorId}/profile`),
+            apiClient.get(`/tutors/${tutorId}/booking-requests`).catch(() => ({ data: [] })),
+          ]);
 
-              // Calculate rating from booking requests
-              let bookings: any[] = [];
-              if (Array.isArray(bookingsRes.data)) {
-                bookings = bookingsRes.data;
-              } else if (Array.isArray(bookingsRes.data?.data)) {
-                bookings = bookingsRes.data.data;
-              } else if (Array.isArray(bookingsRes.data?.bookings)) {
-                bookings = bookingsRes.data.bookings;
-              }
+          let bookings: any[] = [];
+          if (Array.isArray(bookingsRes.data)) {
+            bookings = bookingsRes.data;
+          } else if (Array.isArray(bookingsRes.data?.data)) {
+            bookings = bookingsRes.data.data;
+          } else if (Array.isArray(bookingsRes.data?.bookings)) {
+            bookings = bookingsRes.data.bookings;
+          }
 
-              // Calculate average rating from all ratings
-              const ratings: number[] = [];
-              bookings.forEach((booking: any) => {
-                if (booking.tutee_rating && booking.tutee_rating > 0) {
-                  ratings.push(Number(booking.tutee_rating));
-                }
-              });
-
-              let averageRating = 0;
-              let totalRatings = 0;
-              if (ratings.length > 0) {
-                const sum = ratings.reduce((acc, rating) => acc + rating, 0);
-                averageRating = sum / ratings.length;
-                totalRatings = ratings.length;
-              }
-
-              return { ...u, profile: profileRes.data, calculatedRating: averageRating, calculatedTotalRatings: totalRatings };
-            } catch (err) {
-              // If profile fetch fails, return the original item without profile
-              console.warn('Failed to fetch tutor profile for', tutorId, err);
-              return u;
-            }
-          }));
-          setTutors(enriched as TutorListItem[]);
-
-          // Extract online status from tutor profiles and store ratings
-          const onlineStatusMap: Record<number, boolean> = {};
-          const ratingsMap: Record<number, { average: number; totalRatings: number }> = {};
-          enriched.forEach(tutor => {
-            if (tutor.user_id && tutor.tutor_profile) {
-              // Get online status from tutor_profile (from API response)
-              const onlineStatus = tutor.tutor_profile.activity_status;
-              onlineStatusMap[tutor.user_id] = onlineStatus === 'online';
-
-              // Store calculated ratings
-              if ((tutor as any).calculatedRating !== undefined) {
-                ratingsMap[tutor.user_id] = {
-                  average: (tutor as any).calculatedRating,
-                  totalRatings: (tutor as any).calculatedTotalRatings || 0
-                };
-              }
+          const ratings: number[] = [];
+          bookings.forEach((booking: any) => {
+            if (booking.tutee_rating && booking.tutee_rating > 0) {
+              ratings.push(Number(booking.tutee_rating));
             }
           });
-          setTutorOnlineStatus(onlineStatusMap);
-          setTutorRatings(ratingsMap);
 
-          // Re-sort tutors by calculated ratings
-          const sortedByRating = [...enriched].sort((a, b) => {
-            const ratingA = ratingsMap[a.user_id]?.average || 0;
-            const ratingB = ratingsMap[b.user_id]?.average || 0;
-            if (ratingB !== ratingA) {
-              return ratingB - ratingA;
-            }
-            // If ratings are equal, sort by creation date (oldest first)
-            const dateA = new Date(a.created_at || 0).getTime();
-            const dateB = new Date(b.created_at || 0).getTime();
-            return dateA - dateB;
-          });
-          setTutors(sortedByRating as TutorListItem[]);
+          let averageRating = 0;
+          let totalRatings = 0;
+          if (ratings.length > 0) {
+            const sum = ratings.reduce((acc, rating) => acc + rating, 0);
+            averageRating = sum / ratings.length;
+            totalRatings = ratings.length;
+          }
+
+          return { ...u, profile: profileRes.data, calculatedRating: averageRating, calculatedTotalRatings: totalRatings };
         } catch (err) {
-          // If enrichment fails for any reason, fall back to the basic list
-          console.warn('Failed to enrich tutors with profile data', err);
-          setTutors(sortedTutors);
+          console.warn('Failed to fetch tutor profile for', tutorId, err);
+          return u;
         }
-      } catch (err) {
+      }));
+
+      const onlineStatusMap: Record<number, boolean> = {};
+      const ratingsMap: Record<number, { average: number; totalRatings: number }> = {};
+      enriched.forEach(tutor => {
+        if (tutor.user_id && tutor.tutor_profile) {
+          onlineStatusMap[tutor.user_id] = tutor.tutor_profile.activity_status === 'online';
+          if ((tutor as any).calculatedRating !== undefined) {
+            ratingsMap[tutor.user_id] = {
+              average: (tutor as any).calculatedRating,
+              totalRatings: (tutor as any).calculatedTotalRatings || 0,
+            };
+          }
+        }
+      });
+      setTutorOnlineStatus(onlineStatusMap);
+      setTutorRatings(ratingsMap);
+
+      const sortedByRating = [...enriched].sort((a, b) => {
+        const ratingA = ratingsMap[a.user_id]?.average || 0;
+        const ratingB = ratingsMap[b.user_id]?.average || 0;
+        if (ratingB !== ratingA) return ratingB - ratingA;
+        return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+      });
+      setTutors(sortedByRating as TutorListItem[]);
+    } catch (err) {
+      console.warn('Failed to enrich tutors with profile data', err);
+      setTutors(base);
+    }
+  }, []);
+
+  // Lightweight poll: re-fetches /users to check for status/online changes.
+  // Runs the full enrichment only when the eligible tutor set changes.
+  const fetchTutors = React.useCallback(async (isPolling = false) => {
+    try {
+      if (!isPolling) setLoading(true);
+      const res = await apiClient.get('/users');
+      const all: TutorListItem[] = res.data || [];
+
+      // Apply the same filter: approved tutor + active user account
+      const tutorsOnly = all.filter(u =>
+        u.tutor_profile &&
+        (u.tutor_profile.status || '').toLowerCase() === 'approved' &&
+        ((u as any).status || '').toLowerCase() === 'active'
+      );
+
+      // Sort by creation date before enrichment
+      const sorted = tutorsOnly.slice().sort((a, b) =>
+        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+      );
+
+      // Compute a fingerprint of the current eligible tutor set
+      const idsFingerprint = sorted.map(u => u.user_id).join(',');
+
+      if (!isPolling || idsFingerprint !== lastTutorIdsRef.current) {
+        // Tutor set changed (or first load): run full enrichment
+        lastTutorIdsRef.current = idsFingerprint;
+        await enrichAndSetTutors(sorted);
+      } else {
+        // Same tutor set: just refresh online/activity statuses cheaply
+        setTutorOnlineStatus(prev => {
+          const updated = { ...prev };
+          sorted.forEach(u => {
+            if (u.user_id && u.tutor_profile) {
+              updated[u.user_id] = u.tutor_profile.activity_status === 'online';
+            }
+          });
+          return updated;
+        });
+      }
+    } catch (err) {
+      if (!isPolling) {
         console.error('Failed to fetch tutors', err);
         setError('Failed to load tutors. Please try again later.');
-      } finally {
+      }
+    } finally {
+      if (!isPolling || isInitialLoad.current) {
+        isInitialLoad.current = false;
         setLoading(false);
       }
-    };
-    fetchTutors();
-  }, []);
+    }
+  }, [enrichAndSetTutors]);
+
+  useEffect(() => {
+    fetchTutors(false); // initial full load
+    const interval = setInterval(() => fetchTutors(true), 30000); // poll every 30 s
+    return () => clearInterval(interval);
+  }, [fetchTutors]);
+
 
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -304,7 +332,21 @@ const TuteeFindAndBookTutors: React.FC = () => {
   const [tutorOnlineStatus, setTutorOnlineStatus] = useState<Record<number, boolean>>({});
   const [tutorBookingRequests, setTutorBookingRequests] = useState<any[]>([]);
   const [tutorDocuments, setTutorDocuments] = useState<any[]>([]);
-  const [tutorRatings, setTutorRatings] = useState<Record<number, { average: number; totalRatings: number }>>({});
+  const [tutorRatings, setTutorRatings] = useState<Record<number, { average: number; totalRatings: number }>>({});
+
+  // Real-time online/offline updates via WebSocket (user_status event from chat.gateway)
+  const { socket } = useSocket();
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserStatus = (data: { userId: number; status: 'online' | 'offline' }) => {
+      setTutorOnlineStatus(prev => {
+        if (!(data.userId in prev)) return prev; // ignore non-tracked users
+        return { ...prev, [data.userId]: data.status === 'online' };
+      });
+    };
+    socket.on('user_status', handleUserStatus);
+    return () => { socket.off('user_status', handleUserStatus); };
+  }, [socket]);
 
   // Document Viewer State
   const [documentViewerOpen, setDocumentViewerOpen] = useState(false);
@@ -2566,7 +2608,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
             className="w-full h-full sm:h-[90vh] sm:max-w-7xl flex flex-col p-0 sm:rounded-2xl overflow-hidden bg-white"
             contentClassName="flex-1 overflow-hidden p-0 bg-slate-50 flex flex-col relative"
             footer={null} // We rely on the custom close button and potential overlay controls
-            title={''} children={''}
+            title={''}
             hideCloseButton={true}
           >
             {/* Header / Controls Overlay */}

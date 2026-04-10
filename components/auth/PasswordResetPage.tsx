@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Logo from '../Logo';
 import api from '../../services/api';
+import Modal from '../ui/Modal';
+import Button from '../ui/Button';
+import { CheckCircle2 } from 'lucide-react';
 
 const PasswordResetPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +19,7 @@ const PasswordResetPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Get email and determine flow type (default vs admin)
   const email = searchParams.get('email') || '';
@@ -82,20 +86,31 @@ const PasswordResetPage: React.FC = () => {
     if (error) setError(''); // Clear error when user starts typing
   };
 
+  const passwordError = useMemo(() => {
+    const password = formData.newPassword;
+    if (!password) return null;
+    if (password.length < 8) return 'Password must be at least 8 characters long.';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter.';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter.';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number.';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return 'Password must contain at least one special character.';
+    return null;
+  }, [formData.newPassword]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     // Validation
-    if (formData.newPassword !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (passwordError) {
+      setError(passwordError);
       setIsLoading(false);
       return;
     }
 
-    if (formData.newPassword.length < 7) {
-      setError('Password must be at least 7 characters long');
+    if (formData.newPassword !== formData.confirmPassword) {
+      setError('Passwords do not match');
       setIsLoading(false);
       return;
     }
@@ -109,14 +124,8 @@ const PasswordResetPage: React.FC = () => {
       });
 
       if (response.data) {
-        // Show success message and redirect to login
-        // Use a more subtle notification or just redirect? 
-        // Original code used alert, let's use a nice localized success state or just redirect.
-        // For consistency with Login flow, maybe navigate with state?
-        // But the original had an alert. I'll stick to alert for now or navigation.
-        // Better yet, just navigate.
-        alert('Password reset successful! You can now log in with your new password.');
-        navigate(redirectRoute);
+        // Show our sleek modern modal rather than native alert
+        setShowSuccessModal(true);
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Failed to reset password. Please try again.';
@@ -238,7 +247,7 @@ const PasswordResetPage: React.FC = () => {
                       required
                       value={formData.newPassword}
                       onChange={handleInputChange}
-                      className={`${inputStyles} pr-10 
+                      className={`${inputStyles} pr-10 ${passwordError && formData.newPassword.length > 0 ? '!border-rose-300 !bg-rose-50 focus:!ring-rose-500/20 focus:!border-rose-500' : ''} 
                       [&::-ms-reveal]:hidden 
                       [&::-webkit-credentials-auto-fill-button]:!hidden 
                       [&::-webkit-strong-password-auto-fill-button]:!hidden`}
@@ -258,6 +267,9 @@ const PasswordResetPage: React.FC = () => {
                       )}
                     </button>
                   </div>
+                  {passwordError && formData.newPassword.length > 0 && (
+                    <p className="text-[11px] font-medium text-rose-500 ml-1 mt-1 leading-tight">{passwordError}</p>
+                  )}
                 </div>
 
                 {/* Confirm Password */}
@@ -305,7 +317,7 @@ const PasswordResetPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || (passwordError !== null)}
                   className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm tracking-wide"
                 >
                   {isLoading ? (
@@ -335,6 +347,33 @@ const PasswordResetPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <Modal
+          isOpen={true}
+          onClose={() => navigate(redirectRoute)}
+          title="Password Reset Successful"
+          maxWidth="sm"
+          footer={
+            <Button onClick={() => navigate(redirectRoute)} className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 border-none font-bold py-2 shadow-sm text-sm flex items-center justify-center gap-2">
+              <span>Go to Login</span>
+              <svg className="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </Button>
+          }
+        >
+          <div className="p-4 sm:p-5 flex flex-col items-center text-center space-y-3 sm:space-y-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100/80 rounded-full flex items-center justify-center mb-1 sm:mb-2 shadow-sm border border-emerald-200/50">
+              <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight">You're all set!</h3>
+            <p className="text-slate-500 text-sm leading-relaxed max-w-xs font-medium">
+               Your password has been successfully reset. You can now use your new password to securely log into your account.
+            </p>
+          </div>
+        </Modal>
+      )}
+
     </div>
   );
 };
