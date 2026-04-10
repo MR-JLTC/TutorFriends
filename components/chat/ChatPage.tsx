@@ -599,7 +599,8 @@ const ChatPage: React.FC = () => {
     }, [conversations, availableContacts, activeConversation, user]);
 
     return (
-        <div className="flex flex-col md:flex-row h-[85vh] md:h-[calc(100vh-5rem)] bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden relative">
+        /* dvh handles the mobile browser chrome + virtual keyboard correctly */
+        <div className="flex flex-col md:flex-row h-[calc(100dvh-4.5rem)] md:h-[calc(100vh-5rem)] bg-white md:rounded-2xl md:shadow-xl md:border md:border-slate-200/80 overflow-hidden relative">
 
             {/* ── Sidebar ───────────────────────────────────────── */}
             <div className={`w-full md:w-80 lg:w-96 border-r border-slate-200/80 flex flex-col absolute md:relative z-10 h-full bg-white transition-transform duration-300 ease-in-out ${activeConversation ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
@@ -613,7 +614,7 @@ const ChatPage: React.FC = () => {
                         </p>
                     </div>
                     <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-inner">
-                        <svg className="w-4.5 h-4.5 text-white w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                     </div>
@@ -673,22 +674,21 @@ const ChatPage: React.FC = () => {
             >
                 {activeConversation ? (
                     <>
-                        {/* Chat Header */}
-                        <div className="px-3 sm:px-4 py-3 bg-white/90 backdrop-blur-md border-b border-slate-200/80 flex items-center gap-2 sm:gap-3 shadow-sm z-30 sticky top-0 flex-shrink-0">
-                            {/* Mobile back button */}
+                        {/* ── Chat Header — compact messenger-style ── */}
+                        <div className="px-2 sm:px-4 py-2 sm:py-3 bg-white border-b border-slate-100 flex items-center gap-1.5 sm:gap-3 shadow-sm z-30 sticky top-0 flex-shrink-0">
+                            {/* Mobile back — icon-only large touch target */}
                             <button
                                 onClick={() => setActiveConversation(null)}
-                                className="md:hidden p-2 -ml-1 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors flex items-center gap-0.5 flex-shrink-0"
+                                className="md:hidden w-10 h-10 -ml-0.5 text-indigo-600 active:bg-indigo-50 rounded-full transition-colors flex items-center justify-center flex-shrink-0 touch-manipulation active:scale-90"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                                 </svg>
-                                <span className="text-sm font-semibold">Back</span>
                             </button>
 
-                            {/* Avatar with online ring */}
+                            {/* Avatar with live online ring */}
                             <div className="relative flex-shrink-0">
-                                <div className={`h-10 w-10 rounded-full overflow-hidden ring-2 shadow-sm ${onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) ? 'ring-green-400' : 'ring-slate-200'}`}>
+                                <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-full overflow-hidden ring-2 ${onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) ? 'ring-green-400' : 'ring-slate-200'}`}>
                                     <img
                                         src={getPartner(activeConversation)?.profile_image_url || `https://ui-avatars.com/api/?name=${getPartner(activeConversation)?.name}&background=6366f1&color=fff`}
                                         className="w-full h-full object-cover"
@@ -696,9 +696,9 @@ const ChatPage: React.FC = () => {
                                     />
                                 </div>
                                 {onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) && (
-                                    <span className="absolute bottom-0 right-0 flex h-3 w-3">
+                                    <span className="absolute bottom-0 right-0 flex h-2.5 w-2.5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 ring-2 ring-white"></span>
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500 ring-2 ring-white"></span>
                                     </span>
                                 )}
                             </div>
@@ -708,29 +708,22 @@ const ChatPage: React.FC = () => {
                                 <h3 className="font-bold text-slate-800 truncate text-sm sm:text-base leading-tight">
                                     {getPartner(activeConversation)?.name}
                                 </h3>
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                    {/* Status of the PARTNER */}
+                                <p className="text-[11px] sm:text-xs leading-none mt-0.5 font-medium truncate">
                                     {onlineUsers.has(Number(getPartner(activeConversation)?.user_id)) ? (
-                                        <>
-                                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                            <span className="text-xs text-green-600 font-bold">Active Now</span>
-                                        </>
+                                        <span className="text-green-500">Active now</span>
                                     ) : (
-                                        <>
-                                            <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                                            <span className="text-xs text-slate-500 font-bold">
-                                                {lastSeenMap[Number(getPartner(activeConversation)?.user_id)]
-                                                    ? `Seen ${formatDistanceToNow(lastSeenMap[Number(getPartner(activeConversation)?.user_id)], { addSuffix: true })}`
-                                                    : 'Offline'}
-                                            </span>
-                                        </>
+                                        <span className="text-slate-400">
+                                            {lastSeenMap[Number(getPartner(activeConversation)?.user_id)]
+                                                ? `Last seen ${formatDistanceToNow(lastSeenMap[Number(getPartner(activeConversation)?.user_id)], { addSuffix: true })}`
+                                                : 'Offline'}
+                                        </span>
                                     )}
-                                </div>
+                                </p>
                             </div>
                         </div>
 
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-3" ref={scrollRef}>
+                        {/* ── Messages ── */}
+                        <div className="flex-1 overflow-y-auto overscroll-contain px-0 sm:px-3 py-2" ref={scrollRef}>
                             <MessageList
                                 referance={scrollRef}
                                 className="message-list"
@@ -740,35 +733,46 @@ const ChatPage: React.FC = () => {
                             />
                         </div>
 
-                        {/* Input Bar */}
-                        <div className="px-3 sm:px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-slate-200/80 flex-shrink-0">
-                            <Input
-                                referance={inputRef}
-                                placeholder="Type a message…"
-                                multiline={true}
-                                value={inputValue}
-                                onChange={(e: any) => setInputValue(e.target.value)}
-                                onKeyDown={(e: any) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSendMessage();
-                                    }
-                                }}
-                                rightButtons={[
-                                    <button
-                                        key="send-btn"
-                                        type="button"
-                                        className="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-200/60 ml-1"
-                                        onClick={handleSendMessage}
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                        </svg>
-                                    </button>
-                                ]}
-                                maxHeight={100}
-                            />
-                            <p className="hidden sm:block text-[10px] text-slate-400 mt-1.5 ml-1 select-none">
+                        {/* ── Input Bar — Messenger-style pill ── */}
+                        <div
+                            className="flex-shrink-0 bg-white border-t border-slate-100 px-2.5 sm:px-3.5 py-2 sm:py-2.5"
+                            style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
+                        >
+                            <div className="flex items-end gap-2">
+                                {/* Pill input wrapper */}
+                                <div className="flex-1 bg-slate-100 rounded-3xl overflow-hidden border border-slate-200/60 min-h-[42px] flex items-end">
+                                    <Input
+                                        referance={inputRef}
+                                        placeholder="Aa"
+                                        multiline={true}
+                                        value={inputValue}
+                                        onChange={(e: any) => setInputValue(e.target.value)}
+                                        onKeyDown={(e: any) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSendMessage();
+                                            }
+                                        }}
+                                        rightButtons={[]}
+                                        maxHeight={120}
+                                    />
+                                </div>
+                                {/* Circular send button — lights up when there's text */}
+                                <button
+                                    type="button"
+                                    onClick={handleSendMessage}
+                                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 touch-manipulation select-none mb-0.5 ${
+                                        inputValue.trim()
+                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200/60 hover:bg-indigo-700 active:scale-90'
+                                            : 'bg-slate-100 text-slate-400 cursor-default'
+                                    }`}
+                                >
+                                    <svg className="w-5 h-5 translate-x-px" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p className="hidden sm:block text-[10px] text-slate-400 mt-1.5 ml-2 select-none">
                                 Press <kbd className="px-1 py-px text-[9px] bg-slate-100 rounded border border-slate-200 font-mono">Enter</kbd> to send &nbsp;·&nbsp;
                                 <kbd className="px-1 py-px text-[9px] bg-slate-100 rounded border border-slate-200 font-mono">Shift+Enter</kbd> for new line
                             </p>
