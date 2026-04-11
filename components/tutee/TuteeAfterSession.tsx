@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Star, Calendar, Clock, User, RefreshCw, Info, CheckCircle2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import apiClient from '../../services/api';
+import apiClient, { getFileUrl } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
@@ -17,6 +17,7 @@ interface Session {
   isPendingCompletion?: boolean;
   tutee_rating?: number | null;
   tutee_comment?: string | null;
+  session_proof_url?: string | null;
   student_notes?: string;
   tutor?: {
     user?: {
@@ -126,6 +127,7 @@ const TuteeAfterSession: React.FC = () => {
             isPendingCompletion, // Add flag to identify pending completion sessions
             tutee_rating: booking.tutee_rating ?? null,
             tutee_comment: booking.tutee_comment ?? null,
+            session_proof_url: booking.session_proof_url ?? null,
             student_notes: booking.student_notes || '',
             tutor: {
               user: {
@@ -515,6 +517,17 @@ const TuteeAfterSession: React.FC = () => {
         >
           <p>Are you sure you want to confirm the completion of the session for "{confirmTargetSession.subject}"?</p>
           <p className="text-sm text-gray-600 mt-2">Once confirmed, you will be able to leave feedback for your tutor.</p>
+          {confirmTargetSession.session_proof_url && (
+            <div className="mt-4">
+              <p className="text-sm font-medium text-slate-700 mb-2">Proof uploaded by tutor:</p>
+              <img
+                src={getFileUrl(confirmTargetSession.session_proof_url)}
+                alt="Session proof"
+                className="w-full max-h-64 object-contain rounded-lg border border-slate-200 bg-slate-50"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            </div>
+          )}
         </Modal>
       )}
     </div>

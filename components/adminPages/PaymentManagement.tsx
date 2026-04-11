@@ -4,9 +4,12 @@ import { Payment } from '../../types';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import Card from '../ui/Card';
-import { Upload, Eye, DollarSign, Star, CheckCircle2, Info } from 'lucide-react';
+import { Upload, Eye, DollarSign, Star, CheckCircle2, Info, RefreshCw } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import QRCode from 'react-qr-code';
+import QRCodeGen from 'qrcode';
+import { decodeQRFromImageUrl, injectAmountIntoPayload, decodeQRMultiScale } from '../../utils/qrUtils';
 
 interface CompletedBooking {
     booking_id: number;
@@ -30,6 +33,7 @@ interface CompletedBooking {
     tutee_comment: string | null;
     amount: number;
     calculated_amount: number;
+    status?: string | null;
     payment_status?: string | null;
     payment_id?: number | null;
     payout_status?: string | null;
@@ -64,8 +68,59 @@ const PaymentManagement: React.FC = () => {
     const [processingPayment, setProcessingPayment] = useState(false);
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [adminPaymentReceipt, setAdminPaymentReceipt] = useState<File | null>(null);
+    const [payTutorDecodedQrPayload, setPayTutorDecodedQrPayload] = useState<string | null>(null);
+    const [payTutorUseDynamicQR, setPayTutorUseDynamicQR] = useState(false);
+    const [payTutorQrModalOpen, setPayTutorQrModalOpen] = useState(false);
+    const [payTutorQrModalPayload, setPayTutorQrModalPayload] = useState<string | null>(null);
+    const [payTutorQrModalUrl, setPayTutorQrModalUrl] = useState<string | null>(null);
+    const [payTutorQrCacheBust, setPayTutorQrCacheBust] = useState<number>(Date.now());
 
     const isInitialLoad = useRef(true);
+
+    useEffect(() => {
+        if (payBooking?.tutor?.gcash_qr_url) {
+            const decodeViaBlob = async (bust: number): Promise<void> => {
+                const url = `${getFileUrl(payBooking.tutor.gcash_qr_url!)}?t=${bust}`;
+                console.log('[TutorQR] Attempting decode for:', url);
+                let blobUrl: string | null = null;
+                try {
+                    const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
+                    console.log('[TutorQR] Fetch ok, final URL:', response.url, 'type:', response.type);
+                    const blob = await response.blob();
+                    blobUrl = URL.createObjectURL(blob);
+                    const payload = await decodeQRMultiScale(blobUrl);
+                    console.log('[TutorQR] Multi-scale decode via blob:', payload ? `SUCCESS (${payload.substring(0, 40)}...)` : 'FAILED');
+                    if (payload) { setPayTutorDecodedQrPayload(payload); return; }
+                } catch (e) {
+                    console.warn('[TutorQR] Fetch/blob error:', e);
+                } finally {
+                    if (blobUrl) URL.revokeObjectURL(blobUrl);
+                }
+                // Fallback: direct decode with crossOrigin (works when server sends CORS headers)
+                console.log('[TutorQR] Trying direct crossOrigin decode...');
+                const payload = await decodeQRFromImageUrl(url);
+                console.log('[TutorQR] Direct decode:', payload ? 'SUCCESS' : 'FAILED');
+                if (payload) setPayTutorDecodedQrPayload(payload);
+            };
+
+            const initialBust = Date.now();
+            setPayTutorQrCacheBust(initialBust);
+            setPayTutorDecodedQrPayload(null);
+            setPayTutorUseDynamicQR(false);
+            decodeViaBlob(initialBust);
+
+            const interval = setInterval(() => {
+                const newBust = Date.now();
+                setPayTutorQrCacheBust(newBust);
+                decodeViaBlob(newBust);
+            }, 30000);
+
+            return () => clearInterval(interval);
+        } else {
+            setPayTutorDecodedQrPayload(null);
+            setPayTutorUseDynamicQR(false);
+        }
+    }, [payBooking]);
 
     const fetchData = useCallback(async (silent = false) => {
         try {
@@ -244,6 +299,25 @@ const PaymentManagement: React.FC = () => {
             console.error(e);
         } finally {
             setProcessingPayment(false);
+        }
+    };
+
+    const downloadTutorDynamicQRCode = async (payload: string, filename: string) => {
+        try {
+            const dataUrl = await QRCodeGen.toDataURL(payload, {
+                width: 512,
+                margin: 4,
+                color: { dark: '#000000', light: '#ffffff' },
+                errorCorrectionLevel: 'M',
+            });
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } catch {
+            toast.error('Failed to download QR code');
         }
     };
 
@@ -1212,13 +1286,13 @@ const PaymentManagement: React.FC = () => {
                         )}
 
                         {/* Tutee Rating and Comment */}
-                        {(viewProofBooking.tutee_rating || viewProofBooking.tutee_comment) && (
+                        {((viewProofBooking.status || '').toLowerCase() === 'completed' || viewProofBooking.tutee_rating || viewProofBooking.tutee_comment) && (
                             <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg border-2 border-primary-200 p-4">
                                 <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
                                     <Star className="h-5 w-5 text-yellow-500 fill-current" />
                                     Student Feedback
                                 </h3>
-                                {viewProofBooking.tutee_rating && (
+                                {viewProofBooking.tutee_rating ? (
                                     <div className="mb-3">
                                         <p className="text-slate-600 font-medium mb-1">Rating</p>
                                         <div className="flex items-center gap-1">
@@ -1233,15 +1307,19 @@ const PaymentManagement: React.FC = () => {
                                             ))}
                                         </div>
                                     </div>
-                                )}
-                                {viewProofBooking.tutee_comment && (
+                                ) : (viewProofBooking.status || '').toLowerCase() === 'completed' ? (
+                                    <p className="text-slate-400 text-sm italic mb-3">No rating provided yet.</p>
+                                ) : null}
+                                {viewProofBooking.tutee_comment ? (
                                     <div>
                                         <p className="text-slate-600 font-medium mb-1">Comment</p>
                                         <p className="text-slate-800 bg-white rounded-lg p-3 border border-primary-200">
                                             {viewProofBooking.tutee_comment}
                                         </p>
                                     </div>
-                                )}
+                                ) : (viewProofBooking.status || '').toLowerCase() === 'completed' ? (
+                                    <p className="text-slate-400 text-sm italic">No comment provided yet.</p>
+                                ) : null}
                             </div>
                         )}
                     </div>
@@ -1256,6 +1334,8 @@ const PaymentManagement: React.FC = () => {
                         setPayBooking(null);
                         setPayBookingPayment(null);
                         setAdminPaymentReceipt(null);
+                        setPayTutorDecodedQrPayload(null);
+                        setPayTutorUseDynamicQR(false);
                     }}
                     title={`Pay Tutor - ${payBooking.subject}`}
                     maxWidth="2xl"
@@ -1265,6 +1345,8 @@ const PaymentManagement: React.FC = () => {
                                 setPayBooking(null);
                                 setPayBookingPayment(null);
                                 setAdminPaymentReceipt(null);
+                                setPayTutorDecodedQrPayload(null);
+                                setPayTutorUseDynamicQR(false);
                             }}>
                                 Cancel
                             </Button>
@@ -1316,13 +1398,114 @@ const PaymentManagement: React.FC = () => {
                                 {payBooking.tutor.gcash_qr_url && (
                                     <div>
                                         <h3 className="text-lg font-semibold text-slate-800 mb-2">Tutor's GCash QR Code</h3>
-                                        <div className="flex justify-center bg-white rounded-lg border-2 border-slate-200 p-4">
-                                            <img
-                                                src={getFileUrl(payBooking.tutor.gcash_qr_url)}
-                                                alt="GCash QR Code"
-                                                className="max-h-[300px] w-auto object-contain rounded-lg shadow-md"
-                                                onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_QR_NA; }}
-                                            />
+                                        <div className="flex flex-col items-center bg-white rounded-lg border-2 border-slate-200 p-4">
+                                            <div className="relative group/qr mb-3">
+                                                <div className="absolute -inset-2 bg-gradient-to-r from-primary-200 to-indigo-200 rounded-2xl blur opacity-20 group-hover/qr:opacity-40 transition duration-500"></div>
+                                                <div className="relative bg-white rounded-xl shadow-sm border border-slate-100 p-3 transition-transform duration-300 group-hover/qr:scale-[1.02]">
+                                                    {payTutorUseDynamicQR && payTutorDecodedQrPayload ? (
+                                                        <div className="h-56 w-56 flex items-center justify-center bg-white p-2">
+                                                            <QRCode
+                                                                value={injectAmountIntoPayload(
+                                                                    payTutorDecodedQrPayload,
+                                                                    (Number(payBookingPayment!.amount) * 0.87).toFixed(2)
+                                                                )}
+                                                                size={200}
+                                                                style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                                                                viewBox="0 0 200 200"
+                                                                level="M"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <img
+                                                            src={`${getFileUrl(payBooking.tutor.gcash_qr_url)}?t=${payTutorQrCacheBust}`}
+                                                            alt="GCash QR Code"
+                                                            className="h-56 w-56 object-contain rounded-lg"
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_QR_NA; }}
+                                                        />
+                                                    )}
+
+                                                    {/* View larger */}
+                                                    <button
+                                                        onClick={() => {
+                                                            if (payTutorUseDynamicQR && payTutorDecodedQrPayload) {
+                                                                setPayTutorQrModalUrl(null);
+                                                                setPayTutorQrModalPayload(injectAmountIntoPayload(
+                                                                    payTutorDecodedQrPayload,
+                                                                    (Number(payBookingPayment!.amount) * 0.87).toFixed(2)
+                                                                ));
+                                                            } else {
+                                                                setPayTutorQrModalPayload(null);
+                                                                setPayTutorQrModalUrl(`${getFileUrl(payBooking.tutor.gcash_qr_url!)}?t=${payTutorQrCacheBust}`);
+                                                            }
+                                                            setPayTutorQrModalOpen(true);
+                                                        }}
+                                                        className="absolute -top-3 -right-3 p-2.5 bg-white text-slate-500 hover:text-primary-600 rounded-xl shadow border border-slate-100 hover:border-primary-100 transition-all opacity-0 group-hover/qr:opacity-100"
+                                                        title="View larger"
+                                                    >
+                                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                        </svg>
+                                                    </button>
+
+                                                    {/* Download QR */}
+                                                    {((payTutorUseDynamicQR && payTutorDecodedQrPayload) || !payTutorUseDynamicQR) && (
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (payTutorUseDynamicQR && payTutorDecodedQrPayload) {
+                                                                    await downloadTutorDynamicQRCode(
+                                                                        injectAmountIntoPayload(payTutorDecodedQrPayload, (Number(payBookingPayment!.amount) * 0.87).toFixed(2)),
+                                                                        `${payBooking.tutor.name.replace(/\s+/g, '_')}_GCash_QR_Dynamic.png`
+                                                                    );
+                                                                } else {
+                                                                    try {
+                                                                        const url = `${getFileUrl(payBooking.tutor.gcash_qr_url!)}?t=${payTutorQrCacheBust}`;
+                                                                        const response = await fetch(url);
+                                                                        const blob = await response.blob();
+                                                                        const blobUrl = URL.createObjectURL(blob);
+                                                                        const a = document.createElement('a');
+                                                                        a.href = blobUrl;
+                                                                        a.download = `${payBooking.tutor.name.replace(/\s+/g, '_')}_GCash_QR.png`;
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        document.body.removeChild(a);
+                                                                        URL.revokeObjectURL(blobUrl);
+                                                                    } catch {
+                                                                        toast.error('Failed to download QR code');
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="absolute -top-3 -left-3 p-2.5 bg-white text-slate-500 hover:text-emerald-600 rounded-xl shadow border border-slate-100 hover:border-emerald-200 transition-all opacity-0 group-hover/qr:opacity-100"
+                                                            title="Download QR code"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Toggle Dynamic/Static */}
+                                            {payTutorDecodedQrPayload && (
+                                                <button
+                                                    onClick={() => setPayTutorUseDynamicQR(prev => !prev)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full text-xs font-bold transition-all border border-slate-200 shadow-sm mb-2"
+                                                >
+                                                    <RefreshCw className={`h-3 w-3 ${payTutorUseDynamicQR ? 'text-primary-600 animate-spin' : ''}`} style={{ animationDuration: '3s' }} />
+                                                    <span>{payTutorUseDynamicQR ? 'Switch to Static QR' : 'Switch to Dynamic QR'}</span>
+                                                </button>
+                                            )}
+
+                                            {/* Dynamic QR badge */}
+                                            {payTutorUseDynamicQR && payTutorDecodedQrPayload && (
+                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-primary-200">
+                                                    <span className="relative flex h-2 w-2">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                                                    </span>
+                                                    Dynamic QR with Amount
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -1435,6 +1618,52 @@ const PaymentManagement: React.FC = () => {
                                 <p className="text-slate-600 text-sm">No payment found for this booking.</p>
                             </div>
                         )}
+                    </div>
+                </Modal>
+            )}
+
+            {/* Tutor QR Enlarged Modal */}
+            {payTutorQrModalOpen && (
+                <Modal isOpen={true} onClose={() => setPayTutorQrModalOpen(false)} title={`${payBooking?.tutor?.name || 'Tutor'}'s GCash QR`}>
+                    <div className="w-full flex flex-col items-center gap-4 p-4">
+                        {payTutorQrModalPayload ? (
+                            <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100">
+                                <QRCode
+                                    value={payTutorQrModalPayload}
+                                    size={360}
+                                    style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                                    viewBox="0 0 360 360"
+                                />
+                            </div>
+                        ) : payTutorQrModalUrl ? (
+                            <img src={payTutorQrModalUrl} alt="GCash QR" className="max-w-full rounded-2xl shadow-lg border border-slate-100" onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_QR_NA; }} />
+                        ) : null}
+                        <button
+                            onClick={async () => {
+                                if (payTutorQrModalPayload) {
+                                    await downloadTutorDynamicQRCode(payTutorQrModalPayload, `${(payBooking?.tutor?.name || 'tutor').replace(/\s+/g, '_')}_GCash_QR_Dynamic.png`);
+                                } else if (payTutorQrModalUrl) {
+                                    try {
+                                        const response = await fetch(payTutorQrModalUrl);
+                                        const blob = await response.blob();
+                                        const blobUrl = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = blobUrl;
+                                        a.download = `${(payBooking?.tutor?.name || 'tutor').replace(/\s+/g, '_')}_GCash_QR.png`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(blobUrl);
+                                    } catch { toast.error('Failed to download QR code'); }
+                                }
+                            }}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm shadow transition-colors"
+                        >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download QR Code
+                        </button>
                     </div>
                 </Modal>
             )}

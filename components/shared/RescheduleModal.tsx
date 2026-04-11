@@ -62,17 +62,43 @@ const RescheduleModal: React.FC<Props> = ({ open, bookingId, bookingContext, onC
   const timeDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) { setResolvedTutorId(undefined); return; }
-    if (bookingContext?.tutorId) {
-      setResolvedTutorId(bookingContext.tutorId);
+    if (!open) {
+      setDate('');
+      setTime('');
+      setDuration(undefined);
+      setReason('');
+      setTimeDropdownOpen(false);
       return;
     }
+    if (bookingContext?.currentDuration !== undefined) {
+      setDuration(Number(bookingContext.currentDuration));
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setResolvedTutorId(undefined);
+      setAvailability([]);
+      return;
+    }
+    const fetchAvailability = (tid: number) => {
+      setResolvedTutorId(tid);
+      apiClient.get(`/tutors/${tid}/availability`)
+        .then(r => setAvailability(Array.isArray(r.data) ? r.data : []))
+        .catch(() => setAvailability([]));
+    };
+    const tid = bookingContext?.tutorId;
+    if (tid) {
+      fetchAvailability(tid);
+      return;
+    }
+    setAvailability([]);
     apiClient.get('/users/me/bookings')
       .then(r => {
         const list: any[] = Array.isArray(r.data) ? r.data : [];
         const found = list.find((b: any) => b.id === bookingId);
         const id = found?.tutor?.tutor_id ?? (found as any)?.tutor_id;
-        if (id) setResolvedTutorId(Number(id));
+        if (id) fetchAvailability(Number(id));
       })
       .catch(() => {});
   }, [open, bookingContext?.tutorId, bookingId]);
@@ -87,13 +113,6 @@ const RescheduleModal: React.FC<Props> = ({ open, bookingId, bookingContext, onC
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
   }, [timeDropdownOpen]);
-
-  useEffect(() => {
-    if (!open || !resolvedTutorId) { setAvailability([]); return; }
-    apiClient.get(`/tutors/${resolvedTutorId}/availability`)
-      .then(r => setAvailability(Array.isArray(r.data) ? r.data : []))
-      .catch(() => setAvailability([]));
-  }, [open, resolvedTutorId]);
 
   useEffect(() => {
     if (!date || !resolvedTutorId) { setExistingBookings([]); return; }
@@ -272,7 +291,7 @@ const RescheduleModal: React.FC<Props> = ({ open, bookingId, bookingContext, onC
                 <input
                   type="date"
                   value={date}
-                  onChange={(e) => { setDate(e.target.value); setTime(''); setDuration(undefined); }}
+                  onChange={(e) => { setDate(e.target.value); setTime(''); }}
                   min={new Date().toISOString().split('T')[0]}
                   className="w-full border-2 border-slate-300 bg-white hover:border-sky-400 pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl focus:ring-4 focus:ring-sky-200 focus:border-sky-500 transition-all text-sm sm:text-base font-medium text-slate-700"
                 />
@@ -359,12 +378,6 @@ const RescheduleModal: React.FC<Props> = ({ open, bookingId, bookingContext, onC
                 ));
               })()}
               {!date && <p className="text-xs text-slate-500">Please select a date first</p>}
-              {date && !duration && availableTimeSlots.length > 0 && (
-                <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg flex items-center gap-2">
-                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                  Select a duration to filter available times
-                </p>
-              )}
               {date && duration && duration > 0 && availableTimeSlots.length === 0 && !loadingBookings && (
                 <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg flex items-center gap-2">
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
@@ -373,14 +386,17 @@ const RescheduleModal: React.FC<Props> = ({ open, bookingId, bookingContext, onC
               )}
             </div>
 
-            {/* Duration */}
+            {/* Duration — fixed from original booking */}
             <div className="space-y-2 col-span-2">
               <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                 <svg className="w-4 h-4 text-sky-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Duration
-                {!date && <span className="text-xs font-normal text-slate-400">(Select date first)</span>}
+                <span className="ml-auto flex items-center gap-1 text-xs font-normal text-slate-400">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  Fixed from booking
+                </span>
               </label>
               <div className="relative">
                 <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -388,24 +404,15 @@ const RescheduleModal: React.FC<Props> = ({ open, bookingId, bookingContext, onC
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <select
-                  value={duration ?? ''}
-                  onChange={(e) => { setDuration(e.target.value ? Number(e.target.value) : undefined); setTime(''); }}
-                  disabled={!date || allowedDurations.length === 0}
-                  className={`w-full border-2 border-slate-300 bg-white hover:border-sky-400 ${!date || allowedDurations.length === 0 ? 'bg-slate-100 cursor-not-allowed opacity-60' : ''} pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl focus:ring-4 focus:ring-sky-200 focus:border-sky-500 transition-all text-sm sm:text-base font-medium text-slate-700`}
-                >
-                  <option value="">{!date ? 'Select date first' : allowedDurations.length === 0 ? 'No available durations' : 'Select duration'}</option>
-                  {allowedDurations.map(d => (
-                    <option key={d} value={d}>{d % 1 === 0 ? `${d}hr${d !== 1 ? 's' : ''}` : `${d}hr`}</option>
-                  ))}
-                </select>
-              </div>
-              {maxAllowedMinutes > 0 && (
-                <div className="text-xs text-slate-600 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 px-4 py-3 rounded-lg flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sky-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span className="font-medium">Maximum available: {Math.floor(maxAllowedMinutes / 60)}h {maxAllowedMinutes % 60 > 0 ? `${maxAllowedMinutes % 60}m` : ''}</span>
+                <div className="w-full border-2 border-slate-200 bg-slate-50 pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium text-slate-600 select-none">
+                  {duration !== undefined
+                    ? (duration % 1 === 0 ? `${duration} hr${duration !== 1 ? 's' : ''}` : `${duration} hr`)
+                    : '—'}
                 </div>
-              )}
+                <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                </div>
+              </div>
             </div>
           </div>
 

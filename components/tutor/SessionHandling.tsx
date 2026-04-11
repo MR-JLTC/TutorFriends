@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../context/AuthContext';
-import { MessageSquare, Clock, CheckCircle, X, Info, AlertCircle, Calendar, User, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, X, Info, AlertCircle, Calendar, User, FileText, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -256,6 +256,12 @@ const SessionHandlingContent: React.FC = () => {
       setIsMounted(false);
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!tutorId) return;
+    const interval = setInterval(() => fetchBookingRequests(tutorId), 30000);
+    return () => clearInterval(interval);
+  }, [tutorId]);
 
   const fetchBookingRequests = async (overrideTutorId?: number) => {
     const idToUse = overrideTutorId || tutorId;
@@ -609,10 +615,21 @@ const SessionHandlingContent: React.FC = () => {
           <div className="space-y-6">
             {/* Status Filter Tabs */}
             <div>
-              <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <span className="w-1 h-4 bg-primary-500 rounded-full"></span>
-                Filter by Status
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-1 h-4 bg-primary-500 rounded-full"></span>
+                  Filter by Status
+                </h3>
+                <button
+                  onClick={() => tutorId && fetchBookingRequests(tutorId)}
+                  disabled={!tutorId}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg border border-primary-200 transition-all disabled:opacity-50"
+                  title="Refresh booking requests"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Refresh
+                </button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {[
                   { key: 'all', label: 'All Requests' },
@@ -703,8 +720,8 @@ const SessionHandlingContent: React.FC = () => {
 
               <div className="bg-slate-50/50 rounded-xl p-3 border border-slate-100">
                 <div className="grid grid-cols-7 gap-1 text-center mb-1">
-                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(day => (
-                    <div key={day} className="text-[10px] font-bold text-slate-400 uppercase">
+                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                    <div key={i} className="text-[10px] font-bold text-slate-400 uppercase">
                       {day}
                     </div>
                   ))}

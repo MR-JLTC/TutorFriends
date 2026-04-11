@@ -452,9 +452,9 @@ const TuteePayment: React.FC = () => {
     const file = selectedPaymentFiles[bookingId];
     // Use the first admin automatically since there's only one
     const adminId = admins.length > 0 ? admins[0].user_id : null;
-    const amt = amountByBooking[bookingId] || '';
     const booking = bookings.find(b => b.id === bookingId);
     const calculatedAmount = booking ? calculateAmount(booking) : 0;
+    const amt = amountByBooking[bookingId] ?? (calculatedAmount > 0 ? calculatedAmount.toFixed(2) : '');
     const amountPaid = Number(amt);
 
     if (!file) {
@@ -785,7 +785,7 @@ const TuteePayment: React.FC = () => {
                           {booking.subject}
                         </h3>
                         <p className="text-sm sm:text-base md:text-lg text-slate-700 mb-3 md:mb-4 font-semibold">
-                          with <span className="text-primary-700">{booking.tutor.user.name}</span>
+                          with <span className="text-primary-700">{booking.tutor?.user?.name ?? 'Unknown Tutor'}</span>
                         </p>
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
                           <span className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-white rounded-lg md:rounded-xl border border-slate-200 md:border-2 shadow-sm md:shadow-md hover:shadow-lg transition-shadow">
@@ -1142,7 +1142,8 @@ const TuteePayment: React.FC = () => {
                               <button
                                 onClick={() => handleUploadPayment(booking.id)}
                                 disabled={(() => {
-                                  const amountPaid = amountByBooking[booking.id] ? Number(amountByBooking[booking.id]) : 0;
+                                  const effectiveAmountStr = amountByBooking[booking.id] ?? (calculatedAmount > 0 ? calculatedAmount.toFixed(2) : '');
+                                  const amountPaid = effectiveAmountStr ? Number(effectiveAmountStr) : 0;
                                   const hasValidAmount = calculatedAmount > 0
                                     ? (!isNaN(amountPaid) && amountPaid >= calculatedAmount)
                                     : (!isNaN(amountPaid) && amountPaid > 0);
@@ -1150,7 +1151,7 @@ const TuteePayment: React.FC = () => {
                                   return !selectedPaymentFiles[booking.id] ||
                                     uploadingPayment ||
                                     admins.length === 0 ||
-                                    !amountByBooking[booking.id] ||
+                                    !effectiveAmountStr ||
                                     !hasValidAmount;
                                 })()}
                                 className="w-full mt-2 flex items-center justify-center gap-2 sm:gap-3 px-6 py-4 bg-slate-800 text-white rounded-xl md:rounded-2xl hover:bg-slate-900 active:bg-black disabled:bg-slate-100 disabled:text-slate-400 disabled:border disabled:border-slate-200 disabled:cursor-not-allowed transition-all text-base sm:text-lg font-bold tracking-wide group/btn"
@@ -1171,7 +1172,8 @@ const TuteePayment: React.FC = () => {
 
                               {/* Error Reporting array */}
                               {(() => {
-                                const amountPaid = amountByBooking[booking.id] ? Number(amountByBooking[booking.id]) : 0;
+                                const effectiveAmountStr = amountByBooking[booking.id] ?? (calculatedAmount > 0 ? calculatedAmount.toFixed(2) : '');
+                                const amountPaid = effectiveAmountStr ? Number(effectiveAmountStr) : 0;
                                 const hasValidAmount = calculatedAmount > 0
                                   ? (!isNaN(amountPaid) && amountPaid >= calculatedAmount)
                                   : (!isNaN(amountPaid) && amountPaid > 0);
@@ -1179,7 +1181,7 @@ const TuteePayment: React.FC = () => {
 
                                 if (admins.length === 0) missingRequirements.push('Admin QR code not available');
                                 if (!selectedPaymentFiles[booking.id]) missingRequirements.push('Select a payment proof image');
-                                if (!amountByBooking[booking.id]) missingRequirements.push('Enter the amount paid');
+                                if (!effectiveAmountStr) missingRequirements.push('Enter the amount paid');
                                 else if (calculatedAmount > 0 && (isNaN(amountPaid) || amountPaid < calculatedAmount)) {
                                   missingRequirements.push(`Amount paid must be at least ₱${calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
                                 } else if (calculatedAmount === 0 && (isNaN(amountPaid) || amountPaid <= 0)) {

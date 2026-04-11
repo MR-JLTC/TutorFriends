@@ -80,6 +80,37 @@ export const decodeQRFromImageUrl = (imageUrl: string): Promise<string | null> =
 };
 
 /**
+ * Decodes a QR code from a same-origin URL (e.g. blob:) trying multiple canvas scales.
+ * Does NOT set crossOrigin — intended for blob URLs where CORS is not an issue.
+ * Tries 1x → 2x (upscale small QR in large image) → 0.5x (downscale very large image).
+ */
+export const decodeQRMultiScale = (imageUrl: string): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      for (const scale of [1, 2, 0.5]) {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(w * scale);
+          canvas.height = Math.round(h * scale);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) continue;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const result = jsQR(data.data, data.width, data.height);
+          if (result?.data) { resolve(result.data); return; }
+        } catch { continue; }
+      }
+      resolve(null);
+    };
+    img.onerror = () => resolve(null);
+    img.src = imageUrl;
+  });
+};
+
+/**
  * Takes a base EMVCo payload (decoded from a valid GCash QR) and injects/modifies
  * the amount (tag 54) and point-of-initiation method (tag 01).
  * Recalculates CRC-16 (tag 63).
