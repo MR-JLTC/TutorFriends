@@ -646,18 +646,30 @@ const TuteePayment: React.FC = () => {
       return;
     }
     try {
+      const size = 512;
+      // Clone the SVG and set explicit pixel dimensions.
+      // The live SVG has style="width:100%;height:auto" which resolves to 0 when
+      // loaded from a blob URL (no parent element), producing a blank canvas.
+      const clonedSvg = svgEl.cloneNode(true) as SVGElement;
+      clonedSvg.setAttribute('width', String(size));
+      clonedSvg.setAttribute('height', String(size));
+      clonedSvg.removeAttribute('style');
+      if (!clonedSvg.getAttribute('xmlns')) {
+        clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      }
       const serializer = new XMLSerializer();
-      const svgStr = serializer.serializeToString(svgEl);
+      const svgStr = serializer.serializeToString(clonedSvg);
       const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
       const svgUrl = URL.createObjectURL(svgBlob);
       const img = new Image();
       img.onload = () => {
-        const size = 512;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
         if (!ctx) { URL.revokeObjectURL(svgUrl); return; }
+        // Disable smoothing so QR modules stay sharp and scannable
+        ctx.imageSmoothingEnabled = false;
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, size, size);
         ctx.drawImage(img, 0, 0, size, size);
