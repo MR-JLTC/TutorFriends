@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../hooks/useAuth';
 import QRCode from 'react-qr-code';
+import QRCodeGen from 'qrcode';
 import { decodeQRFromImageUrl, injectAmountIntoPayload } from '../../utils/qrUtils';
 
 interface Payment {
@@ -637,60 +638,21 @@ const TuteePayment: React.FC = () => {
     }
   };
 
-  // Download the dynamic (SVG-based) QR code as a PNG
-  const downloadDynamicQRCode = async (bookingId: number, filename: string) => {
-    const container = document.querySelector(`[data-qr-booking="${bookingId}"]`);
-    const svgEl = container?.querySelector('svg');
-    if (!svgEl) {
-      toast.error('Failed to download QR code');
-      return;
-    }
+  // Download the dynamic QR code as a PNG using qrcode library directly from payload
+  const downloadDynamicQRCode = async (payload: string, filename: string) => {
     try {
-      const size = 512;
-      // Clone the SVG and set explicit pixel dimensions.
-      // The live SVG has style="width:100%;height:auto" which resolves to 0 when
-      // loaded from a blob URL (no parent element), producing a blank canvas.
-      const clonedSvg = svgEl.cloneNode(true) as SVGElement;
-      clonedSvg.setAttribute('width', String(size));
-      clonedSvg.setAttribute('height', String(size));
-      clonedSvg.removeAttribute('style');
-      if (!clonedSvg.getAttribute('xmlns')) {
-        clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-      }
-      const serializer = new XMLSerializer();
-      const svgStr = serializer.serializeToString(clonedSvg);
-      const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-      const svgUrl = URL.createObjectURL(svgBlob);
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { URL.revokeObjectURL(svgUrl); return; }
-        // Disable smoothing so QR modules stay sharp and scannable
-        ctx.imageSmoothingEnabled = false;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, size, size);
-        ctx.drawImage(img, 0, 0, size, size);
-        canvas.toBlob((blob) => {
-          if (!blob) { URL.revokeObjectURL(svgUrl); return; }
-          const blobUrl = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(blobUrl);
-          URL.revokeObjectURL(svgUrl);
-        }, 'image/png');
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(svgUrl);
-        toast.error('Failed to download QR code');
-      };
-      img.src = svgUrl;
+      const dataUrl = await QRCodeGen.toDataURL(payload, {
+        width: 512,
+        margin: 4,
+        color: { dark: '#000000', light: '#ffffff' },
+        errorCorrectionLevel: 'M',
+      });
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } catch {
       toast.error('Failed to download QR code');
     }
@@ -990,7 +952,10 @@ const TuteePayment: React.FC = () => {
                                         <button
                                           onClick={async () => {
                                             if (useDynamicQR[booking.id] && decodedQrPayload) {
-                                              await downloadDynamicQRCode(booking.id, `${admins[0].name.replace(/\s+/g, '_')}_GCash_QR_Dynamic.png`);
+                                              await downloadDynamicQRCode(
+                                                injectAmountIntoPayload(decodedQrPayload, amountByBooking[booking.id] || calculatedAmount),
+                                                `${admins[0].name.replace(/\s+/g, '_')}_GCash_QR_Dynamic.png`
+                                              );
                                             } else {
                                               try {
                                                 const url = `${getFileUrl(admins[0].qr_code_url)}?t=${qrCacheBust}`;
