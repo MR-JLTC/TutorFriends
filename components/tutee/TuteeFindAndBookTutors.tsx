@@ -332,7 +332,8 @@ const TuteeFindAndBookTutors: React.FC = () => {
   const [tutorOnlineStatus, setTutorOnlineStatus] = useState<Record<number, boolean>>({});
   const [tutorBookingRequests, setTutorBookingRequests] = useState<any[]>([]);
   const [tutorDocuments, setTutorDocuments] = useState<any[]>([]);
-  const [tutorRatings, setTutorRatings] = useState<Record<number, { average: number; totalRatings: number }>>({});
+  const [tutorRatings, setTutorRatings] = useState<Record<number, { average: number; totalRatings: number }>>({});
+
 
   // Real-time online/offline updates via WebSocket (user_status event from chat.gateway)
   const { socket } = useSocket();

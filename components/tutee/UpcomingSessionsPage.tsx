@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../../services/api';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { MessageSquare, Clock, CheckCircle, Info } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Info, CalendarClock, XCircle, CheckCircle2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import RescheduleModal from '../shared/RescheduleModal';
+import { useAuth } from '../../hooks/useAuth';
 
 interface Student {
   user_id: number;
@@ -16,6 +17,8 @@ interface Student {
 interface BookingRequest {
   id: number;
   student: Student;
+  tutor_id?: number;
+  tutor_name?: string;
   subject: string;
   date: string;
   time: string;
@@ -32,6 +35,9 @@ const UpcomingSessionsPage: React.FC = () => {
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [rescheduleTarget, setRescheduleTarget] = useState<BookingRequest | null>(null);
   const [now, setNow] = useState(new Date());
+  const { user } = useAuth();
+  const [reschedulesByBooking, setReschedulesByBooking] = useState<Record<number, any[]>>({});
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60000);
@@ -56,6 +62,20 @@ const UpcomingSessionsPage: React.FC = () => {
     return sessionDate;
   };
 
+  const fetchRescheduleProposals = async (bookingIds: number[]) => {
+    if (!bookingIds.length) return;
+    const results: Record<number, any[]> = {};
+    await Promise.all(bookingIds.map(async (id) => {
+      try {
+        const res = await apiClient.get(`/reschedules/booking/${id}`);
+        results[id] = res.data || [];
+      } catch {
+        results[id] = [];
+      }
+    }));
+    setReschedulesByBooking(results);
+  };
+
   const fetchUpcoming = async () => {
     setLoading(true);
     try {
@@ -66,6 +86,7 @@ const UpcomingSessionsPage: React.FC = () => {
         return start && start > now;
       });
       setBookingRequests(futureSessions);
+      fetchRescheduleProposals(futureSessions.map((b: BookingRequest) => b.id));
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Failed to load upcoming sessions');
     } finally {
@@ -76,6 +97,32 @@ const UpcomingSessionsPage: React.FC = () => {
   useEffect(() => {
     fetchUpcoming();
   }, [now]);
+
+  const handleAcceptReschedule = async (rescheduleId: number) => {
+    setActionLoading(rescheduleId);
+    try {
+      await apiClient.patch(`/reschedules/${rescheduleId}/accept`);
+      toast.success('Reschedule accepted!');
+      await fetchUpcoming();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Failed to accept reschedule');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRejectReschedule = async (rescheduleId: number) => {
+    setActionLoading(rescheduleId);
+    try {
+      await apiClient.patch(`/reschedules/${rescheduleId}/reject`);
+      toast.success('Reschedule declined — session reverted to original time.');
+      await fetchUpcoming();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Failed to decline reschedule');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -178,7 +225,10 @@ const UpcomingSessionsPage: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6 pl-3">
                   <div className="flex-1 space-y-3">
                     <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-lg sm:text-xl font-bold text-slate-900">{request.student?.name || 'Student'}</h3>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Tutor</span>
+                        <h3 className="text-lg sm:text-xl font-bold text-slate-900">{request.tutor_name || 'Your Tutor'}</h3>
+                      </div>
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(request.status)}`}>
                         {getStatusIcon(request.status)}
                         <span>{request.status.replace('_', ' ').charAt(0).toUpperCase() + request.status.replace('_', ' ').slice(1)}</span>
@@ -224,13 +274,71 @@ const UpcomingSessionsPage: React.FC = () => {
                       variant="secondary"
                       onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
                       disabled={loading}
-                      className="w-full md:w-auto bg-white border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-sm"
+                      className="group w-full md:w-auto relative overflow-hidden bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white border-0 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-md shadow-primary-200/60 hover:shadow-lg hover:shadow-primary-300/50 flex items-center gap-2 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Clock className="h-4 w-4 mr-2" />
+                      <Clock className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12 flex-shrink-0" />
                       Reschedule
                     </Button>
                   </div>
                 </div>
+
+                {/* Pending Reschedule Proposals from tutor */}
+                {(reschedulesByBooking[request.id] || [])
+                  .filter(p => p.status === 'pending' && p.receiver_user_id === user?.user_id)
+                  .map(proposal => (
+                    <div key={proposal.reschedule_id} className="mt-4 ml-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <CalendarClock className="w-4 h-4 text-amber-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-amber-800 leading-tight">Reschedule Proposed</p>
+                          <p className="text-xs text-amber-600 mt-0.5">
+                            {proposal.proposer?.name || 'Your tutor'} wants to change the schedule
+                          </p>
+                          <div className="mt-2.5 grid grid-cols-2 gap-2 text-xs">
+                            <div className="bg-white rounded-lg p-2.5 border border-amber-100 shadow-sm">
+                              <span className="text-slate-400 font-medium block mb-0.5">Proposed</span>
+                              <span className="font-semibold text-slate-800 block">
+                                {new Date(proposal.proposedDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                              </span>
+                              <span className="text-slate-600">{proposal.proposedTime}</span>
+                            </div>
+                            {proposal.originalDate && (
+                              <div className="bg-white rounded-lg p-2.5 border border-amber-100 shadow-sm">
+                                <span className="text-slate-400 font-medium block mb-0.5">Original</span>
+                                <span className="font-semibold text-slate-800 block">
+                                  {new Date(proposal.originalDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                                </span>
+                                <span className="text-slate-600">{proposal.originalTime}</span>
+                              </div>
+                            )}
+                          </div>
+                          {proposal.reason && (
+                            <p className="text-xs text-amber-700 mt-2 italic leading-relaxed">&ldquo;{proposal.reason}&rdquo;</p>
+                          )}
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              onClick={() => handleAcceptReschedule(proposal.reschedule_id)}
+                              disabled={actionLoading === proposal.reschedule_id}
+                              className="flex-1 py-2 px-3 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              {actionLoading === proposal.reschedule_id ? 'Processing…' : 'Accept'}
+                            </button>
+                            <button
+                              onClick={() => handleRejectReschedule(proposal.reschedule_id)}
+                              disabled={actionLoading === proposal.reschedule_id}
+                              className="flex-1 py-2 px-3 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              {actionLoading === proposal.reschedule_id ? 'Processing…' : 'Decline'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
               </div>
             ))}
           </div>
@@ -240,6 +348,13 @@ const UpcomingSessionsPage: React.FC = () => {
         <RescheduleModal
           open={isRescheduleModalOpen}
           bookingId={rescheduleTarget.id}
+          bookingContext={{
+            subject: rescheduleTarget.subject,
+            currentDate: rescheduleTarget.date,
+            currentTime: rescheduleTarget.time,
+            currentDuration: rescheduleTarget.duration,
+            tutorId: rescheduleTarget.tutor_id,
+          }}
           onClose={() => { setIsRescheduleModalOpen(false); setRescheduleTarget(null); }}
           onSuccess={() => {
             setIsRescheduleModalOpen(false);

@@ -975,9 +975,9 @@ const SessionHandlingContent: React.FC = () => {
                               variant="secondary"
                               onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
                               disabled={loading}
-                              className="text-primary-700 bg-primary-50 hover:bg-primary-100 border-primary-200 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors"
+                              className="group relative overflow-hidden bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white border-0 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-md shadow-primary-200/60 hover:shadow-lg hover:shadow-primary-300/50 flex items-center gap-2 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <Clock className="h-4 w-4" />
+                              <Clock className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12 flex-shrink-0" />
                               Reschedule
                             </Button>
                           )}
@@ -1177,6 +1177,13 @@ const SessionHandlingContent: React.FC = () => {
           <RescheduleModal
             open={isRescheduleModalOpen}
             bookingId={rescheduleTarget.id}
+            bookingContext={{
+              subject: rescheduleTarget.subject,
+              currentDate: rescheduleTarget.date,
+              currentTime: rescheduleTarget.time,
+              currentDuration: rescheduleTarget.duration,
+              tutorId: tutorId ?? undefined,
+            }}
             onClose={() => { setIsRescheduleModalOpen(false); setRescheduleTarget(null); }}
             onSuccess={() => {
               setIsRescheduleModalOpen(false);

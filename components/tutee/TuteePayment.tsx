@@ -637,6 +637,53 @@ const TuteePayment: React.FC = () => {
     }
   };
 
+  // Download the dynamic (SVG-based) QR code as a PNG
+  const downloadDynamicQRCode = async (bookingId: number, filename: string) => {
+    const container = document.querySelector(`[data-qr-booking="${bookingId}"]`);
+    const svgEl = container?.querySelector('svg');
+    if (!svgEl) {
+      toast.error('Failed to download QR code');
+      return;
+    }
+    try {
+      const serializer = new XMLSerializer();
+      const svgStr = serializer.serializeToString(svgEl);
+      const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      img.onload = () => {
+        const size = 512;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { URL.revokeObjectURL(svgUrl); return; }
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        canvas.toBlob((blob) => {
+          if (!blob) { URL.revokeObjectURL(svgUrl); return; }
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+          URL.revokeObjectURL(svgUrl);
+        }, 'image/png');
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(svgUrl);
+        toast.error('Failed to download QR code');
+      };
+      img.src = svgUrl;
+    } catch {
+      toast.error('Failed to download QR code');
+    }
+  };
+
   // Calculate amount based on session rate and duration
   const calculateAmount = (booking: BookingRequest): number => {
     const sessionRate = booking.tutor?.session_rate_per_hour || 0;
@@ -877,7 +924,7 @@ const TuteePayment: React.FC = () => {
                                     {/* QR Code Container */}
                                     <div className="relative bg-white rounded-2xl shadow-sm border border-white p-4 transition-transform duration-300 group-hover/qr:scale-[1.02]">
                                       {useDynamicQR[booking.id] && decodedQrPayload ? (
-                                        <div className="h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 flex items-center justify-center bg-white p-2">
+                                        <div data-qr-booking={booking.id} className="h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 flex items-center justify-center bg-white p-2">
                                           <QRCode
                                             value={injectAmountIntoPayload(
                                               decodedQrPayload,
@@ -926,24 +973,28 @@ const TuteePayment: React.FC = () => {
                                         </svg>
                                       </button>
                                       
-                                      {/* Download QR button (Static only) */}
-                                      {!useDynamicQR[booking.id] && admins[0].qr_code_url && (
+                                      {/* Download QR button (Static and Dynamic) */}
+                                      {((useDynamicQR[booking.id] && decodedQrPayload) || (!useDynamicQR[booking.id] && admins[0].qr_code_url)) && (
                                         <button
                                           onClick={async () => {
-                                            try {
-                                              const url = `${getFileUrl(admins[0].qr_code_url)}?t=${qrCacheBust}`;
-                                              const response = await fetch(url);
-                                              const blob = await response.blob();
-                                              const blobUrl = URL.createObjectURL(blob);
-                                              const a = document.createElement('a');
-                                              a.href = blobUrl;
-                                              a.download = `${admins[0].name.replace(/\s+/g, '_')}_GCash_QR.png`;
-                                              document.body.appendChild(a);
-                                              a.click();
-                                              document.body.removeChild(a);
-                                              URL.revokeObjectURL(blobUrl);
-                                            } catch {
-                                              toast.error('Failed to download QR code');
+                                            if (useDynamicQR[booking.id] && decodedQrPayload) {
+                                              await downloadDynamicQRCode(booking.id, `${admins[0].name.replace(/\s+/g, '_')}_GCash_QR_Dynamic.png`);
+                                            } else {
+                                              try {
+                                                const url = `${getFileUrl(admins[0].qr_code_url)}?t=${qrCacheBust}`;
+                                                const response = await fetch(url);
+                                                const blob = await response.blob();
+                                                const blobUrl = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = blobUrl;
+                                                a.download = `${admins[0].name.replace(/\s+/g, '_')}_GCash_QR.png`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                document.body.removeChild(a);
+                                                URL.revokeObjectURL(blobUrl);
+                                              } catch {
+                                                toast.error('Failed to download QR code');
+                                              }
                                             }
                                           }}
                                           className="absolute -top-3 -left-3 p-3 bg-white text-slate-500 hover:text-emerald-600 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 hover:border-emerald-200 transition-all opacity-0 group-hover/qr:opacity-100 scale-95 group-hover/qr:scale-100"

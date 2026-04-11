@@ -70,7 +70,7 @@ const TuteeLayout: React.FC<TuteeLayoutProps> = ({ children }) => {
         <div className="flex-1 flex flex-col min-h-0 bg-slate-50 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/20 via-white to-sky-50/20 pointer-events-none" />
           <TuteeHeader onMenuClick={() => setIsMobileMenuOpen(true)} />
-          <main className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
+          <main className="flex-1 overflow-y-auto relative scroll-smooth">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-6 sm:pt-4 sm:pb-8 lg:pt-5 lg:pb-10 w-full">
               {children}
             </div>
