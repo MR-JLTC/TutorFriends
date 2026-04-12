@@ -312,6 +312,9 @@ const TuteeFindAndBookTutors: React.FC = () => {
   const [bookingMessage, setBookingMessage] = useState<string | null>(null);
   const [bookingForm, setBookingForm] = useState<{ subject: string; date: string; time: string; duration: number; student_notes?: string }>({ subject: '', date: '', time: '', duration: 1 });
   const [bookingErrors, setBookingErrors] = useState<{ subject?: string; date?: string; time?: string; duration?: string; student_notes?: string }>({});
+  const [recurringEnabled, setRecurringEnabled] = useState(false);
+  const [recurringWeeks, setRecurringWeeks] = useState<number>(4);
+  const [recurringDays, setRecurringDays] = useState<string[]>([]);
   // Controls whether the booking input fields are visible inside the profile modal
   const [showBookingForm, setShowBookingForm] = useState(false);
 
@@ -928,6 +931,30 @@ const TuteeFindAndBookTutors: React.FC = () => {
     setCancelConfirmationOpen(true);
   };
 
+  const generateRecurringDates = (startDate: string, days: string[], weeks: number): string[] => {
+    if (!startDate || days.length === 0 || weeks <= 0) return [startDate];
+    const dayIndex: Record<string, number> = {
+      Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+      Thursday: 4, Friday: 5, Saturday: 6,
+    };
+    const base = new Date(startDate + 'T12:00:00');
+    const baseDow = base.getDay();
+    const all: string[] = [];
+    for (const day of days) {
+      const target = dayIndex[day];
+      if (target === undefined) continue;
+      const offset = (target - baseDow + 7) % 7;
+      const first = new Date(base);
+      first.setDate(base.getDate() + offset);
+      for (let w = 0; w < weeks; w++) {
+        const d = new Date(first);
+        d.setDate(first.getDate() + w * 7);
+        all.push(d.toISOString().split('T')[0]);
+      }
+    }
+    return Array.from(new Set(all)).sort();
+  };
+
   const handleConfirmBooking = async () => {
     if (!selectedTutorProfile?.user?.tutor_profile) {
       console.error('handleConfirmBooking: No tutor profile found');
@@ -944,15 +971,34 @@ const TuteeFindAndBookTutors: React.FC = () => {
         tutorName: selectedTutorProfile.user.name
       });
 
-      const response = await apiClient.post(`/tutors/${tutorId}/booking-requests`, bookingForm);
+      const isRecurring = recurringEnabled && recurringDays.length > 0;
 
-      console.log('Booking request response:', response.data);
-
-      // Show success toast at center
-      toast.success('Booking request submitted successfully!', {
-        position: 'top-center',
-        autoClose: 3000,
-      });
+      if (isRecurring) {
+        const allDates = generateRecurringDates(bookingForm.date, recurringDays, recurringWeeks);
+        console.log('Creating recurring booking requests for dates:', allDates);
+        const results = await Promise.allSettled(
+          allDates.map(date =>
+            apiClient.post(`/tutors/${tutorId}/booking-requests`, { ...bookingForm, date })
+          )
+        );
+        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+        console.log(`Recurring bookings: ${succeeded} succeeded, ${failed} failed`);
+        if (succeeded === 0) {
+          throw new Error('All recurring booking requests failed. Please try again.');
+        }
+        toast.success(
+          `${succeeded} booking request${succeeded > 1 ? 's' : ''} submitted!${failed > 0 ? ` (${failed} could not be created)` : ''}`,
+          { position: 'top-center', autoClose: 4000 }
+        );
+      } else {
+        const response = await apiClient.post(`/tutors/${tutorId}/booking-requests`, bookingForm);
+        console.log('Booking request response:', response.data);
+        toast.success('Booking request submitted successfully!', {
+          position: 'top-center',
+          autoClose: 3000,
+        });
+      }
 
       // Close modals after a brief delay to show toast
       setTimeout(() => {
@@ -965,6 +1011,9 @@ const TuteeFindAndBookTutors: React.FC = () => {
           duration: 1,
           student_notes: ''
         });
+        setRecurringEnabled(false);
+        setRecurringDays([]);
+        setRecurringWeeks(4);
       }, 100);
     } catch (err: any) {
       console.error('Booking request failed:', {
@@ -1584,7 +1633,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                       onClick={() => {
                         const ok = validateBookingForm();
                         if (!ok) {
-                          toast.error('Please fix booking errors before submitting');
+                          toast.warning('We’re missing a bit of info to get you started."');
                           return;
                         }
                         setConfirmationOpen(true);
@@ -2215,41 +2264,6 @@ const TuteeFindAndBookTutors: React.FC = () => {
                                             </span>
                                           )}
                                         </label>
-                                        {/* Show the block's start/end time for the block containing the selected time, or all blocks if no time selected */}
-                                        {bookingForm.date && selectedTutorProfile?.availability && (() => {
-                                          const date = new Date(bookingForm.date);
-                                          const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
-                                          const dayBlocks = selectedTutorProfile.availability.filter(
-                                            (a: any) => a.day_of_week.toLowerCase() === dayOfWeek.toLowerCase()
-                                          );
-                                          if (dayBlocks.length > 0) {
-                                            if (bookingForm.time) {
-                                              const selectedMin = (() => {
-                                                const [h, m] = bookingForm.time.split(':').map(Number);
-                                                return h * 60 + m;
-                                              })();
-                                              const block = dayBlocks.find((b: any) => {
-                                                const startMin = Number(b.start_time.split(':')[0]) * 60 + Number(b.start_time.split(':')[1]);
-                                                const endMin = Number(b.end_time.split(':')[0]) * 60 + Number(b.end_time.split(':')[1]);
-                                                return selectedMin >= startMin && selectedMin < endMin;
-                                              });
-                                              if (block) {
-                                                return (
-                                                  <div className="text-xs text-slate-600 mb-1">
-                                                    <span className="font-semibold">Available:</span> {block.start_time} - {block.end_time}
-                                                  </div>
-                                                );
-                                              }
-                                            }
-                                            // If no time selected, show all blocks
-                                            return dayBlocks.map((block: any, idx: number) => (
-                                              <div key={idx} className="text-xs text-slate-600 mb-1">
-                                                <span className="font-semibold">Available:</span> {block.start_time} - {block.end_time}
-                                              </div>
-                                            ));
-                                          }
-                                          return null;
-                                        })()}
                                         <div className="relative">
                                           <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none">
                                             <svg className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2273,6 +2287,41 @@ const TuteeFindAndBookTutors: React.FC = () => {
                                             ))}
                                           </select>
                                         </div>
+                                        {/* Show the block's start/end time for the block containing the selected time, or all blocks if no time selected */}
+                                        {bookingForm.date && selectedTutorProfile?.availability && (() => {
+                                          const date = new Date(bookingForm.date);
+                                          const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+                                          const dayBlocks = selectedTutorProfile.availability.filter(
+                                            (a: any) => a.day_of_week.toLowerCase() === dayOfWeek.toLowerCase()
+                                          );
+                                          if (dayBlocks.length > 0) {
+                                            if (bookingForm.time) {
+                                              const selectedMin = (() => {
+                                                const [h, m] = bookingForm.time.split(':').map(Number);
+                                                return h * 60 + m;
+                                              })();
+                                              const block = dayBlocks.find((b: any) => {
+                                                const startMin = Number(b.start_time.split(':')[0]) * 60 + Number(b.start_time.split(':')[1]);
+                                                const endMin = Number(b.end_time.split(':')[0]) * 60 + Number(b.end_time.split(':')[1]);
+                                                return selectedMin >= startMin && selectedMin < endMin;
+                                              });
+                                              if (block) {
+                                                return (
+                                                  <div className="text-xs text-slate-600">
+                                                    <span className="font-semibold">Available:</span> {block.start_time} - {block.end_time}
+                                                  </div>
+                                                );
+                                              }
+                                            }
+                                            // If no time selected, show all blocks
+                                            return dayBlocks.map((block: any, idx: number) => (
+                                              <div key={idx} className="text-xs text-slate-600">
+                                                <span className="font-semibold">Available:</span> {block.start_time} - {block.end_time}
+                                              </div>
+                                            ));
+                                          }
+                                          return null;
+                                        })()}
                                         {bookingErrors.time && (
                                           <p className="text-sm text-red-600 flex items-center gap-1.5">
                                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -2360,6 +2409,112 @@ const TuteeFindAndBookTutors: React.FC = () => {
                                           </div>
                                         )}
                                       </div>
+
+                                      {/* Recurring Schedule */}
+                                      <div className="space-y-3 md:col-span-2">
+                                        <div className="flex items-center justify-between">
+                                          <label className="block text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                            <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                            Recurring Schedule
+                                            <span className="text-xs font-normal text-slate-400">(Optional)</span>
+                                          </label>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const enabling = !recurringEnabled;
+                                              setRecurringEnabled(enabling);
+                                              if (enabling && bookingForm.date) {
+                                                const raw = new Date(bookingForm.date).toLocaleDateString('en-US', { weekday: 'long' });
+                                                const dayOfWeek = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+                                                setRecurringDays([dayOfWeek]);
+                                              } else if (!enabling) {
+                                                setRecurringDays([]);
+                                              }
+                                            }}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1 ${recurringEnabled ? 'bg-violet-600' : 'bg-slate-300'}`}
+                                            aria-label="Toggle recurring schedule"
+                                          >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${recurringEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                                          </button>
+                                        </div>
+
+                                        {recurringEnabled && (() => {
+                                          const toTitleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+                                          const availability: any[] = selectedTutorProfile?.availability || [];
+                                          const selectedDayOfWeek = bookingForm.date
+                                            ? toTitleCase(new Date(bookingForm.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' }))
+                                            : null;
+                                          const tutorAvailableDays: string[] = selectedDayOfWeek && availability.some(
+                                            (a: any) => toTitleCase(a.day_of_week) === selectedDayOfWeek
+                                          ) ? [selectedDayOfWeek] : [];
+                                          const totalSessions = recurringDays.length * recurringWeeks;
+                                          return (
+                                            <div className="space-y-3 p-3 sm:p-4 bg-violet-50/60 border border-violet-200 rounded-xl">
+                                              {!bookingForm.date ? (
+                                                <p className="text-xs text-amber-600 flex items-center gap-1.5">
+                                                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                  </svg>
+                                                  Please select a date first to configure recurring
+                                                </p>
+                                              ) : tutorAvailableDays.length === 0 ? (
+                                                <p className="text-xs text-slate-500">The tutor is not available on this day.</p>
+                                              ) : (
+                                                <>
+                                                  {/* Day chip + Repeat for on one line */}
+                                                  <div className="flex items-center gap-2 sm:gap-3">
+                                                    {tutorAvailableDays.map((day: string) => {
+                                                      const sessionTimeRange = (() => {
+                                                        if (!bookingForm.time || !bookingForm.duration) return null;
+                                                        const [h, m] = bookingForm.time.split(':').map(Number);
+                                                        const endMins = h * 60 + m + bookingForm.duration * 60;
+                                                        const endH = Math.floor(endMins / 60);
+                                                        const endM = endMins % 60;
+                                                        return `${bookingForm.time}–${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+                                                      })();
+                                                      return (
+                                                        <div
+                                                          key={day}
+                                                          className="flex items-center gap-1.5 bg-violet-600 border-2 border-violet-600 text-white rounded-lg px-3 py-1.5 shadow-sm flex-shrink-0"
+                                                        >
+                                                          <svg className="w-3 h-3 text-violet-200 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                          </svg>
+                                                          <span className="text-xs font-bold">{day}</span>
+                                                          {sessionTimeRange && (
+                                                            <span className="text-[10px] text-violet-200">{sessionTimeRange}</span>
+                                                          )}
+                                                        </div>
+                                                      );
+                                                    })}
+                                                    <label className="text-xs font-semibold text-slate-600 whitespace-nowrap">for</label>
+                                                    <select
+                                                      className="flex-1 border-2 border-slate-200 bg-white rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:ring-2 focus:ring-violet-300 focus:border-violet-500 transition-all"
+                                                      value={recurringWeeks}
+                                                      onChange={(e) => setRecurringWeeks(Number(e.target.value))}
+                                                    >
+                                                      {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(w => (
+                                                        <option key={w} value={w}>{w} weeks</option>
+                                                      ))}
+                                                    </select>
+                                                  </div>
+
+                                                  <div className="flex items-center gap-2 bg-violet-100 border border-violet-300 rounded-lg px-3 py-2">
+                                                    <svg className="w-3.5 h-3.5 text-violet-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                    <p className="text-xs text-violet-700 font-medium">
+                                                      Every {recurringDays.join(', ')} for {recurringWeeks} week{recurringWeeks !== 1 ? 's' : ''} ({totalSessions} session{totalSessions !== 1 ? 's' : ''} total)
+                                                    </p>
+                                                  </div>
+                                                </>
+                                              )}
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
                                     </div>
                                   </div>
 
@@ -2431,6 +2586,7 @@ const TuteeFindAndBookTutors: React.FC = () => {
                                   { label: 'Date', value: bookingForm.date ? new Date(bookingForm.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'Select date', icon: '📅' },
                                   { label: 'Time', value: bookingForm.time || 'Select time', icon: '🕐' },
                                   { label: 'Duration', value: bookingForm.duration ? `${bookingForm.duration}${bookingForm.duration % 1 === 0 ? 'hr' + (bookingForm.duration !== 1 ? 's' : '') : 'hr'}` : 'Select duration', icon: '⏱️' },
+                                  ...(recurringEnabled && recurringDays.length > 0 ? [{ label: 'Recurring', value: `Every ${recurringDays.join(', ')} · ${recurringWeeks}wk (${recurringDays.length * recurringWeeks} sessions)`, icon: '🔁' }] : []),
                                 ].map((item) => (
                                   <div key={item.label} className="flex items-center justify-between rounded-xl bg-gradient-to-r from-slate-50 to-sky-50/30 px-4 py-3 border border-slate-200/60 hover:border-sky-300 transition-colors">
                                     <div className="flex items-center gap-3">
@@ -2450,24 +2606,103 @@ const TuteeFindAndBookTutors: React.FC = () => {
                                   </div>
                                 )}
                                 {selectedTutorProfile?.profile?.session_rate_per_hour && bookingForm.duration > 0 && (() => {
-                                  const totalCost = Number(selectedTutorProfile.profile.session_rate_per_hour) * bookingForm.duration;
+                                  const ratePerHour = Number(selectedTutorProfile.profile.session_rate_per_hour);
+                                  const perSessionCost = ratePerHour * bookingForm.duration;
                                   const durationDisplay = `${bookingForm.duration}${bookingForm.duration % 1 === 0 ? 'hr' + (bookingForm.duration !== 1 ? 's' : '') : 'hr'}`;
+                                  const isRecurring = recurringEnabled && recurringDays.length > 0;
+                                  const totalSessions = isRecurring ? recurringDays.length * recurringWeeks : 1;
+                                  const grandTotal = perSessionCost * totalSessions;
                                   return (
                                     <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 p-4 border-2 border-emerald-400 shadow-lg">
                                       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                                      <div className="relative flex items-center justify-between">
-                                        <span className="text-white font-bold text-sm">Estimated Cost</span>
-                                        <span className="font-black text-white text-xl">
-                                          ₱{totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </span>
-                                      </div>
-                                      <div className="relative mt-1 text-xs text-white/90">
-                                        ₱{Number(selectedTutorProfile.profile.session_rate_per_hour).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/hr × {durationDisplay}
-                                      </div>
+                                      {isRecurring ? (
+                                        <>
+                                          <div className="relative flex items-start justify-between gap-2">
+                                            <div>
+                                              <p className="text-white/80 text-xs font-semibold uppercase tracking-wide">Per Session</p>
+                                              <p className="font-black text-white text-lg leading-tight">
+                                                ₱{perSessionCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                              </p>
+                                              <p className="text-white/80 text-[10px] mt-0.5">
+                                                ₱{ratePerHour.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/hr × {durationDisplay}
+                                              </p>
+                                            </div>
+                                            <div className="text-right">
+                                              <p className="text-white/80 text-xs font-semibold uppercase tracking-wide">Total ({totalSessions} sessions)</p>
+                                              <p className="font-black text-white text-lg leading-tight">
+                                                ₱{grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                              </p>
+                                              <p className="text-white/80 text-[10px] mt-0.5">
+                                                ₱{perSessionCost.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} × {totalSessions} sessions
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <div className="relative mt-2.5 pt-2 border-t border-white/20 flex items-center gap-1.5">
+                                            <svg className="w-3 h-3 text-white/70 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                            </svg>
+                                            <p className="text-white/70 text-[10px]">
+                                              Recurring: every {recurringDays.join(', ')} for {recurringWeeks} week{recurringWeeks !== 1 ? 's' : ''}
+                                            </p>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <div className="relative flex items-center justify-between">
+                                            <span className="text-white font-bold text-sm">Estimated Cost</span>
+                                            <span className="font-black text-white text-xl">
+                                              ₱{perSessionCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </span>
+                                          </div>
+                                          <div className="relative mt-1 text-xs text-white/90">
+                                            ₱{ratePerHour.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/hr × {durationDisplay}
+                                          </div>
+                                        </>
+                                      )}
                                     </div>
                                   );
                                 })()}
                               </div>
+
+                              {/* Tutor Availability */}
+                              {(() => {
+                                const toTitleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+                                const availability: any[] = selectedTutorProfile?.availability || [];
+                                if (availability.length === 0) return null;
+                                const DAY_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+                                const grouped: Record<string, { start: string; end: string }[]> = {};
+                                availability.forEach((a: any) => {
+                                  const d = toTitleCase(a.day_of_week);
+                                  if (!grouped[d]) grouped[d] = [];
+                                  grouped[d].push({ start: a.start_time, end: a.end_time });
+                                });
+                                const days = DAY_ORDER.filter(d => grouped[d]);
+                                return (
+                                  <div className="space-y-2 pt-1">
+                                    <h5 className="text-sm font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                                      <div className="h-1 w-8 bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full"></div>
+                                      Tutor's Schedule
+                                    </h5>
+                                    <div className="rounded-xl border border-slate-200/80 overflow-hidden">
+                                      {days.map((day, i) => (
+                                        <div
+                                          key={day}
+                                          className={`flex items-center justify-between px-3 py-2 ${i % 2 === 0 ? 'bg-slate-50' : 'bg-white'}`}
+                                        >
+                                          <span className="text-xs font-semibold text-slate-600 w-8">{day.slice(0, 3)}</span>
+                                          <div className="flex flex-col items-end gap-0.5">
+                                            {grouped[day].map((block, bi) => (
+                                              <span key={bi} className="text-xs font-bold text-slate-800 tabular-nums">
+                                                {block.start}–{block.end}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                             </aside>
                           </div>
                         </div>
@@ -2525,8 +2760,8 @@ const TuteeFindAndBookTutors: React.FC = () => {
                       <div className="text-slate-700">{bookingForm.subject || '—'}</div>
                     </div>
                     <div className="text-sm">
-                      <div className="font-medium">When</div>
-                      <div className="text-slate-700">{bookingForm.date ? new Date(bookingForm.date).toLocaleDateString() : '—'} · {bookingForm.time || '—'}</div>
+                      <div className="font-medium">{recurringEnabled && recurringDays.length > 0 ? 'First Session' : 'When'}</div>
+                      <div className="text-slate-700">{bookingForm.date ? new Date(bookingForm.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '—'} · {bookingForm.time || '—'}</div>
                     </div>
                     <div className="text-sm">
                       <div className="font-medium">Duration</div>
@@ -2540,6 +2775,26 @@ const TuteeFindAndBookTutors: React.FC = () => {
                       <div className="font-medium">Notes</div>
                       <div className="text-slate-700">{bookingForm.student_notes || 'No notes'}</div>
                     </div>
+                    {recurringEnabled && recurringDays.length > 0 && (() => {
+                      const allDates = generateRecurringDates(bookingForm.date, recurringDays, recurringWeeks);
+                      return (
+                        <div className="text-sm sm:col-span-2">
+                          <div className="font-medium flex items-center gap-1.5 mb-2">
+                            <span>🔁</span> All Sessions ({allDates.length} bookings · {bookingForm.time})
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-40 overflow-y-auto pr-1">
+                            {allDates.map((date, i) => (
+                              <div key={date} className="flex items-center gap-1.5 bg-violet-50 border border-violet-200 rounded-lg px-2.5 py-1.5">
+                                <span className="text-violet-500 font-bold text-[10px] w-4 text-center flex-shrink-0">{i + 1}</span>
+                                <p className="text-xs font-semibold text-slate-800 leading-tight">
+                                  {new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                   {/* <div className="mt-3 text-xs text-slate-500">A confirmation will be sent to your email when the tutor accepts.</div> */}
                 </div>
@@ -2561,6 +2816,9 @@ const TuteeFindAndBookTutors: React.FC = () => {
                     setIsProfileOpen(false);
                     setCancelConfirmationOpen(false);
                     setBookingForm({ subject: '', date: '', time: '', duration: 1, student_notes: '' });
+                    setRecurringEnabled(false);
+                    setRecurringDays([]);
+                    setRecurringWeeks(4);
                   }}
                   className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 >

@@ -387,8 +387,12 @@ const TuteePayment: React.FC = () => {
             }
           }
 
+          // const hasPaymentStatus = booking.payment &&
+          //   ['pending', 'paid', 'admin_confirmed', 'confirmed', 'rejected', 'refunded'].includes(
+          //     (booking.payment.status || '').toLowerCase()
+          //   );
           const hasPaymentStatus = booking.payment &&
-            ['pending', 'paid', 'admin_confirmed', 'confirmed', 'rejected', 'refunded'].includes(
+            [ 'paid', 'admin_confirmed', 'confirmed', 'rejected', 'refunded'].includes(
               (booking.payment.status || '').toLowerCase()
             );
 
@@ -397,11 +401,11 @@ const TuteePayment: React.FC = () => {
             return false;
           }
 
+          // bookingStatus === 'pending' ||
           const hasBookingPaymentStatus =
             bookingStatus === 'awaiting_payment' ||
             bookingStatus === 'payment_pending' ||
             bookingStatus === 'payment_rejected' ||
-            bookingStatus === 'pending' ||
             bookingStatus === 'paid' ||
             bookingStatus === 'admin_confirmed' ||
             bookingStatus === 'confirmed' ||
