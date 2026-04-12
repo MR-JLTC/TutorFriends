@@ -23,7 +23,7 @@ interface BookingRequest {
   date: string;
   time: string;
   duration: number;
-  status: 'pending' | 'accepted' | 'declined' | 'awaiting_payment' | 'confirmed' | 'completed' | 'cancelled' | 'upcoming';
+  status: 'pending' | 'accepted' | 'declined' | 'awaiting_payment' | 'confirmed' | 'completed' | 'cancelled' | 'upcoming' | 'reschedule_confirmation' | 'reschedule_approved';
   payment_proof?: string;
   student_notes?: string;
   created_at: string;

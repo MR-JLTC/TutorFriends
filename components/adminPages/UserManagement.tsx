@@ -517,6 +517,7 @@ const UserManagement: React.FC = () => {
           isOpen={true}
           onClose={() => setStatusConfirmDialog(null)}
           title={`Confirm Status Change`}
+          maxWidth="sm"
           footer={
             <>
               <Button variant="secondary" onClick={() => setStatusConfirmDialog(null)}>Cancel</Button>
@@ -526,8 +527,8 @@ const UserManagement: React.FC = () => {
             </>
           }
         >
-          <div className="p-4 text-slate-700">
-             Are you sure you want to <strong>{statusConfirmDialog.nextStatus === 'active' ? 'activate' : 'deactivate'}</strong> this user? 
+          <div className="px-4 py-3 text-sm text-slate-700">
+             Are you sure you want to <strong>{statusConfirmDialog.nextStatus === 'active' ? 'activate' : 'deactivate'}</strong> this user?
              {statusConfirmDialog.nextStatus === 'inactive' && " They will not be able to log in while deactivated."}
           </div>
         </Modal>
@@ -588,16 +589,17 @@ const UserManagement: React.FC = () => {
           isOpen={true}
           onClose={() => setFeedbackMessage(null)}
           title={feedbackMessage.type === 'success' ? 'Success' : 'Error'}
+          maxWidth="sm"
           footer={
               <Button variant={feedbackMessage.type === 'success' ? 'primary' : 'danger'} onClick={() => setFeedbackMessage(null)}>Okay</Button>
           }
         >
-          <div className="p-5 flex items-start gap-3">
+          <div className="px-4 py-3 flex items-center gap-2.5">
              {feedbackMessage.type === 'success' 
-               ? <div className="p-1.5 bg-emerald-100 rounded-full shrink-0"><RefreshCw className="h-5 w-5 text-emerald-600" /></div>
-               : <div className="p-1.5 bg-rose-100 rounded-full shrink-0"><Ban className="h-5 w-5 text-rose-600" /></div>
+               ? <div className="p-1 bg-emerald-100 rounded-full shrink-0"><RefreshCw className="h-4 w-4 text-emerald-600" /></div>
+               : <div className="p-1 bg-rose-100 rounded-full shrink-0"><Ban className="h-4 w-4 text-rose-600" /></div>
              }
-             <p className="text-slate-700 text-sm mt-1">{feedbackMessage.text}</p>
+             <p className="text-slate-700 text-sm">{feedbackMessage.text}</p>
           </div>
         </Modal>
       )}

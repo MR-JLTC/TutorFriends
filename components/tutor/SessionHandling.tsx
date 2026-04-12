@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../context/AuthContext';
-import { MessageSquare, Clock, CheckCircle, X, Info, AlertCircle, Calendar, User, FileText, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, X, Info, AlertCircle, Calendar, User, FileText, ChevronLeft, ChevronRight, RefreshCw, CalendarClock, CheckCircle2, XCircle } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +25,7 @@ interface BookingRequest {
   date: string;
   time: string;
   duration: number;
-  status: 'pending' | 'accepted' | 'declined' | 'awaiting_payment' | 'awaiting_confirmation' | 'confirmed' | 'completed' | 'cancelled' | 'upcoming';
+  status: 'pending' | 'accepted' | 'declined' | 'awaiting_payment' | 'awaiting_confirmation' | 'confirmed' | 'completed' | 'cancelled' | 'upcoming' | 'reschedule_confirmation' | 'reschedule_approved';
   payment_proof?: string;
   student_notes?: string;
   created_at: string;
@@ -48,6 +48,8 @@ const SessionHandlingContent: React.FC = () => {
   const [acceptTarget, setAcceptTarget] = useState<BookingRequest | null>(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false); // New state
   const [rescheduleTarget, setRescheduleTarget] = useState<BookingRequest | null>(null); // New state
+  const [reschedulesByBooking, setReschedulesByBooking] = useState<Record<number, any[]>>({});
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [now, setNow] = useState(new Date());
 
   // Calendar State
@@ -119,7 +121,9 @@ const SessionHandlingContent: React.FC = () => {
         'payment_approved',
         'awaiting_payment',
         'accepted',
-        'completed'
+        'completed',
+        'reschedule_confirmation',
+        'reschedule_approved'
       ];
       return isSameDay(reqDate, date) && relevantStatuses.includes(req.status);
     });
@@ -315,6 +319,7 @@ const SessionHandlingContent: React.FC = () => {
       console.log('Mapped booking-requests:', mapped);
       if (isMounted) {
         setBookingRequests(mapped);
+        fetchRescheduleProposals(mapped.map((b: BookingRequest) => b.id));
       }
     } catch (error: any) {
       console.error('Failed to fetch booking requests:', error);
@@ -328,6 +333,46 @@ const SessionHandlingContent: React.FC = () => {
         localStorage.removeItem('user');
         navigate('/login');
       }
+    }
+  };
+
+  const fetchRescheduleProposals = async (bookingIds: number[]) => {
+    if (!bookingIds.length) return;
+    const results: Record<number, any[]> = {};
+    await Promise.all(bookingIds.map(async (id) => {
+      try {
+        const res = await apiClient.get(`/reschedules/booking/${id}`);
+        results[id] = res.data || [];
+      } catch {
+        results[id] = [];
+      }
+    }));
+    if (isMounted) setReschedulesByBooking(results);
+  };
+
+  const handleAcceptReschedule = async (rescheduleId: number) => {
+    setActionLoading(rescheduleId);
+    try {
+      await apiClient.patch(`/reschedules/${rescheduleId}/accept`);
+      toast.success('Reschedule approved!');
+      if (tutorId) await fetchBookingRequests(tutorId);
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Failed to approve reschedule');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRejectReschedule = async (rescheduleId: number) => {
+    setActionLoading(rescheduleId);
+    try {
+      await apiClient.patch(`/reschedules/${rescheduleId}/reject`);
+      toast.success('Reschedule declined.');
+      if (tutorId) await fetchBookingRequests(tutorId);
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Failed to decline reschedule');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -411,6 +456,8 @@ const SessionHandlingContent: React.FC = () => {
       case 'declined': return 'text-red-600 bg-red-50 border-red-200';
       case 'awaiting_payment': return 'text-orange-600 bg-orange-50 border-orange-200';
       case 'payment_approved': return 'text-primary-700 bg-primary-50 border-primary-200';
+      case 'reschedule_confirmation': return 'text-amber-700 bg-amber-50 border-amber-300';
+      case 'reschedule_approved': return 'text-emerald-700 bg-emerald-50 border-emerald-300';
       case 'confirmed': return 'text-green-600 bg-green-50 border-green-200';
       case 'completed': return 'text-purple-600 bg-purple-50 border-purple-200';
       case 'cancelled': return 'text-slate-600 bg-slate-50 border-slate-200';
@@ -425,6 +472,8 @@ const SessionHandlingContent: React.FC = () => {
       case 'declined': return <X className="h-4 w-4" />;
       case 'awaiting_payment': return <AlertCircle className="h-4 w-4" />;
       case 'payment_approved': return <CheckCircle className="h-4 w-4" />;
+      case 'reschedule_confirmation': return <CalendarClock className="h-4 w-4" />;
+      case 'reschedule_approved': return <CheckCircle2 className="h-4 w-4" />;
       case 'confirmed': return <CheckCircle className="h-4 w-4" />;
       case 'completed': return <CheckCircle className="h-4 w-4" />;
       case 'cancelled': return <X className="h-4 w-4" />;
@@ -438,11 +487,11 @@ const SessionHandlingContent: React.FC = () => {
     if (!start) return false;
 
     const durationHours = request.duration || 1.0;
-    const endTime = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
+    const end = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
     const currentTime = new Date();
 
     // Session has ended if current time is past the end time
-    return currentTime.getTime() > endTime.getTime();
+    return currentTime.getTime() > end.getTime();
   };
 
   // Sort: 1) awaiting_payment with proof, 2) awaiting_payment without proof, 3) others
@@ -548,7 +597,7 @@ const SessionHandlingContent: React.FC = () => {
   return (
     <>
       <ToastContainer aria-label="Notification messages" />
-      <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 sm:pb-8 md:pb-10">
+      <div className="space-y-3 sm:space-y-4 pb-6 sm:pb-8 md:pb-10">
         <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary-600 via-primary-700 to-primary-900 shadow-lg p-2 sm:p-3 md:p-4 -mx-2 sm:-mx-3 md:mx-0 transition-all duration-300">
           {/* Modern Abstract Shapes Background */}
           <div className="absolute inset-0 opacity-10">
@@ -1013,6 +1062,82 @@ const SessionHandlingContent: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Pending reschedule proposals from tutee — tutor must approve or decline */}
+                  {(reschedulesByBooking[request.id] || [])
+                    .filter(p => p.status === 'pending' && p.receiver_user_id === user?.user_id)
+                    .map(proposal => (
+                      <div key={proposal.reschedule_id} className="mx-4 mb-5 rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 shadow-sm overflow-hidden">
+                        {/* Header strip */}
+                        <div className="flex items-center gap-3 bg-amber-100 border-b border-amber-200 px-5 py-3">
+                          <div className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 shadow">
+                            <CalendarClock className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-base font-bold text-amber-900 leading-tight">Reschedule Requested</p>
+                            <p className="text-sm text-amber-700">
+                              {proposal.proposer?.name || 'Tutee'} wants to change the session schedule
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-5 py-4 space-y-4">
+                          {/* Proposed date & time */}
+                          <div className="flex flex-wrap gap-4">
+                            {proposal.proposedDate && (
+                              <div className="flex items-center gap-2 bg-white border border-amber-200 rounded-xl px-4 py-2.5 shadow-sm">
+                                <Calendar className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                                <div>
+                                  <p className="text-[11px] text-amber-500 font-semibold uppercase tracking-wide">Proposed Date</p>
+                                  <p className="text-sm font-bold text-amber-900">
+                                    {new Date(proposal.proposedDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            {proposal.proposedTime && (
+                              <div className="flex items-center gap-2 bg-white border border-amber-200 rounded-xl px-4 py-2.5 shadow-sm">
+                                <Clock className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                                <div>
+                                  <p className="text-[11px] text-amber-500 font-semibold uppercase tracking-wide">Proposed Time</p>
+                                  <p className="text-sm font-bold text-amber-900">{proposal.proposedTime}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Reason */}
+                          {proposal.reason && (
+                            <div className="bg-white border border-amber-200 rounded-xl px-4 py-3">
+                              <p className="text-[11px] text-amber-500 font-semibold uppercase tracking-wide mb-1">Reason</p>
+                              <p className="text-sm text-amber-800 italic leading-relaxed">&ldquo;{proposal.reason}&rdquo;</p>
+                            </div>
+                          )}
+
+                          {/* Action buttons */}
+                          <div className="flex gap-3 pt-1">
+                            <button
+                              onClick={() => handleAcceptReschedule(proposal.reschedule_id)}
+                              disabled={actionLoading === proposal.reschedule_id}
+                              className="flex-1 py-3 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-md shadow-green-200"
+                            >
+                              <CheckCircle2 className="w-5 h-5" />
+                              {actionLoading === proposal.reschedule_id ? 'Processing…' : 'Approve Reschedule'}
+                            </button>
+                            <button
+                              onClick={() => handleRejectReschedule(proposal.reschedule_id)}
+                              disabled={actionLoading === proposal.reschedule_id}
+                              className="flex-1 py-3 px-4 rounded-xl border-2 border-red-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                              <XCircle className="w-5 h-5" />
+                              {actionLoading === proposal.reschedule_id ? 'Processing…' : 'Decline'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  }
                 </Card>
               );
             })
