@@ -328,7 +328,7 @@ const RescheduleModal: React.FC<Props> = ({ open, bookingId, bookingContext, onC
                   type="button"
                   disabled={!date}
                   onClick={() => date && setTimeDropdownOpen(o => !o)}
-                  className={`w-full border-2 text-left flex items-center gap-2 pl-9 pr-3 py-2.5 rounded-lg transition-all text-sm font-medium ${
+                  className={`w-full border-2 text-left flex items-center gap-2 pl-9 pr-3 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl transition-all text-sm sm:text-base font-medium ${
                     !date
                       ? 'border-slate-200 bg-slate-100 cursor-not-allowed opacity-60 text-slate-400'
                       : timeDropdownOpen

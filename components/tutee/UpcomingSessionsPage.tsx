@@ -270,15 +270,17 @@ const UpcomingSessionsPage: React.FC = () => {
                       Requested {new Date(request.created_at).toLocaleDateString()}
                     </div>
 
-                    <Button
-                      variant="secondary"
-                      onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
-                      disabled={loading}
-                      className="group w-full md:w-auto relative overflow-hidden bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white border-0 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-md shadow-primary-200/60 hover:shadow-lg hover:shadow-primary-300/50 flex items-center gap-2 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Clock className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12 flex-shrink-0" />
-                      Reschedule
-                    </Button>
+                    {!(reschedulesByBooking[request.id] || []).some(p => p.status === 'pending' && p.receiver_user_id === user?.user_id) && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
+                        disabled={loading}
+                        className="group w-full md:w-auto relative overflow-hidden bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white border-0 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-md shadow-primary-200/60 hover:shadow-lg hover:shadow-primary-300/50 flex items-center gap-2 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Clock className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12 flex-shrink-0" />
+                        Reschedule
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -286,55 +288,68 @@ const UpcomingSessionsPage: React.FC = () => {
                 {(reschedulesByBooking[request.id] || [])
                   .filter(p => p.status === 'pending' && p.receiver_user_id === user?.user_id)
                   .map(proposal => (
-                    <div key={proposal.reschedule_id} className="mt-4 ml-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <CalendarClock className="w-4 h-4 text-amber-600" />
+                    <div key={proposal.reschedule_id} className="mt-4 rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 shadow-sm overflow-hidden">
+                      {/* Header strip */}
+                      <div className="flex items-center gap-3 bg-amber-100 border-b border-amber-200 px-5 py-3">
+                        <div className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 shadow">
+                          <CalendarClock className="w-5 h-5 text-white" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-amber-800 leading-tight">Reschedule Proposed</p>
-                          <p className="text-xs text-amber-600 mt-0.5">
-                            {proposal.proposer?.name || 'Your tutor'} wants to change the schedule
+                        <div>
+                          <p className="text-base font-bold text-amber-900 leading-tight">Reschedule Proposed</p>
+                          <p className="text-sm text-amber-700">
+                            {proposal.proposer?.name || 'Your tutor'} wants to change the session schedule
                           </p>
-                          <div className="mt-2.5 grid grid-cols-2 gap-2 text-xs">
-                            <div className="bg-white rounded-lg p-2.5 border border-amber-100 shadow-sm">
-                              <span className="text-slate-400 font-medium block mb-0.5">Proposed</span>
-                              <span className="font-semibold text-slate-800 block">
-                                {new Date(proposal.proposedDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                              </span>
-                              <span className="text-slate-600">{proposal.proposedTime}</span>
+                        </div>
+                      </div>
+
+                      {/* Body */}
+                      <div className="px-5 py-4 space-y-4">
+                        {/* Proposed & Original side-by-side */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-white border border-amber-200 rounded-xl px-4 py-3 shadow-sm">
+                            <p className="text-[11px] text-amber-500 font-semibold uppercase tracking-wide mb-1">New Schedule</p>
+                            <p className="text-sm font-bold text-amber-900">
+                              {new Date(proposal.proposedDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                            </p>
+                            <p className="text-sm text-amber-700 font-medium mt-0.5">{proposal.proposedTime}</p>
+                          </div>
+                          {proposal.originalDate && (
+                            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm">
+                              <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wide mb-1">Original</p>
+                              <p className="text-sm font-bold text-slate-700">
+                                {new Date(proposal.originalDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                              </p>
+                              <p className="text-sm text-slate-500 font-medium mt-0.5">{proposal.originalTime}</p>
                             </div>
-                            {proposal.originalDate && (
-                              <div className="bg-white rounded-lg p-2.5 border border-amber-100 shadow-sm">
-                                <span className="text-slate-400 font-medium block mb-0.5">Original</span>
-                                <span className="font-semibold text-slate-800 block">
-                                  {new Date(proposal.originalDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                                </span>
-                                <span className="text-slate-600">{proposal.originalTime}</span>
-                              </div>
-                            )}
-                          </div>
-                          {proposal.reason && (
-                            <p className="text-xs text-amber-700 mt-2 italic leading-relaxed">&ldquo;{proposal.reason}&rdquo;</p>
                           )}
-                          <div className="flex gap-2 mt-3">
-                            <button
-                              onClick={() => handleAcceptReschedule(proposal.reschedule_id)}
-                              disabled={actionLoading === proposal.reschedule_id}
-                              className="flex-1 py-2 px-3 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              {actionLoading === proposal.reschedule_id ? 'Processing…' : 'Accept'}
-                            </button>
-                            <button
-                              onClick={() => handleRejectReschedule(proposal.reschedule_id)}
-                              disabled={actionLoading === proposal.reschedule_id}
-                              className="flex-1 py-2 px-3 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
-                            >
-                              <XCircle className="w-3.5 h-3.5" />
-                              {actionLoading === proposal.reschedule_id ? 'Processing…' : 'Decline'}
-                            </button>
+                        </div>
+
+                        {/* Reason */}
+                        {proposal.reason && (
+                          <div className="bg-white border border-amber-200 rounded-xl px-4 py-3">
+                            <p className="text-[11px] text-amber-500 font-semibold uppercase tracking-wide mb-1">Reason</p>
+                            <p className="text-sm text-amber-800 italic leading-relaxed">&ldquo;{proposal.reason}&rdquo;</p>
                           </div>
+                        )}
+
+                        {/* Action buttons */}
+                        <div className="flex gap-3 pt-1">
+                          <button
+                            onClick={() => handleAcceptReschedule(proposal.reschedule_id)}
+                            disabled={actionLoading === proposal.reschedule_id}
+                            className="flex-1 py-3 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-md shadow-green-200"
+                          >
+                            <CheckCircle2 className="w-5 h-5" />
+                            {actionLoading === proposal.reschedule_id ? 'Processing…' : 'Accept Reschedule'}
+                          </button>
+                          <button
+                            onClick={() => handleRejectReschedule(proposal.reschedule_id)}
+                            disabled={actionLoading === proposal.reschedule_id}
+                            className="flex-1 py-3 px-4 rounded-xl border-2 border-red-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                          >
+                            <XCircle className="w-5 h-5" />
+                            {actionLoading === proposal.reschedule_id ? 'Processing…' : 'Decline'}
+                          </button>
                         </div>
                       </div>
                     </div>

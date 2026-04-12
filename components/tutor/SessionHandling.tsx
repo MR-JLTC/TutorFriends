@@ -1036,7 +1036,7 @@ const SessionHandlingContent: React.FC = () => {
                             </>
                           )}
 
-                          {(request.status === 'upcoming' || request.status === 'confirmed') && (
+                          {(request.status === 'upcoming' || request.status === 'confirmed' || request.status === 'reschedule_approved') && (
                             <Button
                               variant="secondary"
                               onClick={() => { setRescheduleTarget(request); setIsRescheduleModalOpen(true); }}
