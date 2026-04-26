@@ -917,7 +917,7 @@ const TuteeRegistrationPage: React.FC<TuteeRegistrationModalProps> = ({ isOpen, 
                     disabled={!universityId}
                     title={!universityId ? 'Select a university first' : undefined}
                   >
-                    <option value="">Select Course</option>
+                    <option value="">Select a Program</option>
                     {filteredCourses.map(c => (
                       <option key={c.course_id} value={c.course_id}>{c.course_name}</option>
                     ))}

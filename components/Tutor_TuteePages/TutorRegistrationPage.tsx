@@ -2107,7 +2107,7 @@ const TutorRegistrationPage: React.FC<TutorRegistrationModalProps> = ({
                           disabled={!universityId}
                           title={!universityId ? 'Select a university first' : undefined}
                         >
-                          <option value="">Select Course</option>
+                          <option value="">Select a Program</option>
                           {filteredCourses.map(c => (
                             <option key={c.course_id} value={String(c.course_id)}>{c.course_name}</option>
                           ))}
