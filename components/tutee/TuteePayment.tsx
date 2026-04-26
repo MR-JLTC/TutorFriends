@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CreditCard, Upload, AlertCircle, CheckCircle2, Ban, History, FileText, Info, RefreshCw } from 'lucide-react';
+import PesoSignIcon from '../icons/PesoSignIcon';
 import apiClient, { getFileUrl } from '../../services/api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -845,9 +846,7 @@ const TuteePayment: React.FC = () => {
                         <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 md:gap-6">
                           <div className="flex items-center gap-3 md:gap-4">
                             <div className="p-2 md:p-3 bg-primary-100 rounded-lg md:rounded-xl shadow-sm">
-                              <svg className="h-5 w-5 md:h-6 md:w-6 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
+                              <PesoSignIcon className="h-5 w-5 md:h-6 md:w-6 text-primary-700" />
                             </div>
                             <div>
                               <span className="text-xs sm:text-sm md:text-base font-bold text-slate-600 block mb-0.5 md:mb-1 uppercase tracking-wide">Session Rate</span>
@@ -1057,7 +1056,9 @@ const TuteePayment: React.FC = () => {
                           <div className="bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-10 border border-slate-200/60 shadow-sm space-y-6 sm:space-y-8 flex flex-col justify-center transition-all duration-300 hover:bg-white">
                             <div className="group">
                               <label className="text-sm sm:text-base md:text-lg font-bold text-slate-700 mb-3 flex items-center gap-2.5">
-                                <span className="bg-slate-100 p-1.5 rounded-lg text-slate-500 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors"><svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                                <span className="bg-slate-100 p-1.5 rounded-lg text-slate-500 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                                  <PesoSignIcon className="h-5 w-5 md:h-6 md:w-6 text-primary-700" />
+                                </span>
                                 Amount to Pay
                               </label>
                               {calculatedAmount > 0 ? (
@@ -1444,7 +1445,7 @@ const TuteePayment: React.FC = () => {
                                 <div className="group/item flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-white/80 backdrop-blur-sm rounded-lg md:rounded-xl border-2 border-slate-200 shadow-sm hover:shadow-md hover:border-primary-300 transition-all duration-200">
                                   <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg shadow-sm flex-shrink-0">
                                     <svg className="h-4 w-4 sm:h-5 sm:w-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      <PesoSignIcon className="h-5 w-5 md:h-6 md:w-6 text-primary-700" />
                                     </svg>
                                   </div>
                                   <div className="min-w-0 flex-1">
@@ -1459,7 +1460,7 @@ const TuteePayment: React.FC = () => {
                                 <div className="group/item flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-white/80 backdrop-blur-sm rounded-lg md:rounded-xl border-2 border-slate-200 shadow-sm hover:shadow-md hover:border-primary-300 transition-all duration-200">
                                   <div className="p-1.5 sm:p-2 bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg shadow-sm flex-shrink-0">
                                     <svg className="h-4 w-4 sm:h-5 sm:w-5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                      <PesoSignIcon className="h-5 w-5 md:h-6 md:w-6 text-primary-700" />
                                     </svg>
                                   </div>
                                   <div className="min-w-0 flex-1">

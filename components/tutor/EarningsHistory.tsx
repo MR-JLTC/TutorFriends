@@ -4,10 +4,12 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { useAuth } from '../../hooks/useAuth';
 import Modal from '../ui/Modal';
-import { DollarSign, TrendingUp, Clock, CheckCircle, Star, Calendar, X, Info } from 'lucide-react';
+import { TrendingUp, Clock, CheckCircle, Star, Calendar, X, Info } from 'lucide-react';
+import PesoIcon from '../ui/PesoIcon';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../ui/Toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import PesoSignIcon from '../icons/PesoSignIcon';
 
 interface Session {
   id: number;
@@ -182,10 +184,10 @@ const EarningsHistory: React.FC = () => {
       case 'approved': return <CheckCircle className="h-4 w-4" />;
       case 'confirmed': return <CheckCircle className="h-4 w-4" />;
       case 'admin_confirmed': return <CheckCircle className="h-4 w-4" />;
-      case 'admin_paid': return <DollarSign className="h-4 w-4" />;
+      case 'admin_paid': return <PesoSignIcon className="h-4 w-4" />;
       case 'rejected': return <X className="h-4 w-4" />;
-      case 'refunded': return <DollarSign className="h-4 w-4" />;
-      case 'paid': return <DollarSign className="h-4 w-4" />;
+      case 'refunded': return <PesoSignIcon className="h-4 w-4" />;
+      case 'paid': return <PesoSignIcon className="h-4 w-4" />;
       default: return <Clock className="h-4 w-4" />;
     }
   };
@@ -438,12 +440,12 @@ const EarningsHistory: React.FC = () => {
         <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-slate-50 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200/50 hover:shadow-2xl transition-all duration-300 -mx-2 sm:-mx-3 md:mx-0">
           <div className="flex items-center">
             <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl mr-3 flex-shrink-0 shadow-lg">
-              <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              <PesoSignIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs sm:text-sm font-semibold text-slate-600 uppercase tracking-wide">Total Earnings</p>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-700 truncate">
-                ₱{totalAdminEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {totalAdminEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
           </div>
@@ -541,8 +543,8 @@ const EarningsHistory: React.FC = () => {
           {/* Service Fee Information */}
           <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 rounded-xl border-2 border-amber-200 shadow-sm">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg flex-shrink-0">
-                <Info className="h-4 w-4 sm:h-5 sm:w-5 text-amber-700" />
+              <div className="p-2 sm:p-2.5 md:p-3 bg-blue-100 rounded-lg">
+                <PesoIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-xs sm:text-sm font-bold text-amber-900 mb-1.5">Service Fee Information</h3>

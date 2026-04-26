@@ -5,12 +5,12 @@ import {
   User,
   Calendar,
   MessageSquare,
-  DollarSign,
   CheckCircle,
   Lock,
   X,
   Clock
 } from 'lucide-react';
+import PesoIcon from '../ui/PesoIcon';
 import { logoBase64 } from '../../assets/logo';
 import { useVerification } from '../../context/VerificationContext';
 import apiClient from '../../services/api';
@@ -77,7 +77,7 @@ const tutorNavLinks = [
   },
   {
     to: '/tutor-dashboard/earnings',
-    icon: DollarSign,
+    icon: PesoIcon,
     label: 'Earnings & History',
     description: 'View your payment history, track completed sessions, and monitor your tutoring income.',
     requiresApproval: true,

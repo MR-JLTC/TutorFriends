@@ -7,6 +7,7 @@ import { CheckCircle, History, Clock, Calendar, User, Upload, FileText, Star, Tr
 import { useAuth } from '../../hooks/useAuth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import PesoSignIcon from '../icons/PesoSignIcon';
 
 interface Student {
   user_id: number;
@@ -870,16 +871,16 @@ const SessionHistory: React.FC = () => {
                                 <div className="flex flex-col items-end gap-0.5">
                                   <div className="px-2.5 py-1 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg border border-emerald-200/50 shadow-sm">
                                     <div className="flex items-center gap-1">
-                                      <DollarSign className="h-3.5 w-3.5 text-emerald-700" />
+                                      <PesoSignIcon className="h-3.5 w-3.5 text-emerald-700" />
                                       <span className="text-sm font-bold text-emerald-700">
-                                        ₱{expectedEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        {expectedEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                       </span>
                                     </div>
                                   </div>
                                   {ratePerHour > 0 && (
                                     <div className="flex flex-col items-end">
                                       <span className="text-[10px] text-slate-500 font-medium">
-                                        (₱{ratePerHour.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/hr)
+                                        ({ratePerHour.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/hr)
                                       </span>
                                       <span className="text-[9px] text-amber-600 font-semibold">
                                         After 13% fee
@@ -933,9 +934,9 @@ const SessionHistory: React.FC = () => {
                           <td className="px-4 py-3 text-right">
                             <div className="flex flex-col items-end gap-1">
                               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
-                                <DollarSign className="h-4 w-4 text-white" />
+                                <PesoSignIcon className="h-4 w-4 text-white" />
                                 <span className="text-base font-bold text-white">
-                                  ₱{totalUpcomingEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  {totalUpcomingEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                               </div>
                               <span className="text-[10px] text-white/90 font-semibold">
